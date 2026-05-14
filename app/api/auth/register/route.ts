@@ -14,7 +14,7 @@ function registerErrorResponse(e: unknown): { error: string; status: number } {
   if (e instanceof PrismaClientInitializationError) {
     return {
       error:
-        'Database is not reachable. Set DATABASE_URL to a PostgreSQL connection string (Vercel: Project → Settings → Environment Variables). Use Neon or Vercel Postgres, then redeploy.',
+        'Database is not reachable. Set DATABASE_URL (and DIRECT_URL) to your PostgreSQL connection strings (Vercel: Project → Settings → Environment Variables). Use Supabase, Neon, or Vercel Postgres, then redeploy.',
       status: 503,
     }
   }

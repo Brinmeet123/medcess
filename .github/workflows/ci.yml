@@ -13,6 +13,7 @@ jobs:
     env:
       AUTH_SECRET: github-actions-ci-placeholder-min-32-chars-not-secret
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/test
 
     steps:
       - name: Checkout code
@@ -40,6 +41,7 @@ jobs:
     env:
       AUTH_SECRET: github-actions-ci-placeholder-min-32-chars-not-secret
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/test
 
     services:
       postgres:

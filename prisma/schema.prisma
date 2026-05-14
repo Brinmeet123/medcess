@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Same as DATABASE_URL for Neon / local Postgres. For Supabase + pooler, set DIRECT_URL to the
+  // direct (session) connection string from the dashboard so `prisma migrate` works.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
