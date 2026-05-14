@@ -14,12 +14,13 @@
     "dev:clean": "npm run clean && npx --yes kill-port 3001 && next dev -p 3001",
     "dev:fresh": "npm run clean && npx --yes kill-port 3001 && next dev -p 3001",
     "dev:safe": "npm run clean && npx --yes kill-port 3001 && next dev -p 3001",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "node scripts/with-database-env.cjs npx prisma generate && node scripts/with-database-env.cjs npx prisma migrate deploy && next build",
     "build:next": "prisma generate && next build",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "node scripts/with-database-env.cjs npx prisma generate && node scripts/with-database-env.cjs npx prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:wipe-users": "node scripts/wipe-users.cjs"
+    "db:wipe-users": "node scripts/wipe-users.cjs",
+    "db:deploy": "node scripts/with-database-env.cjs npx prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
