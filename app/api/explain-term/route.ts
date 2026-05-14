@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getMockTermExplanation } from '@/lib/mockResponses'
 import { callLLM } from '@/lib/llm'
 
+export const dynamic = 'force-dynamic'
+
 const USE_DEMO_MOCKS = process.env.DEMO_MODE === 'true'
 
 export async function POST(request: NextRequest) {

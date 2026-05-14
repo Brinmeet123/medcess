@@ -4,6 +4,8 @@ import { getMockPatientResponse } from '@/lib/mockResponses'
 import { getPresetPatientResponse } from '@/lib/presetPatientResponses'
 import { callLLM, shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 
+export const dynamic = 'force-dynamic'
+
 const USE_DEMO_MOCKS = process.env.DEMO_MODE === 'true'
 const USE_PRESET_FALLBACK = process.env.USE_PRESET_FALLBACK !== 'false'
 

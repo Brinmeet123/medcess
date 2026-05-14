@@ -4,19 +4,27 @@
  * Env:
  * - OPENAI_BASE_URL — default https://api.openai.com/v1
  * - OPENAI_MODEL — default gpt-4o-mini
- * - OPENAI_API_KEY — required for real OpenAI calls
+ * - OPENAI_API_KEY — required for real OpenAI calls (alias: OPENAI_API)
  * - DEMO_MODE=true — use mock responses in API routes (no OpenAI calls)
  * - USE_LOCAL_LLM_DEBRIEF_POLISH=true — optional prose-polish pass via LLM
  */
 
 export type LLMMessage = { role: string; content: string }
 
-const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(
-  /\/$/,
-  ''
-)
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini'
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY?.trim()
+/** Bracket access avoids build-time env inlining so Vercel runtime secrets resolve. */
+function readOpenAiApiKey(): string | undefined {
+  const raw = process.env['OPENAI_API_KEY'] ?? process.env['OPENAI_API'] ?? ''
+  const trimmed = String(raw).trim()
+  return trimmed || undefined
+}
+
+function readOpenAiBaseUrl(): string {
+  return (process.env['OPENAI_BASE_URL'] || 'https://api.openai.com/v1').replace(/\/$/, '')
+}
+
+function readOpenAiModel(): string {
+  return process.env['OPENAI_MODEL'] || 'gpt-4o-mini'
+}
 
 function toChatRole(role: string): 'system' | 'user' | 'assistant' {
   if (role === 'system' || role === 'user' || role === 'assistant') return role
@@ -29,15 +37,15 @@ export function getOllamaConfig(): {
   apiKeyConfigured: boolean
 } {
   return {
-    baseUrl: OPENAI_BASE_URL,
-    model: OPENAI_MODEL,
-    apiKeyConfigured: Boolean(OPENAI_API_KEY),
+    baseUrl: readOpenAiBaseUrl(),
+    model: readOpenAiModel(),
+    apiKeyConfigured: Boolean(readOpenAiApiKey()),
   }
 }
 
 /** True when routes should call OpenAI (DEMO_MODE forces mocks instead). */
 export function shouldUseOllamaLLM(): boolean {
-  return process.env.DEMO_MODE !== 'true' && Boolean(OPENAI_API_KEY)
+  return process.env['DEMO_MODE'] !== 'true' && Boolean(readOpenAiApiKey())
 }
 
 /** @deprecated Use shouldUseOllamaLLM */
@@ -74,9 +82,13 @@ export async function callLLM(
   messages: LLMMessage[],
   options?: CallLLMOptions
 ): Promise<string> {
+  const OPENAI_API_KEY = readOpenAiApiKey()
   if (!OPENAI_API_KEY) {
     throw new Error('Missing OPENAI_API_KEY')
   }
+
+  const OPENAI_BASE_URL = readOpenAiBaseUrl()
+  const OPENAI_MODEL = readOpenAiModel()
 
   const url = `${OPENAI_BASE_URL}/chat/completions`
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }

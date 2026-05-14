@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getOllamaConfig, shouldUseOllamaLLM } from '@/lib/llm'
 
+/** Read OPENAI_* and DEMO_MODE at request time (Vercel / Next 14). */
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const demoMode = process.env.DEMO_MODE === 'true'
   const { baseUrl, model, apiKeyConfigured } = getOllamaConfig()
@@ -12,7 +15,9 @@ export async function GET() {
 
   const hint = demoMode
     ? 'Unset DEMO_MODE or set to false to use OpenAI for real AI.'
-    : 'Set OPENAI_API_KEY in your environment. Optional: set OPENAI_MODEL and OPENAI_BASE_URL.'
+    : apiKeyConfigured
+      ? 'Optional: set OPENAI_MODEL and OPENAI_BASE_URL if you use a non-default endpoint.'
+      : 'In Vercel → Project → Settings → Environment Variables, set OPENAI_API_KEY (or OPENAI_API) for Production (and Preview if you use preview URLs), then redeploy. Optional: OPENAI_MODEL, OPENAI_BASE_URL.'
 
   return NextResponse.json({
     ok: true,

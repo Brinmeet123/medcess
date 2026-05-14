@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { callLLM, getOllamaConfig } from '@/lib/llm'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const response = await callLLM([
@@ -30,7 +32,7 @@ export async function GET() {
         success: false,
         error: isConnection ? 'Cannot reach OpenAI' : error?.message || 'Unknown error',
         details: isConnection
-          ? `Check OPENAI_API_KEY and OPENAI_BASE_URL (${baseUrl}). Or set DEMO_MODE=true for mocks.`
+          ? `Check OPENAI_API_KEY (or OPENAI_API) and OPENAI_BASE_URL (${baseUrl}). Or set DEMO_MODE=true for mocks.`
           : error?.message || 'Check your configuration',
       },
       { status: 500 }

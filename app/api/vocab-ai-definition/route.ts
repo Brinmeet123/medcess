@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { callLLM } from '@/lib/llm'
 import { lookupDictionaryAny } from '@/lib/medicalDictionary'
 
+export const dynamic = 'force-dynamic'
+
 const DEMO = process.env.DEMO_MODE === 'true'
 
 export async function POST(request: NextRequest) {

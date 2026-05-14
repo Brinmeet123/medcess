@@ -4,6 +4,8 @@ import { getMockAssessment } from '@/lib/mockResponses'
 import { buildDeterministicAssessment } from '@/lib/debrief/generateDebrief'
 import { maybePolishDeterministicAssessment } from '@/lib/debrief/polishDebrief'
 
+export const dynamic = 'force-dynamic'
+
 const USE_DEMO_MOCKS = process.env.DEMO_MODE === 'true'
 
 export async function POST(request: NextRequest) {
