@@ -3,8 +3,8 @@
 
 /**
  * Prisma migrate reads DIRECT_URL from the schema. If you only set DATABASE_URL
- * (e.g. Vercel / Neon / Supabase direct URI), default DIRECT_URL so deploys work.
- * When DIRECT_URL is set explicitly (Supabase pooler + direct), it is left unchanged.
+ * (e.g. Vercel / Neon), default DIRECT_URL so deploys work.
+ * When DIRECT_URL is set explicitly, it is left unchanged.
  */
 if (!process.env.DIRECT_URL && process.env.DATABASE_URL) {
   process.env.DIRECT_URL = process.env.DATABASE_URL
