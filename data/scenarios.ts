@@ -1,4 +1,5 @@
 import type { ScenarioDebriefConfig } from "@/types/debrief";
+import type { MedicalSpecialty } from "@/data/specialties";
 
 export type ScenarioDifficulty = "Beginner" | "Intermediate" | "Advanced";
 
@@ -163,7 +164,7 @@ export type AIInstructions = {
 export type Scenario = {
   id: string;
   title: string;
-  specialty: string;          // "Emergency Medicine"
+  specialty: MedicalSpecialty;
   difficulty: ScenarioDifficulty;
   estimatedMinutes: number;
   description: string;
@@ -189,7 +190,7 @@ export const scenarios: Scenario[] = [
   {
     id: "chest-pain-er",
     title: "Chest Pain in the ER",
-    specialty: "Emergency Medicine",
+    specialty: "Cardiology",
     difficulty: "Beginner",
     estimatedMinutes: 12,
     description:
@@ -422,7 +423,7 @@ export const scenarios: Scenario[] = [
   {
     id: "sudden-headache-er",
     title: "Sudden Severe Headache",
-    specialty: "Emergency Medicine / Neurology",
+    specialty: "Neurology",
     difficulty: "Intermediate",
     estimatedMinutes: 12,
     description:
@@ -535,7 +536,7 @@ export const scenarios: Scenario[] = [
   {
     id: "acute-sob-er",
     title: "Acute Shortness of Breath",
-    specialty: "Emergency Medicine / Pulmonary",
+    specialty: "Pulmonology",
     difficulty: "Intermediate",
     estimatedMinutes: 12,
     description:
@@ -646,7 +647,7 @@ export const scenarios: Scenario[] = [
   {
     id: "rlq-abdominal-pain",
     title: "Right Lower Quadrant Abdominal Pain",
-    specialty: "General Surgery / Emergency Medicine",
+    specialty: "General Surgery",
     difficulty: "Beginner",
     estimatedMinutes: 10,
     description:
@@ -754,7 +755,7 @@ export const scenarios: Scenario[] = [
   {
     id: "fever-confusion",
     title: "Fever and Confusion",
-    specialty: "Emergency Medicine / Infectious Disease",
+    specialty: "Infectious Disease",
     difficulty: "Advanced",
     estimatedMinutes: 14,
     description:

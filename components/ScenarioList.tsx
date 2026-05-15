@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { Scenario, ScenarioDifficulty } from '@/data/scenarios'
+import { SPECIALTY_FILTER_ALL, type SpecialtyFilterValue } from '@/data/specialties'
 import ScenarioCard from './ScenarioCard'
+import SpecialtyFilter from './SpecialtyFilter'
 import SimulatorHelpButton from './simulator/SimulatorHelpButton'
 
 export type ScenarioProgressInfo = {
@@ -17,17 +19,13 @@ type Props = {
 }
 
 export default function ScenarioList({ scenarios, progressByScenario = {} }: Props) {
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('all')
+  const [selectedSpecialty, setSelectedSpecialty] = useState<SpecialtyFilterValue>(SPECIALTY_FILTER_ALL)
   const [selectedDifficulty, setSelectedDifficulty] = useState<ScenarioDifficulty | 'all'>('all')
-
-  const specialties = useMemo(() => {
-    const unique = Array.from(new Set(scenarios.map(s => s.specialty)))
-    return unique.sort()
-  }, [scenarios])
 
   const filteredScenarios = useMemo(() => {
     return scenarios.filter(scenario => {
-      const specialtyMatch = selectedSpecialty === 'all' || scenario.specialty === selectedSpecialty
+      const specialtyMatch =
+        selectedSpecialty === SPECIALTY_FILTER_ALL || scenario.specialty === selectedSpecialty
       const difficultyMatch = selectedDifficulty === 'all' || scenario.difficulty === selectedDifficulty
       return specialtyMatch && difficultyMatch
     })
@@ -47,20 +45,7 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">
-            <label htmlFor="specialty" className="block text-sm font-medium text-gray-700 mb-2">
-              Specialty
-            </label>
-            <select
-              id="specialty"
-              value={selectedSpecialty}
-              onChange={(e) => setSelectedSpecialty(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="all">All Specialties</option>
-              {specialties.map(specialty => (
-                <option key={specialty} value={specialty}>{specialty}</option>
-              ))}
-            </select>
+            <SpecialtyFilter value={selectedSpecialty} onChange={setSelectedSpecialty} />
           </div>
           
           <div className="flex-1">
