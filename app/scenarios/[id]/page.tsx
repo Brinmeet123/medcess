@@ -1,5 +1,6 @@
 import { scenarios } from '@/data/scenarios'
 import ScenarioPlayer from '@/components/ScenarioPlayer'
+import ScenarioAccessGate from '@/components/ScenarioAccessGate'
 import { notFound } from 'next/navigation'
 
 // Generate static params for all scenarios (required for static export)
@@ -22,6 +23,10 @@ export default async function ScenarioPage({ params }: Props) {
     notFound()
   }
 
-  return <ScenarioPlayer scenario={scenario} />
+  return (
+    <ScenarioAccessGate scenarioId={scenario.id}>
+      <ScenarioPlayer scenario={scenario} />
+    </ScenarioAccessGate>
+  )
 }
 

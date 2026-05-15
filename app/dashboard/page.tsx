@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { scoreToLevel } from '@/lib/scoring'
 import { scenarios } from '@/data/scenarios'
+import { orderWithFreeCasesFirst } from '@/lib/caseAccess'
 import { countDistinctCompletedScenarios, getScenarioSummariesForUser } from '@/lib/scenarioMastery'
 
 function performanceLevelFromCompleted(avgScore: number, completedCount: number): string {
@@ -19,6 +20,8 @@ export default async function DashboardPage() {
   }
 
   const scenarioIds = scenarios.map((s) => s.id)
+  const { free: freeScenarios, locked: lockedScenarios } = orderWithFreeCasesFirst(scenarios)
+  const orderedForDashboard = [...freeScenarios, ...lockedScenarios]
 
   const [user, scenariosCompleted, summaries] = await Promise.all([
     prisma.user.findUnique({
@@ -113,7 +116,7 @@ export default async function DashboardPage() {
       <div className="mt-10">
         <h2 className="text-sm font-semibold text-teal-800 uppercase tracking-wide mb-4">Scenario progress</h2>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
-          {scenarios.map((s) => {
+          {orderedForDashboard.map((s) => {
             const sum = summaries.get(s.id)!
             let label = 'Not started'
             let detail = ''

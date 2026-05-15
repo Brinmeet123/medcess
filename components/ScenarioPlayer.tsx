@@ -23,6 +23,8 @@ import InstructionModal from './InstructionModal'
 import HelpButton from './HelpButton'
 import { useInstructionModal } from '@/hooks/useInstructionModal'
 import { INSTRUCTION_COPY, type InstructionPageKey } from '@/lib/instructionCopy'
+import { isGuestAccessible } from '@/lib/caseAccess'
+import { recordGuestScenarioCompletion } from '@/lib/guestScenarioProgress'
 
 type Message = {
   role: 'doctor' | 'patient'
@@ -366,6 +368,18 @@ export default function ScenarioPlayer({ scenario }: Props) {
       }
     }
 
+    const applyAssessment = (next: AssessmentResult) => {
+      setAssessment(next)
+      if (
+        sessionStatus !== 'authenticated' &&
+        isGuestAccessible(scenario.id) &&
+        typeof next.totalScore === 'number' &&
+        Number.isFinite(next.totalScore)
+      ) {
+        recordGuestScenarioCompletion(scenario.id, Math.round(next.totalScore))
+      }
+    }
+
     try {
       const response = await fetch('/api/assess', {
         method: 'POST',
@@ -385,7 +399,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
       })
 
       if (!response.ok) {
-        setAssessment(getMockAssessment() as AssessmentResult)
+        applyAssessment(getMockAssessment() as AssessmentResult)
         await completeScoring(effectiveAttemptId)
         return
       }
@@ -397,14 +411,14 @@ export default function ScenarioPlayer({ scenario }: Props) {
         throw new Error(result.error)
       }
       
-      setAssessment(result)
+      applyAssessment(result)
       await completeScoring(effectiveAttemptId)
     } catch (error: any) {
       console.error('Error:', error)
       const errorMessage = error?.message || 'Unknown error occurred'
       const isNetworkError = errorMessage.includes('Failed to fetch') || errorMessage.includes('Load failed')
       if (isNetworkError) {
-        setAssessment(getMockAssessment() as AssessmentResult)
+        applyAssessment(getMockAssessment() as AssessmentResult)
         await completeScoring(effectiveAttemptId)
         return
       }

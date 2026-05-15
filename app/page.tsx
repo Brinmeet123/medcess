@@ -1,6 +1,11 @@
 import Link from 'next/link'
+import { FREE_CASE_IDS } from '@/lib/caseAccess'
+import { scenarios } from '@/data/scenarios'
 
 export default function Home() {
+  const starterCases = FREE_CASE_IDS.map((id) => scenarios.find((s) => s.id === id)).filter(
+    (s): s is (typeof scenarios)[number] => Boolean(s)
+  )
   return (
     <div className="min-h-screen">
       <section className="bg-gradient-to-b from-primary-50 via-white to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
@@ -30,6 +35,44 @@ export default function Home() {
               View Progress
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+            <div>
+              <p className="text-sm font-semibold text-primary-700 mb-1">Featured — play free</p>
+              <h2 className="text-2xl font-bold text-gray-900">Five starter cases</h2>
+              <p className="text-sm text-slate-600 mt-1 max-w-xl">
+                No sign-in required. Full cases, scoring, and debrief — jump in from any device.
+              </p>
+            </div>
+            <Link
+              href="/scenarios"
+              className="btn-press shrink-0 text-sm font-semibold text-primary-700 hover:text-primary-900"
+            >
+              View all cases →
+            </Link>
+          </div>
+          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {starterCases.map((s) => (
+              <li key={s.id}>
+                <Link
+                  href={`/scenarios/${s.id}`}
+                  className="block rounded-xl border border-slate-200 bg-slate-50/80 p-4 hover:border-primary-200 hover:bg-primary-50/40 transition h-full"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="font-semibold text-slate-900">{s.title}</span>
+                    <span className="shrink-0 inline-flex items-center gap-0.5 rounded-full border border-emerald-300/90 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-900">
+                      <span aria-hidden>🟢</span> Play Free
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 line-clamp-2">{s.description}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

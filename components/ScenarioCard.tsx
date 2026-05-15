@@ -2,10 +2,14 @@ import Link from 'next/link'
 import { Scenario, ScenarioDifficulty } from '@/data/scenarios'
 import type { ScenarioProgressInfo } from './ScenarioList'
 import { difficultyUiLabel } from '@/lib/scenarioUi'
+import { isGuestAccessible } from '@/lib/caseAccess'
 
 type Props = {
   scenario: Scenario
   progress?: ScenarioProgressInfo
+  /** When session is still loading, avoid showing signed-out-only lock chrome. */
+  sessionReady: boolean
+  isAuthenticated: boolean
 }
 
 const difficultyColors: Record<ScenarioDifficulty, string> = {
@@ -33,55 +37,128 @@ function statusBadge(progress?: ScenarioProgressInfo) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-900 border border-emerald-200">
         Done
-        {progress.bestScore != null ? (
-          <span className="tabular-nums">· {progress.bestScore}</span>
-        ) : null}
+        {progress.bestScore != null ? <span className="tabular-nums">· {progress.bestScore}</span> : null}
       </span>
     )
   }
   return null
 }
 
-export default function ScenarioCard({ scenario, progress }: Props) {
+function LockIcon({ className }: { className?: string }) {
   return (
-    <Link href={`/scenarios/${scenario.id}`}>
-      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 h-full flex flex-col cursor-pointer border border-gray-200">
-        <div className="flex justify-between items-start mb-3 gap-2">
-          <h3 className="text-xl font-semibold text-gray-900">{scenario.title}</h3>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-semibold ${difficultyColors[scenario.difficulty]}`}
-              title={scenario.difficulty}
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 1a4 4 0 00-4 4v3H5a2 2 0 00-2 2v7a2 2 0 002 2h10a2 2 0 002-2V10a2 2 0 00-2-2h-1V5a4 4 0 00-4-4zm2 7V5a2 2 0 10-4 0v3h4z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
+export default function ScenarioCard({ scenario, progress, sessionReady, isAuthenticated }: Props) {
+  const guestOk = isGuestAccessible(scenario.id)
+  const needsSignIn = sessionReady && !guestOk && !isAuthenticated
+  const href = needsSignIn
+    ? `/login?callbackUrl=${encodeURIComponent(`/scenarios/${scenario.id}`)}`
+    : `/scenarios/${scenario.id}`
+
+  const accessBadge = guestOk ? (
+    <span
+      className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300/90 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-900 shadow-sm"
+      title="Free — no account needed"
+    >
+      <span aria-hidden>🟢</span> Play Free
+    </span>
+  ) : needsSignIn ? (
+    <span
+      className="inline-flex items-center gap-0.5 rounded-full border border-rose-300/90 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-900 shadow-sm"
+      title="Create an account or sign in to play this case"
+    >
+      <span aria-hidden>🔴</span> Sign In Required
+    </span>
+  ) : null
+
+  return (
+    <Link
+      href={href}
+      title={needsSignIn ? 'Sign in to unlock this case' : scenario.title}
+      className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-lg"
+    >
+      <div
+        className={`relative bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow h-full flex flex-col cursor-pointer border overflow-hidden ${
+          needsSignIn ? 'border-slate-200' : 'border-gray-200'
+        }`}
+      >
+        {/* Visual strip (stand-in for thumbnail) */}
+        <div
+          className={`relative h-20 w-full bg-gradient-to-br from-primary-100 via-slate-100 to-primary-50 shrink-0 transition-all ${
+            needsSignIn ? 'opacity-[0.88] blur-[0.6px] group-hover:opacity-95 group-hover:blur-[0.3px]' : ''
+          }`}
+        >
+          {needsSignIn ? (
+            <div
+              className="absolute inset-0 flex items-center justify-center text-slate-500/80"
+              aria-hidden
             >
-              {difficultyUiLabel(scenario.difficulty)}
-            </span>
-            {statusBadge(progress)}
+              <LockIcon className="w-8 h-8" />
+            </div>
+          ) : null}
+        </div>
+
+        {accessBadge ? (
+          <div className="absolute top-2 right-2 z-10 max-w-[calc(100%-1rem)]">{accessBadge}</div>
+        ) : null}
+
+        <div className={`p-6 pt-4 flex flex-col flex-grow min-h-0 ${needsSignIn ? 'opacity-90' : ''}`}>
+          <div className="flex justify-between items-start mb-3 gap-2 pr-1">
+            <h3 className="text-xl font-semibold text-gray-900 pr-2">{scenario.title}</h3>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${difficultyColors[scenario.difficulty]}`}
+                title={scenario.difficulty}
+              >
+                {difficultyUiLabel(scenario.difficulty)}
+              </span>
+              {statusBadge(progress)}
+            </div>
           </div>
-        </div>
-        <div className="mb-3">
-          <span className="text-sm text-primary-600 font-medium">{scenario.specialty}</span>
-          <span className="text-sm text-gray-500 mx-2">•</span>
-          <span className="text-sm text-gray-500">{scenario.estimatedMinutes} min</span>
-        </div>
-        <p className="text-gray-600 text-sm flex-grow mb-2">{scenario.description}</p>
-        <p className="text-sm text-slate-500 italic mb-3 leading-snug">{scenario.cardTeaser}</p>
-        {progress &&
-          (progress.bestScore != null || progress.lastAttemptScore != null) &&
-          (progress.status === 'completed' || progress.status === 'in_progress') && (
-            <p className="text-xs text-slate-600 tabular-nums mb-4">
-              {progress.bestScore != null && <span>Best {progress.bestScore}</span>}
-              {progress.lastAttemptScore != null && (
-                <span>
-                  {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}
-                </span>
-              )}
-            </p>
-          )}
-        <div className="btn-press mt-auto inline-flex items-center gap-1 rounded-lg bg-primary-50 px-3 py-2 text-primary-800 text-sm font-semibold ring-1 ring-primary-200/80 w-fit">
-          Start Case →
+          <div className="mb-3">
+            <span className="text-sm text-primary-600 font-medium">{scenario.specialty}</span>
+            <span className="text-sm text-gray-500 mx-2">•</span>
+            <span className="text-sm text-gray-500">{scenario.estimatedMinutes} min</span>
+          </div>
+          <p className="text-gray-600 text-sm flex-grow mb-2">{scenario.description}</p>
+          <p className="text-sm text-slate-500 italic mb-3 leading-snug">{scenario.cardTeaser}</p>
+          {progress &&
+            (progress.bestScore != null || progress.lastAttemptScore != null) &&
+            (progress.status === 'completed' || progress.status === 'in_progress') && (
+              <p className="text-xs text-slate-600 tabular-nums mb-4">
+                {progress.bestScore != null && <span>Best {progress.bestScore}</span>}
+                {progress.lastAttemptScore != null && (
+                  <span>
+                    {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}
+                  </span>
+                )}
+              </p>
+            )}
+          <div
+            className={`btn-press mt-auto inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold ring-1 w-fit ${
+              needsSignIn
+                ? 'bg-slate-50 text-slate-800 ring-slate-200/80 group-hover:bg-slate-100'
+                : 'bg-primary-50 text-primary-800 ring-primary-200/80'
+            }`}
+          >
+            {needsSignIn ? 'Sign in to unlock →' : 'Start Case →'}
+          </div>
         </div>
       </div>
     </Link>
   )
 }
-
