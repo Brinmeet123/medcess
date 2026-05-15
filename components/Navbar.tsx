@@ -58,20 +58,12 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
-                <Link
-                  href="/login"
-                  className="text-sm font-semibold text-teal-700 hover:text-teal-800 px-3 py-2 rounded-md border border-teal-200 bg-teal-50/80"
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/signup"
-                  className="text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-md border border-slate-200 bg-white"
-                >
-                  Sign up
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="text-sm font-semibold text-teal-700 hover:text-teal-800 px-3 py-2 rounded-md border border-teal-200 bg-teal-50/80"
+              >
+                Login / Sign Up
+              </Link>
             )}
           </div>
 
@@ -129,22 +121,13 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <div className="mt-2 mx-3 flex flex-col gap-2">
-                <Link
-                  href="/login"
-                  className="block py-2.5 text-center text-sm font-semibold text-teal-700 rounded-md border border-teal-200 bg-teal-50/80"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block py-2.5 text-center text-sm font-semibold text-slate-700 rounded-md border border-slate-200 bg-white"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Sign up
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="block mt-2 mx-3 py-2.5 text-center text-sm font-semibold text-teal-700 rounded-md border border-teal-200 bg-teal-50/80"
+                onClick={() => setMobileOpen(false)}
+              >
+                Login / Sign Up
+              </Link>
             )}
           </div>
         )}

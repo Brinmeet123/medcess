@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import GoogleSignInButton from '@/components/GoogleSignInButton'
+import AuthForm from '@/components/AuthForm'
 import NextStepGuidance from '@/components/ux/NextStepGuidance'
 
 export default function LoginPage() {
@@ -9,8 +9,8 @@ export default function LoginPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h1>
-          <p className="text-slate-600 mt-2">Sign in with Google to continue where you left off.</p>
-          <p className="text-sm text-slate-500 mt-2">After you sign in, you&apos;ll land on your dashboard or the page you opened.</p>
+          <p className="text-slate-600 mt-2">Sign in to save progress, scores, and vocabulary across devices.</p>
+          <p className="text-sm text-slate-500 mt-2">After you sign in, you&apos;ll land where you can pick up cases or open your dashboard.</p>
         </div>
 
         <div className="mb-8">
@@ -21,14 +21,8 @@ export default function LoginPage() {
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 p-8 md:p-10">
           <Suspense fallback={<div className="text-center text-slate-500">Loading…</div>}>
-            <GoogleSignInButton label="Sign in with Google" />
+            <AuthForm />
           </Suspense>
-          <p className="mt-6 text-center text-sm text-slate-600">
-            New here?{' '}
-            <Link href="/signup" className="font-semibold text-teal-700 hover:text-teal-800">
-              Create an account
-            </Link>
-          </p>
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-8">
