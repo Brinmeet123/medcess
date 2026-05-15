@@ -484,6 +484,258 @@ export const DEBRIEF_CONFIGS: Record<string, ScenarioDebriefConfig> = {
     ],
     vocabTerms: ['atopic dermatitis', 'eczema', 'lichenification', 'xerosis', 'atopic march'],
   },
+
+  'opioid-respiratory-depression': {
+    keyHistoryQuestions: [
+      'time since surgery and opioid dosing',
+      'respiratory rate and sedation level',
+      'pain medications in recovery',
+      'family observation of somnolence',
+      'chest pain fever lung disease',
+    ],
+    keyExamItems: ['general', 'heent', 'respiratory'],
+    criticalTests: ['abg', 'capnography', 'pulse_ox_continuous'],
+    unnecessaryTests: ['cxr'],
+    mustRecognizeFindings: [
+      'Two hours post knee replacement with recent opioid',
+      'Respiratory rate 8 with SpO2 88%',
+      'Marked somnolence and pinpoint pupils',
+      'Hypercapnia and respiratory acidosis on ABG',
+      'Elevated end-tidal CO2 on capnography',
+      'Clear lungs and normal chest X-ray',
+      'Bradycardia without ischemic ECG changes',
+    ],
+    commonMisses: [
+      'Not counting respiratory rate in postoperative monitoring',
+      'Diagnosing pneumonia without fever or infiltrate',
+      'Delaying naloxone or airway support while ordering low-yield tests',
+      'Missing opioid timing relative to sedation',
+      'Attributing hypoxia to PE without supportive findings',
+    ],
+    correctDiagnosisExplanation: [
+      'Opioid-induced respiratory depression is central hypoventilation from opioid effect on brainstem respiratory drive.',
+      'Daniel\'s sedation, miosis, bradypnea, hypercapnia, and hypoxemia immediately after opioid analgesia fit this diagnosis.',
+    ],
+    differentialComparison: [
+      {
+        diagnosis: 'Pulmonary embolism',
+        whyLessLikely:
+          'PE causes hypoxia but not classic miosis and hypercapnia from hypoventilation after opioids.',
+      },
+      {
+        diagnosis: 'Pneumonia',
+        whyLessLikely:
+          'No fever, infiltrate, or purulent cough; lungs clear.',
+      },
+    ],
+    clinicalPearls: [
+      'Rubric (100): Respiratory emergency 30, opioid link 25, monitoring 20, diagnosis 25; bonus naloxone (+10).',
+      'Monitor RR and EtCO2/SpO2 continuously in PACU after opioids.',
+      'Treat with airway support, stimulation, naloxone, and reduced opioid dosing.',
+      'ABG and capnography confirm hypoventilation; chest X-ray is low yield if lungs clear.',
+    ],
+    vocabTerms: ['respiratory depression', 'naloxone', 'capnography', 'hypercapnia', 'miosis'],
+  },
+
+  'spinal-anesthesia-hypotension': {
+    keyHistoryQuestions: [
+      'spinal anesthesia for hip surgery',
+      'dizziness orthostasis nausea',
+      'chest pain dyspnea bleeding',
+      'fluid intake output',
+    ],
+    keyExamItems: ['general', 'cardiac', 'respiratory', 'abdomen'],
+    criticalTests: ['orthostatic_vitals', 'cbc'],
+    unnecessaryTests: ['cxr'],
+    mustRecognizeFindings: [
+      'Recent spinal anesthesia for hip replacement',
+      'BP 82/50 with HR 105',
+      'Symptoms worse when head elevated',
+      'Pale diaphoretic but warm skin',
+      'Positive orthostatic vital signs',
+      'Stable hemoglobin without bleeding',
+      'Sinus tachycardia without ischemia on ECG',
+    ],
+    commonMisses: [
+      'Not linking hypotension to neuraxial block',
+      'Missing orthostatic assessment',
+      'Forgetting to rule out occult hemorrhage postoperatively',
+      'Over-ordering PE workup without hypoxia',
+    ],
+    correctDiagnosisExplanation: [
+      'Spinal anesthesia blocks sympathetic nerves causing vasodilation and relative hypovolemia.',
+      'Linda\'s orthostatic symptoms, tachycardia, and stable CBC after spinal block fit spinal anesthesia-induced hypotension.',
+    ],
+    differentialComparison: [
+      {
+        diagnosis: 'Internal bleeding',
+        whyLessLikely:
+          'Stable hemoglobin and dry surgical site; abdomen soft.',
+      },
+      {
+        diagnosis: 'Pulmonary embolism',
+        whyLessLikely:
+          'Normal oxygenation and clear lungs; hypotension positional after spinal.',
+      },
+    ],
+    clinicalPearls: [
+      'Rubric (100): Anesthesia complication 30, hypotension 30, evaluation 15, diagnosis 25.',
+      'Treat with IV fluids, leg elevation, head-down position, and vasopressors if needed.',
+      'CBC helps exclude hemorrhage; orthostatic vitals document block effect.',
+      'Chest X-ray low yield without respiratory symptoms.',
+    ],
+    vocabTerms: ['spinal anesthesia', 'orthostatic hypotension', 'sympathetic block', 'vasopressor'],
+  },
+
+  'malignant-hyperthermia': {
+    keyHistoryQuestions: [
+      'intraoperative sudden vital changes',
+      'volatile anesthetic succinylcholine exposure',
+      'muscle rigidity temperature CO2',
+      'infection signs before surgery',
+    ],
+    keyExamItems: ['general', 'respiratory', 'other'],
+    criticalTests: ['end_tidal_co2', 'ck', 'potassium', 'abg'],
+    unnecessaryTests: ['cbc'],
+    mustRecognizeFindings: [
+      'Sudden rise in end-tidal CO2 during GA',
+      'Generalized muscle rigidity including masseter',
+      'Core temperature 104°F and climbing',
+      'Tachycardia HR 150',
+      'Marked CK elevation',
+      'Hyperkalemia',
+      'No infection source preoperatively',
+    ],
+    commonMisses: [
+      'Not recognizing rigidity with hypercarbia as MH',
+      'Delaying dantrolene while pursuing sepsis workup alone',
+      'Missing hyperkalemia on labs',
+      'Continuing volatile anesthetic after crisis begins',
+    ],
+    correctDiagnosisExplanation: [
+      'Malignant hyperthermia is a genetic hypermetabolic crisis triggered by volatile anesthetics and succinylcholine.',
+      'Tyler\'s intraoperative fever, rigidity, tachycardia, hypercarbia, hyperkalemia, and elevated CK are classic.',
+    ],
+    differentialComparison: [
+      {
+        diagnosis: 'Sepsis',
+        whyLessLikely:
+          'Acute onset under anesthesia with rigidity and triggering agents; no leukocytosis.',
+      },
+      {
+        diagnosis: 'Neuroleptic malignant syndrome',
+        whyLessLikely:
+          'Requires antipsychotic exposure, not volatile anesthetics.',
+      },
+    ],
+    clinicalPearls: [
+      'Rubric (100): Emergency 30, MH clues 30, testing 15, diagnosis 25; bonus dantrolene (+10).',
+      'Stop triggers, hyperventilate, cool, give dantrolene, treat hyperkalemia and arrhythmias.',
+      'End-tidal CO2, CK, potassium, and ABG are critical; routine CBC adds little acutely.',
+      'MH cart must be immediately available in every OR.',
+    ],
+    vocabTerms: ['malignant hyperthermia', 'dantrolene', 'end-tidal CO2', 'rhabdomyolysis', 'succinylcholine'],
+  },
+
+  'emergence-delirium': {
+    keyHistoryQuestions: [
+      'timing after tonsil surgery anesthesia',
+      'agitation confusion recognition',
+      'fever seizure history',
+      'glucose symptoms',
+    ],
+    keyExamItems: ['general', 'neuro', 'heent'],
+    criticalTests: ['glucose', 'neurologic_exam_bedside'],
+    unnecessaryTests: ['ct_head'],
+    mustRecognizeFindings: [
+      'Immediate post-anesthesia agitation in 6-year-old',
+      'Crying disoriented not recognizing parents briefly',
+      'Moves all extremities without focal deficit',
+      'No fever',
+      'Normal glucose and labs',
+      'Non-focal neurologic exam',
+      'Self-limited course with reassurance',
+    ],
+    commonMisses: [
+      'Ordering head CT without red flags',
+      'Not checking glucose in confused child',
+      'Mislabeling normal emergence agitation as seizure',
+      'Missing post-anesthesia timing clue',
+    ],
+    correctDiagnosisExplanation: [
+      'Emergence delirium is acute agitation and confusion when waking from general anesthesia, common in young children.',
+      'Emily\'s PACU agitation after tonsillectomy with normal glucose, non-focal exam, and no fever fits emergence delirium.',
+    ],
+    differentialComparison: [
+      {
+        diagnosis: 'Hypoglycemia',
+        whyLessLikely:
+          'Normal blood glucose on testing.',
+      },
+      {
+        diagnosis: 'Stroke',
+        whyLessLikely:
+          'No focal deficits; symmetric movement; immediate post-anesthetic context.',
+      },
+    ],
+    clinicalPearls: [
+      'Rubric (100): Post-anesthesia timing 30, rule out emergency 20, diagnosis 30, testing 20.',
+      'Supportive care: calm voice, parent presence, protect from injury.',
+      'Glucose and focused neuro exam are high yield; CT head usually unnecessary if classic.',
+      'Differentiate from laryngospasm, bleeding, or true seizure with observation.',
+    ],
+    vocabTerms: ['emergence delirium', 'PACU', 'volatile anesthetic', 'pediatric anesthesia'],
+  },
+
+  'post-intubation-airway-irritation': {
+    keyHistoryQuestions: [
+      'surgery yesterday general anesthesia intubation',
+      'sore throat cough hoarseness',
+      'fever dyspnea stridor',
+      'timing progression',
+    ],
+    keyExamItems: ['general', 'heent', 'respiratory'],
+    criticalTests: ['airway_exam'],
+    unnecessaryTests: ['cxr', 'covid'],
+    mustRecognizeFindings: [
+      'Symptoms began after GA with endotracheal tube',
+      'Sore throat dry cough hoarse voice',
+      'Mild pharyngeal erythema without exudate',
+      'No stridor or dyspnea',
+      'Lungs clear SpO2 normal',
+      'No fever or leukocytosis',
+      'Mobile vocal cords if laryngoscopy performed',
+    ],
+    commonMisses: [
+      'Not asking about intubation',
+      'Ordering chest X-ray without pulmonary symptoms',
+      'Missing stridor as red flag when present',
+      'Treating as strep without exudate or fever',
+    ],
+    correctDiagnosisExplanation: [
+      'Endotracheal intubation mechanically irritates pharynx and vocal cords causing sore throat, cough, and hoarseness.',
+      'Michael\'s symptoms within 24 hours of intubation with reassuring airway exam fit post-intubation irritation.',
+    ],
+    differentialComparison: [
+      {
+        diagnosis: 'Strep throat',
+        whyLessLikely:
+          'No fever, exudate, or leukocytosis.',
+      },
+      {
+        diagnosis: 'Vocal cord injury',
+        whyLessLikely:
+          'Mobile cords and no aspiration; expected mild hoarseness only.',
+      },
+    ],
+    clinicalPearls: [
+      'Rubric (100): Intubation link 25, avoid unnecessary tests 20, diagnosis 35, history 20.',
+      'Reassurance, voice rest, humidification, and analgesia are usually sufficient.',
+      'Focused airway exam is high yield; laryngoscopy if symptoms persist.',
+      'Chest X-ray and infectious panels low yield without respiratory or systemic signs.',
+    ],
+    vocabTerms: ['endotracheal intubation', 'hoarseness', 'laryngoscopy', 'stridor', 'PACU'],
+  },
 }
 
 export function getDebriefConfigForScenario(scenarioId: string): ScenarioDebriefConfig | null {

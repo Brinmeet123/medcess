@@ -1,6 +1,7 @@
 import type { ScenarioDebriefConfig } from "@/types/debrief";
 import type { MedicalSpecialty } from "@/data/specialties";
 import { allergyImmunologyScenarios } from "@/data/scenarios/allergyImmunology";
+import { anesthesiologyScenarios } from "@/data/scenarios/anesthesiology";
 
 export type ScenarioDifficulty = "Beginner" | "Intermediate" | "Advanced";
 
@@ -863,6 +864,7 @@ export const scenarios: Scenario[] = [
       "Early antibiotics and fluid resuscitation are critical in sepsis management."
     ]
   },
-  ...allergyImmunologyScenarios
+  ...allergyImmunologyScenarios,
+  ...anesthesiologyScenarios
 ];
 

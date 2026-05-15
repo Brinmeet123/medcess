@@ -1,5 +1,6 @@
 import type { Scenario } from '@/data/scenarios'
 import { allergyImmunologyFallbackScenarios } from '@/lib/presetResponses/allergyImmunologyFallback'
+import { anesthesiologyFallbackScenarios } from '@/lib/presetResponses/anesthesiologyFallback'
 
 export type ChatMessage = {
   role: string
@@ -21,6 +22,11 @@ const SCENARIO_ID_TO_FALLBACK_KEY: Record<string, string> = {
   'cvid-recurrent-infections': 'cvid-recurrent-infections',
   'exercise-induced-asthma': 'exercise-induced-asthma',
   'atopic-dermatitis-eczema': 'atopic-dermatitis-eczema',
+  'opioid-respiratory-depression': 'opioid-respiratory-depression',
+  'spinal-anesthesia-hypotension': 'spinal-anesthesia-hypotension',
+  'malignant-hyperthermia': 'malignant-hyperthermia',
+  'emergence-delirium': 'emergence-delirium',
+  'post-intubation-airway-irritation': 'post-intubation-airway-irritation',
 }
 
 function normalize(text: string): string {
@@ -140,6 +146,7 @@ export function getPresetPatientResponse(
 }
 
 const FALLBACK_SCENARIOS: FallbackScenario[] = [
+  ...anesthesiologyFallbackScenarios,
   ...allergyImmunologyFallbackScenarios,
   {
     key: 'chest-pain-er',
