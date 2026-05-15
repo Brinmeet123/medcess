@@ -1,8 +1,25 @@
 import type { ScenarioDebriefConfig } from "@/types/debrief";
 import type { MedicalSpecialty } from "@/data/specialties";
 import { allergyImmunologyScenarios } from "@/data/scenarios/allergyImmunology";
-import { anesthesiologyScenarios } from "@/data/scenarios/anesthesiology";
-
+import { cardiologyScenarios } from "@/data/scenarios/cardiology";
+import { dermatologyScenarios } from "@/data/scenarios/dermatology";
+import { emergencyMedicineScenarios } from "@/data/scenarios/emergencyMedicine";
+import { endocrinologyScenarios } from "@/data/scenarios/endocrinology";
+import { familyMedicineScenarios } from "@/data/scenarios/familyMedicine";
+import { internalMedicineScenarios } from "@/data/scenarios/internalMedicine";
+import { hematologyScenarios } from "@/data/scenarios/hematology";
+import { infectiousDiseaseScenarios } from "@/data/scenarios/infectiousDisease";
+import { gastroenterologyScenarios } from "@/data/scenarios/gastroenterology";
+import { neurologyScenarios } from "@/data/scenarios/neurology";
+import { nephrologyScenarios } from "@/data/scenarios/nephrology";
+import { obgynScenarios } from "@/data/scenarios/obgyn";
+import { orthopaedicSurgeryScenarios } from "@/data/scenarios/orthopaedicSurgery";
+import { rheumatologyScenarios } from "@/data/scenarios/rheumatology";
+import { pediatricsScenarios } from "@/data/scenarios/pediatrics";
+import { generalSurgeryScenarios } from "@/data/scenarios/generalSurgery";
+import { psychiatryScenarios } from "@/data/scenarios/psychiatry";
+import { geriatricsScenarios } from "@/data/scenarios/geriatrics";
+import { urologyScenarios } from "@/data/scenarios/urology";
 export type ScenarioDifficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export type VitalSigns = {
@@ -155,6 +172,12 @@ export type PatientPersona = {
   vitals: VitalSigns;
   keyHistoryPoints: string[]; // Important info a good doctor should find
   redFlags: string[];         // Critical danger signs
+  /** Home medications (geriatrics / complex cases); optional */
+  medicationList?: string[];
+  /** Prior functional level before this illness; optional */
+  baselineFunctionalStatus?: string;
+  /** Baseline cognition before acute or progressive change; optional */
+  cognitiveBaseline?: string;
 };
 
 export type AIInstructions = {
@@ -176,6 +199,8 @@ export type Scenario = {
   patientPersona: PatientPersona;
   aiInstructions: AIInstructions;
   physicalExam: PhysicalExamSection[];
+  /** Structured mental status exam sections (e.g. psychiatry cases). Shown after physical exam in the exam step. */
+  mentalStatusExam?: PhysicalExamSection[];
   tests?: DiagnosticTest[];  // Legacy - kept for backward compatibility
   testOverrides?: ScenarioTestOverride[];
   testDefaultBehavior?: TestDefaultBehavior;
@@ -425,7 +450,7 @@ export const scenarios: Scenario[] = [
   {
     id: "sudden-headache-er",
     title: "Sudden Severe Headache",
-    specialty: "Neurology",
+    specialty: "Emergency Medicine",
     difficulty: "Intermediate",
     estimatedMinutes: 12,
     description:
@@ -538,7 +563,7 @@ export const scenarios: Scenario[] = [
   {
     id: "acute-sob-er",
     title: "Acute Shortness of Breath",
-    specialty: "Pulmonology",
+    specialty: "Emergency Medicine",
     difficulty: "Intermediate",
     estimatedMinutes: 12,
     description:
@@ -649,7 +674,7 @@ export const scenarios: Scenario[] = [
   {
     id: "rlq-abdominal-pain",
     title: "Right Lower Quadrant Abdominal Pain",
-    specialty: "General Surgery",
+    specialty: "Gastroenterology",
     difficulty: "Beginner",
     estimatedMinutes: 10,
     description:
@@ -757,7 +782,7 @@ export const scenarios: Scenario[] = [
   {
     id: "fever-confusion",
     title: "Fever and Confusion",
-    specialty: "Infectious Disease",
+    specialty: "Emergency Medicine",
     difficulty: "Advanced",
     estimatedMinutes: 14,
     description:
@@ -865,6 +890,24 @@ export const scenarios: Scenario[] = [
     ]
   },
   ...allergyImmunologyScenarios,
-  ...anesthesiologyScenarios
+  ...cardiologyScenarios,
+  ...dermatologyScenarios,
+  ...emergencyMedicineScenarios,
+  ...endocrinologyScenarios,
+  ...familyMedicineScenarios,
+  ...internalMedicineScenarios,
+  ...hematologyScenarios,
+  ...infectiousDiseaseScenarios,
+  ...gastroenterologyScenarios,
+  ...neurologyScenarios,
+  ...nephrologyScenarios,
+  ...obgynScenarios,
+  ...orthopaedicSurgeryScenarios,
+  ...rheumatologyScenarios,
+  ...pediatricsScenarios,
+  ...generalSurgeryScenarios,
+  ...psychiatryScenarios,
+  ...geriatricsScenarios,
+  ...urologyScenarios,
 ];
 

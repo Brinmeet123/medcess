@@ -2,9 +2,26 @@
  * Mock responses for demo mode (DEMO_MODE=true) when Ollama is not used.
  * Keyword-based patient replies — scenario-specific, 2–3 sentences each.
  */
+import { internalMedicineKeywordHandlers } from '@/lib/mockResponses/internalMedicine'
+import { pediatricsKeywordHandlers } from '@/lib/mockResponses/pediatrics'
 import { allergyImmunologyKeywordHandlers } from '@/lib/mockResponses/allergyImmunology'
-import { anesthesiologyKeywordHandlers } from '@/lib/mockResponses/anesthesiology'
-
+import { cardiologyKeywordHandlers } from '@/lib/mockResponses/cardiology'
+import { dermatologyKeywordHandlers } from '@/lib/mockResponses/dermatology'
+import { emergencyMedicineKeywordHandlers } from '@/lib/mockResponses/emergencyMedicine'
+import { endocrinologyKeywordHandlers } from '@/lib/mockResponses/endocrinology'
+import { familyMedicineKeywordHandlers } from '@/lib/mockResponses/familyMedicine'
+import { gastroenterologyKeywordHandlers } from '@/lib/mockResponses/gastroenterology'
+import { neurologyKeywordHandlers } from '@/lib/mockResponses/neurology'
+import { generalSurgeryKeywordHandlers } from '@/lib/mockResponses/generalSurgery'
+import { infectiousDiseaseKeywordHandlers } from '@/lib/mockResponses/infectiousDisease'
+import { rheumatologyKeywordHandlers } from '@/lib/mockResponses/rheumatology'
+import { nephrologyKeywordHandlers } from '@/lib/mockResponses/nephrology'
+import { obgynKeywordHandlers } from '@/lib/mockResponses/obgyn'
+import { hematologyKeywordHandlers } from '@/lib/mockResponses/hematology'
+import { orthopaedicSurgeryKeywordHandlers } from '@/lib/mockResponses/orthopaedicSurgery'
+import { psychiatryKeywordHandlers } from '@/lib/mockResponses/psychiatry'
+import { geriatricsKeywordHandlers } from '@/lib/mockResponses/geriatrics'
+import { urologyKeywordHandlers } from '@/lib/mockResponses/urology'
 const REPLY_EMPTY =
   "I’m not sure I caught what you asked… could you say it again? I want to make sure I answer you the right way."
 
@@ -672,8 +689,26 @@ const scenarioKeywordHandlers: Record<string, (input: string) => string> = {
   'acute-sob-er': acuteSobKeywords,
   'rlq-abdominal-pain': rlqAbdominalKeywords,
   'fever-confusion': feverConfusionKeywords,
+  ...internalMedicineKeywordHandlers,
+  ...pediatricsKeywordHandlers,
   ...allergyImmunologyKeywordHandlers,
-  ...anesthesiologyKeywordHandlers,
+  ...cardiologyKeywordHandlers,
+  ...dermatologyKeywordHandlers,
+  ...emergencyMedicineKeywordHandlers,
+  ...endocrinologyKeywordHandlers,
+  ...familyMedicineKeywordHandlers,
+  ...infectiousDiseaseKeywordHandlers,
+  ...gastroenterologyKeywordHandlers,
+  ...neurologyKeywordHandlers,
+  ...generalSurgeryKeywordHandlers,
+  ...psychiatryKeywordHandlers,
+  ...nephrologyKeywordHandlers,
+  ...obgynKeywordHandlers,
+  ...hematologyKeywordHandlers,
+  ...orthopaedicSurgeryKeywordHandlers,
+  ...rheumatologyKeywordHandlers,
+  ...geriatricsKeywordHandlers,
+  ...urologyKeywordHandlers,
 }
 
 /**

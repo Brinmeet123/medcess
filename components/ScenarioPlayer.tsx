@@ -472,6 +472,35 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </div>
       </div>
 
+      {(scenario.patientPersona.medicationList?.length ||
+        scenario.patientPersona.baselineFunctionalStatus ||
+        scenario.patientPersona.cognitiveBaseline) && (
+        <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-800">
+          <h3 className="font-semibold text-slate-900 mb-2">Patient context</h3>
+          <ul className="space-y-2 list-none">
+            {scenario.patientPersona.medicationList &&
+              scenario.patientPersona.medicationList.length > 0 && (
+                <li>
+                  <span className="font-medium text-slate-700">Medications: </span>
+                  {scenario.patientPersona.medicationList.join('; ')}
+                </li>
+              )}
+            {scenario.patientPersona.baselineFunctionalStatus && (
+              <li>
+                <span className="font-medium text-slate-700">Baseline function: </span>
+                {scenario.patientPersona.baselineFunctionalStatus}
+              </li>
+            )}
+            {scenario.patientPersona.cognitiveBaseline && (
+              <li>
+                <span className="font-medium text-slate-700">Cognitive baseline: </span>
+                {scenario.patientPersona.cognitiveBaseline}
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
       {activeSection === 'history' && (
         <DoctorPatientScene patientName={scenario.patientPersona.name} onPatientClick={scrollToChat} />
       )}
@@ -593,6 +622,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         <>
           <PhysicalExamPanel
             sections={scenario.physicalExam}
+            mentalStatusExam={scenario.mentalStatusExam}
             scenarioId={scenario.id}
             viewedSections={viewedExamSections}
             onSectionsViewed={handleExamSectionsViewed}

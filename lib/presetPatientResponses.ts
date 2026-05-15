@@ -1,7 +1,24 @@
 import type { Scenario } from '@/data/scenarios'
 import { allergyImmunologyFallbackScenarios } from '@/lib/presetResponses/allergyImmunologyFallback'
-import { anesthesiologyFallbackScenarios } from '@/lib/presetResponses/anesthesiologyFallback'
-
+import { cardiologyFallbackScenarios } from '@/lib/presetResponses/cardiologyFallback'
+import { dermatologyFallbackScenarios } from '@/lib/presetResponses/dermatologyFallback'
+import { emergencyMedicineFallbackScenarios } from '@/lib/presetResponses/emergencyMedicineFallback'
+import { endocrinologyFallbackScenarios } from '@/lib/presetResponses/endocrinologyFallback'
+import { familyMedicineFallbackScenarios } from '@/lib/presetResponses/familyMedicineFallback'
+import { gastroenterologyFallbackScenarios } from '@/lib/presetResponses/gastroenterologyFallback'
+import { pediatricsFallbackScenarios } from '@/lib/presetResponses/pediatricsFallback'
+import { neurologyFallbackScenarios } from '@/lib/presetResponses/neurologyFallback'
+import { generalSurgeryFallbackScenarios } from '@/lib/presetResponses/generalSurgeryFallback'
+import { internalMedicineFallbackScenarios } from '@/lib/presetResponses/internalMedicineFallback'
+import { infectiousDiseaseFallbackScenarios } from '@/lib/presetResponses/infectiousDiseaseFallback'
+import { rheumatologyFallbackScenarios } from '@/lib/presetResponses/rheumatologyFallback'
+import { obgynFallbackScenarios } from '@/lib/presetResponses/obgynFallback'
+import { hematologyFallbackScenarios } from '@/lib/presetResponses/hematologyFallback'
+import { orthopaedicSurgeryFallbackScenarios } from '@/lib/presetResponses/orthopaedicSurgeryFallback'
+import { nephrologyFallbackScenarios } from '@/lib/presetResponses/nephrologyFallback'
+import { psychiatryFallbackScenarios } from '@/lib/presetResponses/psychiatryFallback'
+import { geriatricsFallbackScenarios } from '@/lib/presetResponses/geriatricsFallback'
+import { urologyFallbackScenarios } from '@/lib/presetResponses/urologyFallback'
 export type ChatMessage = {
   role: string
   content: string
@@ -22,11 +39,98 @@ const SCENARIO_ID_TO_FALLBACK_KEY: Record<string, string> = {
   'cvid-recurrent-infections': 'cvid-recurrent-infections',
   'exercise-induced-asthma': 'exercise-induced-asthma',
   'atopic-dermatitis-eczema': 'atopic-dermatitis-eczema',
-  'opioid-respiratory-depression': 'opioid-respiratory-depression',
-  'spinal-anesthesia-hypotension': 'spinal-anesthesia-hypotension',
-  'malignant-hyperthermia': 'malignant-hyperthermia',
-  'emergence-delirium': 'emergence-delirium',
-  'post-intubation-airway-irritation': 'post-intubation-airway-irritation',
+  'stemi-pressure-wont-go-away': 'stemi-pressure-wont-go-away',
+  'afib-rapid-ventricular-response': 'afib-rapid-ventricular-response',
+  'chf-exacerbation-stairs': 'chf-exacerbation-stairs',
+  'hypertrophic-cardiomyopathy-syncope': 'hypertrophic-cardiomyopathy-syncope',
+  'acute-pericarditis-positional': 'acute-pericarditis-positional',
+  'tinea-corporis-spreading': 'tinea-corporis-spreading',
+  'melanoma-mole-changed': 'melanoma-mole-changed',
+  'acne-vulgaris-face': 'acne-vulgaris-face',
+  'herpes-zoster-burning': 'herpes-zoster-burning',
+  'stevens-johnson-peeling': 'stevens-johnson-peeling',
+  'sah-worst-headache-of-my-life': 'sah-worst-headache-of-my-life',
+  'pe-em-cant-catch-breath': 'pe-em-cant-catch-breath',
+  'dka-sugar-out-of-control': 'dka-sugar-out-of-control',
+  'appendicitis-pain-moved-rlq': 'appendicitis-pain-moved-rlq',
+  'aortic-dissection-tearing-chest': 'aortic-dissection-tearing-chest',
+  'graves-hyperthyroid-weight-loss': 'graves-hyperthyroid-weight-loss',
+  'hashimoto-hypothyroid-tired-cold': 'hashimoto-hypothyroid-tired-cold',
+  't1dm-cant-stop-drinking-water': 't1dm-cant-stop-drinking-water',
+  'cushing-face-looks-different': 'cushing-face-looks-different',
+  'hyperparathyroid-recurrent-kidney-stones': 'hyperparathyroid-recurrent-kidney-stones',
+  'iron-deficiency-tired-months': 'iron-deficiency-tired-months',
+  'essential-hypertension-bp-high': 'essential-hypertension-bp-high',
+  'cap-cough-wont-go-away': 'cap-cough-wont-go-away',
+  'mdd-feel-down-all-time': 'mdd-feel-down-all-time',
+  'osteoarthritis-knees-hurt-daily': 'osteoarthritis-knees-hurt-daily',
+  'acute-pancreatitis-pain-through-back': 'acute-pancreatitis-pain-through-back',
+  'peptic-ulcer-burn-after-eating': 'peptic-ulcer-burn-after-eating',
+  'ulcerative-colitis-running-bathroom': 'ulcerative-colitis-running-bathroom',
+  'acute-hepatitis-b-yellow-eyes': 'acute-hepatitis-b-yellow-eyes',
+  'colon-cancer-feel-full-all-time': 'colon-cancer-feel-full-all-time',
+  'acute-stroke-face-feels-strange': 'acute-stroke-face-feels-strange',
+  'migraine-terrible-headaches-samantha': 'migraine-terrible-headaches-samantha',
+  'parkinson-hands-shaking-harold': 'parkinson-hands-shaking-harold',
+  'seizure-at-school-noah': 'seizure-at-school-noah',
+  'ms-vision-legs-relapsing-rachel': 'ms-vision-legs-relapsing-rachel',
+  'incarcerated-hernia-groin-lump-frank': 'incarcerated-hernia-groin-lump-frank',
+  'acute-cholecystitis-ruq-maria-torres': 'acute-cholecystitis-ruq-maria-torres',
+  'psych-ptsd-reliving': 'psych-ptsd-reliving',
+  'psych-ocd-hand-washing': 'psych-ocd-hand-washing',
+  'psych-schizophrenia-watching': 'psych-schizophrenia-watching',
+  'psych-bipolar-manic-no-sleep': 'psych-bipolar-manic-no-sleep',
+  'nephro-ckd-richard-hypertension': 'nephro-ckd-richard-hypertension',
+  'nephro-aki-george-dehydration': 'nephro-aki-george-dehydration',
+  'nephro-psgn-jacob-cola-urine': 'nephro-psgn-jacob-cola-urine',
+  'nephro-nephrotic-amanda-edema': 'nephro-nephrotic-amanda-edema',
+  'heme-acute-leukemia-noah-infections': 'heme-acute-leukemia-noah-infections',
+  'heme-sickle-marcus-voc': 'heme-sickle-marcus-voc',
+  'heme-hodgkin-andrew-cervical-nodes': 'heme-hodgkin-andrew-cervical-nodes',
+  'heme-iron-jessica-fatigue-sob': 'heme-iron-jessica-fatigue-sob',
+  'heme-itp-olivia-easy-bruising': 'heme-itp-olivia-easy-bruising',
+  'ortho-compartment-david-construction-crush': 'ortho-compartment-david-construction-crush',
+  'ortho-scaphoid-tyler-foosh-wrist': 'ortho-scaphoid-tyler-foosh-wrist',
+  'ortho-shoulder-dislocation-brandon-basketball': 'ortho-shoulder-dislocation-brandon-basketball',
+  'ortho-femoral-neck-margaret-kitchen-fall': 'ortho-femoral-neck-margaret-kitchen-fall',
+  'ortho-acl-jordan-soccer-pivot': 'ortho-acl-jordan-soccer-pivot',
+  'obgyn-preeclampsia-rebecca-headache-swelling': 'obgyn-preeclampsia-rebecca-headache-swelling',
+  'obgyn-pid-maria-discharge': 'obgyn-pid-maria-discharge',
+  'obgyn-miscarriage-ashley-bleeding': 'obgyn-miscarriage-ashley-bleeding',
+  'obgyn-pcos-emily-irregular-cycles': 'obgyn-pcos-emily-irregular-cycles',
+  'obgyn-ectopic-jessica-missed-period': 'obgyn-ectopic-jessica-missed-period',
+  'rheum-scleroderma-melissa-raynaud': 'rheum-scleroderma-melissa-raynaud',
+  'rheum-pmr-linda-proximal-pain': 'rheum-pmr-linda-proximal-pain',
+  'rheum-gout-anthony-first-mtp': 'rheum-gout-anthony-first-mtp',
+  'rheum-sle-rachel-photosensitivity': 'rheum-sle-rachel-photosensitivity',
+  'rheum-ra-susan-morning-stiffness': 'rheum-ra-susan-morning-stiffness',
+  'perirectal-abscess-sit-pain-kevin-morris': 'perirectal-abscess-sit-pain-kevin-morris',
+  'perforated-ulcer-rigid-walter-green': 'perforated-ulcer-rigid-walter-green',
+  'sepsis-pyelo-shaking-lauren-mitchell': 'sepsis-pyelo-shaking-lauren-mitchell',
+  'endocarditis-fever-michael-perez': 'endocarditis-fever-michael-perez',
+  'malaria-return-travel-david-khan': 'malaria-return-travel-david-khan',
+  'hiv-opportunistic-cough-jason-reed': 'hiv-opportunistic-cough-jason-reed',
+  'bacterial-meningitis-neck-emma-rodriguez': 'bacterial-meningitis-neck-emma-rodriguez',
+  'croup-breathing-funny-liam-turner': 'croup-breathing-funny-liam-turner',
+  'otitis-media-ear-ava-morris': 'otitis-media-ear-ava-morris',
+  'gastroenteritis-dehydration-noah-garcia': 'gastroenteritis-dehydration-noah-garcia',
+  'kawasaki-rash-fever-sophia-patel': 'kawasaki-rash-fever-sophia-patel',
+  'septic-arthritis-limp-ethan-brooks': 'septic-arthritis-limp-ethan-brooks',
+  't2dm-off-weeks-kevin-sharma': 't2dm-off-weeks-kevin-sharma',
+  'chf-sob-robert-daniels': 'chf-sob-robert-daniels',
+  'iron-anemia-dizziness-melissa-chen': 'iron-anemia-dizziness-melissa-chen',
+  'ckd-fatigue-william-foster': 'ckd-fatigue-william-foster',
+  'nephrotic-edema-thomas-rivera': 'nephrotic-edema-thomas-rivera',
+  'geriatrics-delirium-uti-margaret-russo': 'geriatrics-delirium-uti-margaret-russo',
+  'geriatrics-alzheimer-harold-green': 'geriatrics-alzheimer-harold-green',
+  'geriatrics-orthostatic-falls-richard-bennett': 'geriatrics-orthostatic-falls-richard-bennett',
+  'geriatrics-failure-thrive-dorothy-mitchell': 'geriatrics-failure-thrive-dorothy-mitchell',
+  'geriatrics-stroke-eleanor-foster': 'geriatrics-stroke-eleanor-foster',
+  'urology-retention-bph-thomas-reynolds': 'urology-retention-bph-thomas-reynolds',
+  'urology-stone-eric-patel': 'urology-stone-eric-patel',
+  'urology-hematuria-bladder-james-carter': 'urology-hematuria-bladder-james-carter',
+  'urology-torsion-noah-brooks': 'urology-torsion-noah-brooks',
+  'urology-bph-luts-robert-kim': 'urology-bph-luts-robert-kim',
 }
 
 function normalize(text: string): string {
@@ -146,7 +250,25 @@ export function getPresetPatientResponse(
 }
 
 const FALLBACK_SCENARIOS: FallbackScenario[] = [
-  ...anesthesiologyFallbackScenarios,
+  ...psychiatryFallbackScenarios,
+  ...urologyFallbackScenarios,
+  ...geriatricsFallbackScenarios,
+  ...nephrologyFallbackScenarios,
+  ...rheumatologyFallbackScenarios,
+  ...obgynFallbackScenarios,
+  ...hematologyFallbackScenarios,
+  ...orthopaedicSurgeryFallbackScenarios,
+  ...pediatricsFallbackScenarios,
+  ...internalMedicineFallbackScenarios,
+  ...infectiousDiseaseFallbackScenarios,
+  ...gastroenterologyFallbackScenarios,
+  ...neurologyFallbackScenarios,
+  ...generalSurgeryFallbackScenarios,
+  ...familyMedicineFallbackScenarios,
+  ...endocrinologyFallbackScenarios,
+  ...emergencyMedicineFallbackScenarios,
+  ...dermatologyFallbackScenarios,
+  ...cardiologyFallbackScenarios,
   ...allergyImmunologyFallbackScenarios,
   {
     key: 'chest-pain-er',
