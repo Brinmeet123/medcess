@@ -1,24 +1,13 @@
 import type { Scenario } from '@/data/scenarios'
+import { allergyImmunologyFallbackScenarios } from '@/lib/presetResponses/allergyImmunologyFallback'
 
 export type ChatMessage = {
   role: string
   content: string
 }
 
-type FallbackQA = {
-  id: string
-  answer: string
-  patterns?: string[]
-  keywords?: string[]
-}
-
-type FallbackScenario = {
-  key: string
-  titleMatchers: string[]
-  complaintMatchers: string[]
-  qa: FallbackQA[]
-  defaultAnswer: string
-}
+export type { FallbackQA, FallbackScenario } from '@/lib/presetResponses/types'
+import type { FallbackQA, FallbackScenario } from '@/lib/presetResponses/types'
 
 /** Maps scenario ids in data/scenarios.ts to FALLBACK_SCENARIOS keys (stable even if titles change). */
 const SCENARIO_ID_TO_FALLBACK_KEY: Record<string, string> = {
@@ -27,6 +16,11 @@ const SCENARIO_ID_TO_FALLBACK_KEY: Record<string, string> = {
   'acute-sob-er': 'acute-shortness-of-breath',
   'rlq-abdominal-pain': 'rlq-abdominal-pain',
   'fever-confusion': 'fever-confusion',
+  'spring-allergic-rhinitis': 'spring-allergic-rhinitis',
+  'peanut-anaphylaxis': 'peanut-anaphylaxis',
+  'cvid-recurrent-infections': 'cvid-recurrent-infections',
+  'exercise-induced-asthma': 'exercise-induced-asthma',
+  'atopic-dermatitis-eczema': 'atopic-dermatitis-eczema',
 }
 
 function normalize(text: string): string {
@@ -146,6 +140,7 @@ export function getPresetPatientResponse(
 }
 
 const FALLBACK_SCENARIOS: FallbackScenario[] = [
+  ...allergyImmunologyFallbackScenarios,
   {
     key: 'chest-pain-er',
     titleMatchers: ['chest pain in the er', 'chest pain'],

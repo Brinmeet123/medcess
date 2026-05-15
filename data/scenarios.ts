@@ -1,5 +1,6 @@
 import type { ScenarioDebriefConfig } from "@/types/debrief";
 import type { MedicalSpecialty } from "@/data/specialties";
+import { allergyImmunologyScenarios } from "@/data/scenarios/allergyImmunology";
 
 export type ScenarioDifficulty = "Beginner" | "Intermediate" | "Advanced";
 
@@ -861,6 +862,7 @@ export const scenarios: Scenario[] = [
       "Hypotension in sepsis indicates organ dysfunction and poor prognosis.",
       "Early antibiotics and fluid resuscitation are critical in sepsis management."
     ]
-  }
+  },
+  ...allergyImmunologyScenarios
 ];
 

@@ -2,6 +2,7 @@
  * Mock responses for demo mode (DEMO_MODE=true) when Ollama is not used.
  * Keyword-based patient replies — scenario-specific, 2–3 sentences each.
  */
+import { allergyImmunologyKeywordHandlers } from '@/lib/mockResponses/allergyImmunology'
 
 const REPLY_EMPTY =
   "I’m not sure I caught what you asked… could you say it again? I want to make sure I answer you the right way."
@@ -670,6 +671,7 @@ const scenarioKeywordHandlers: Record<string, (input: string) => string> = {
   'acute-sob-er': acuteSobKeywords,
   'rlq-abdominal-pain': rlqAbdominalKeywords,
   'fever-confusion': feverConfusionKeywords,
+  ...allergyImmunologyKeywordHandlers,
 }
 
 /**
