@@ -65,7 +65,7 @@ function LockIcon({ className }: { className?: string }) {
 
 /** Guest-only access pills: compact chrome, fixed copy size at 11px. */
 const guestAccessPillClass =
-  'inline-flex items-center gap-0 rounded-md border px-1.5 py-[3px] text-[11px] font-semibold leading-none'
+  'inline-flex items-center gap-1.5 rounded-md border px-1.5 py-[3px] text-[11px] font-semibold leading-none'
 
 export default function ScenarioCard({
   scenario,
@@ -112,9 +112,9 @@ export default function ScenarioCard({
           needsSignIn ? 'border-slate-200' : 'border-gray-200'
         }`}
       >
-        {/* Visual strip (stand-in for thumbnail) */}
+        {/* Visual strip (stand-in for thumbnail) — kept short so the card leads with content */}
         <div
-          className={`relative h-20 w-full bg-gradient-to-br from-primary-100 via-slate-100 to-primary-50 shrink-0 transition-all ${
+          className={`relative h-11 sm:h-12 w-full bg-gradient-to-br from-primary-100 via-slate-100 to-primary-50 shrink-0 transition-all ${
             needsSignIn ? 'opacity-[0.88] blur-[0.6px] group-hover:opacity-95 group-hover:blur-[0.3px]' : ''
           }`}
         >
@@ -123,7 +123,7 @@ export default function ScenarioCard({
               className="absolute inset-0 flex items-center justify-center text-slate-500/80"
               aria-hidden
             >
-              <LockIcon className="w-8 h-8" />
+              <LockIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           ) : null}
         </div>
