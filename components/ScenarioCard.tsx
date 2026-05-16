@@ -9,6 +9,7 @@ type Props = {
   progress?: ScenarioProgressInfo
   /** When session is still loading, avoid showing signed-out-only lock chrome. */
   sessionReady: boolean
+  sessionStatus: 'loading' | 'authenticated' | 'unauthenticated'
   isAuthenticated: boolean
 }
 
@@ -62,28 +63,43 @@ function LockIcon({ className }: { className?: string }) {
   )
 }
 
-export default function ScenarioCard({ scenario, progress, sessionReady, isAuthenticated }: Props) {
+/** Guest-only access pills: compact chrome, fixed copy size at 11px. */
+const guestAccessPillClass =
+  'inline-flex items-center gap-0 rounded-md border px-1.5 py-[3px] text-[11px] font-semibold leading-none'
+
+export default function ScenarioCard({
+  scenario,
+  progress,
+  sessionReady,
+  sessionStatus,
+  isAuthenticated,
+}: Props) {
   const guestOk = isGuestAccessible(scenario.id)
   const needsSignIn = sessionReady && !guestOk && !isAuthenticated
   const href = needsSignIn
     ? `/login?callbackUrl=${encodeURIComponent(`/scenarios/${scenario.id}`)}`
     : `/scenarios/${scenario.id}`
 
-  const accessBadge = guestOk ? (
-    <span
-      className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300/90 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-900 shadow-sm"
-      title="Free — no account needed"
-    >
-      <span aria-hidden>🟢</span> Play Free
-    </span>
-  ) : needsSignIn ? (
-    <span
-      className="inline-flex items-center gap-0.5 rounded-full border border-rose-300/90 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-900 shadow-sm"
-      title="Create an account or sign in to play this case"
-    >
-      <span aria-hidden>🔴</span> Sign In Required
-    </span>
-  ) : null
+  /** Avoid guest pills during session load so signed-in users never see a false "Guest" flash. */
+  const showGuestAccessBadges = sessionStatus === 'unauthenticated'
+
+  const accessBadge = !showGuestAccessBadges
+    ? null
+    : guestOk ? (
+        <span
+          className={`${guestAccessPillClass} border-emerald-300/90 bg-emerald-50 text-emerald-900`}
+          title="Free — no account needed"
+        >
+          <span aria-hidden>🟢</span> Guest
+        </span>
+      ) : needsSignIn ? (
+        <span
+          className={`${guestAccessPillClass} border-rose-300/90 bg-rose-50 text-rose-900`}
+          title="Create an account or sign in to play this case"
+        >
+          <span aria-hidden>🔴</span> Sign In Required
+        </span>
+      ) : null
 
   return (
     <Link
@@ -113,12 +129,17 @@ export default function ScenarioCard({ scenario, progress, sessionReady, isAuthe
         </div>
 
         {accessBadge ? (
-          <div className="absolute top-2 right-2 z-10 max-w-[calc(100%-1rem)]">{accessBadge}</div>
+          <div className="absolute top-1.5 right-1.5 z-10 max-w-[calc(100%-0.75rem)]">{accessBadge}</div>
         ) : null}
 
         <div className={`p-6 pt-4 flex flex-col flex-grow min-h-0 ${needsSignIn ? 'opacity-90' : ''}`}>
           <div className="flex justify-between items-start mb-3 gap-2 pr-1">
-            <h3 className="text-xl font-semibold text-gray-900 pr-2">{scenario.title}</h3>
+            <div className="min-w-0 pr-2">
+              <h3 className="text-xl font-semibold text-gray-900">{scenario.title}</h3>
+              {isAuthenticated && guestOk ? (
+                <p className="mt-0.5 text-xs font-normal text-slate-400">Starter Case</p>
+              ) : null}
+            </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
               <span
                 className={`px-2 py-1 rounded-full text-xs font-semibold ${difficultyColors[scenario.difficulty]}`}

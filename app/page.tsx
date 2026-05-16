@@ -64,8 +64,8 @@ export default function Home() {
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span className="font-semibold text-slate-900">{s.title}</span>
-                    <span className="shrink-0 inline-flex items-center gap-0.5 rounded-full border border-emerald-300/90 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-900">
-                      <span aria-hidden>🟢</span> Play Free
+                    <span className="shrink-0 inline-flex items-center gap-0 rounded-md border border-emerald-300/90 bg-emerald-50 px-1.5 py-[3px] text-[11px] font-semibold leading-none text-emerald-900">
+                      <span aria-hidden>🟢</span> Guest
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 line-clamp-2">{s.description}</p>

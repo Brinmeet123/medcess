@@ -79,7 +79,8 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
     [filteredScenarios]
   )
 
-  const showUnlockMessage = freeOrdered.length > 0 && lockedOrdered.length > 0
+  const showUnlockMessage =
+    !isAuthenticated && freeOrdered.length > 0 && lockedOrdered.length > 0
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -150,6 +151,7 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
               scenario={scenario}
               progress={mergedProgress[scenario.id]}
               sessionReady={sessionReady}
+              sessionStatus={status}
               isAuthenticated={isAuthenticated}
             />
           ))}
@@ -171,6 +173,7 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
               scenario={scenario}
               progress={mergedProgress[scenario.id]}
               sessionReady={sessionReady}
+              sessionStatus={status}
               isAuthenticated={isAuthenticated}
             />
           ))}
