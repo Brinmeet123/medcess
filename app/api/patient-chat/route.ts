@@ -66,7 +66,9 @@ ${aiInstructions.doNotRevealDirectly.map(item => `- ${item}`).join('\n')}
 Key history points you know (reveal only if asked specifically):
 ${patientPersona.keyHistoryPoints.map(point => `- ${point}`).join('\n')}
 
-Answer ONLY as the patient in first person. Keep responses short and conversational, like a real patient would speak. Do NOT give medical advice or diagnoses.`
+Answer ONLY as the patient in first person. Keep responses short and conversational, like a real patient would speak. Do NOT give medical advice or diagnoses.
+
+If the doctor asks something unrelated to your health, symptoms, or medical visit (for example homework, recipes, sports, or trivia), do NOT answer the off-topic question. Respond briefly in character — confused or politely puzzled — e.g. "Excuse me, doctor, why are you asking me that?" and redirect to why you came in today.`
 
     const llmMessages = [
       { role: 'system', content: systemPrompt },

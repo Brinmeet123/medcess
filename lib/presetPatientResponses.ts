@@ -1,4 +1,5 @@
 import type { Scenario } from '@/data/scenarios'
+import { getOffTopicPatientReply, isOffTopicDoctorQuestion } from '@/lib/offTopicQuestions'
 import { allergyImmunologyFallbackScenarios } from '@/lib/presetResponses/allergyImmunologyFallback'
 import { cardiologyFallbackScenarios } from '@/lib/presetResponses/cardiologyFallback'
 import { dermatologyFallbackScenarios } from '@/lib/presetResponses/dermatologyFallback'
@@ -223,6 +224,10 @@ export function getPresetPatientResponse(
 
   if (!lastDoctorMessage) {
     return "I'm not sure what you're asking."
+  }
+
+  if (isOffTopicDoctorQuestion(lastDoctorMessage, scenario)) {
+    return getOffTopicPatientReply(scenario.patientPersona.name, lastDoctorMessage)
   }
 
   const bucket = detectScenarioBucket(scenario)

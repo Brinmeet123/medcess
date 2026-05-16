@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Scenario } from '@/data/scenarios'
 import { getMockPatientResponse } from '@/lib/mockResponses'
+import { isOffTopicDoctorQuestion } from '@/lib/offTopicQuestions'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
 
@@ -299,11 +300,23 @@ export default function ChatPanel({
       </div>
       </VocabContextBlock>
 
-      {doctorMessageCount >= 1 && doctorMessageCount <= 3 && (
-        <p className="mb-2 text-xs text-emerald-900 bg-emerald-50 border border-emerald-200/90 rounded-lg px-3 py-2 leading-snug">
-          Good start. Keep narrowing it down.
-        </p>
-      )}
+      {doctorMessageCount >= 1 && doctorMessageCount <= 3 && (() => {
+        const lastDoctor = [...messages].reverse().find((m) => m.role === 'doctor')
+        const offTopic = lastDoctor ? isOffTopicDoctorQuestion(lastDoctor.content, scenario) : false
+        return (
+          <p
+            className={`mb-2 text-xs rounded-lg px-3 py-2 leading-snug border ${
+              offTopic
+                ? 'text-amber-950 bg-amber-50 border-amber-200/90'
+                : 'text-emerald-900 bg-emerald-50 border-emerald-200/90'
+            }`}
+          >
+            {offTopic
+              ? 'That question is off-topic for this visit — focus on symptoms and relevant history.'
+              : 'Good start. Keep narrowing it down.'}
+          </p>
+        )
+      })()}
 
       {questionHint && (
         <p className="mb-2 text-xs text-slate-600 transition-opacity duration-300">{questionHint}</p>

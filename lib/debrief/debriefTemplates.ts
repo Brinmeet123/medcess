@@ -110,6 +110,12 @@ export function buildMissedOpportunities(
       `Key findings to anchor in this case: ${input.missedCriticalFindings.join('; ')}.`
     )
   }
+  if (input.offTopicQuestions.length > 0) {
+    const examples = input.offTopicQuestions.slice(0, 2).map((q) => `"${q}"`).join(', ')
+    missed.push(
+      `You asked ${input.offTopicQuestions.length} question(s) unrelated to the visit${examples ? ` (e.g. ${examples})` : ''}. Stay focused on symptoms, context, and safety.`
+    )
+  }
   for (const m of config.commonMisses.slice(0, 2)) {
     if (!missed.some((x) => x.includes(m.slice(0, 20)))) {
       missed.push(m)
@@ -155,6 +161,9 @@ export function buildDiagnosticReasoning(
 }
 
 export function buildImprovementTip(input: DebriefInput, missedHistoryPoints: string[]): string {
+  if (input.offTopicQuestions.length > 0) {
+    return 'Next time, keep every question tied to why the patient came in — avoid unrelated topics so you do not lose rapport or miss critical history.'
+  }
   if (missedHistoryPoints.length > 0) {
     const hint = missedHistoryPoints[0].trim()
     const short = hint.length > 90 ? `${hint.slice(0, 87)}…` : hint

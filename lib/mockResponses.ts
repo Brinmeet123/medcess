@@ -22,6 +22,8 @@ import { orthopaedicSurgeryKeywordHandlers } from '@/lib/mockResponses/orthopaed
 import { psychiatryKeywordHandlers } from '@/lib/mockResponses/psychiatry'
 import { geriatricsKeywordHandlers } from '@/lib/mockResponses/geriatrics'
 import { urologyKeywordHandlers } from '@/lib/mockResponses/urology'
+import { getOffTopicPatientReply, isOffTopicDoctorQuestion } from '@/lib/offTopicQuestions'
+import { scenarios } from '@/data/scenarios'
 const REPLY_EMPTY =
   "I’m not sure I caught what you asked… could you say it again? I want to make sure I answer you the right way."
 
@@ -722,6 +724,11 @@ export function getMockPatientResponse(
   const lastDoctorMessage = getLastDoctorMessage(messages)
   if (!lastDoctorMessage.trim()) {
     return REPLY_EMPTY
+  }
+
+  const scenario = scenarios.find((s) => s.id === scenarioId)
+  if (isOffTopicDoctorQuestion(lastDoctorMessage, scenario)) {
+    return getOffTopicPatientReply(scenario?.patientPersona.name, lastDoctorMessage)
   }
 
   const handler = scenarioKeywordHandlers[scenarioId]

@@ -32,6 +32,8 @@ export type DebriefInput = {
   /** Must-not-miss dx ids missing from DDx */
   missingMustNotMissDxIds: string[]
   differentialLength: number
+  /** Doctor messages flagged as unrelated to the clinical interview */
+  offTopicQuestions: string[]
 }
 
 /** Post-scenario score out of 100, split evenly across four domains. */

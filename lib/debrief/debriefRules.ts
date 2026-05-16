@@ -3,6 +3,7 @@ import { diagnosisCatalog } from '@/data/diagnosisCatalog'
 import type { DebriefInput, DebriefScoreBreakdown, ScenarioDebriefConfig } from '@/types/debrief'
 import { resolveTest, calculateTestScore } from '@/lib/testEngine'
 import { calculateFinalDxScore, checkMissingMustNotMiss } from '@/lib/dxEngine'
+import { findOffTopicQuestionsFromChat } from '@/lib/offTopicQuestions'
 
 const STOPWORDS = new Set([
   'the',
@@ -159,6 +160,9 @@ export function buildDebriefInput(params: {
     scenario.requiredMustNotMiss
   )
 
+  const offTopicMatches = findOffTopicQuestionsFromChat(params.chat, scenario)
+  const offTopicQuestions = offTopicMatches.map((m) => m.question)
+
   const scoreBreakdown = computeScoreBreakdown({
     scenario,
     askedCount: askedHistoryQuestions.length,
@@ -169,6 +173,7 @@ export function buildDebriefInput(params: {
     differentialDetailed: params.differentialDetailed,
     finalDxId: params.finalDxId ?? null,
     missingMustNotMiss,
+    offTopicCount: offTopicQuestions.length,
   })
 
   return {
@@ -189,6 +194,7 @@ export function buildDebriefInput(params: {
     doctorChatBlob: doctorBlob,
     missingMustNotMissDxIds: missingMustNotMiss,
     differentialLength: params.differentialDetailed?.length ?? 0,
+    offTopicQuestions,
   }
 }
 
@@ -202,11 +208,16 @@ function computeScoreBreakdown(args: {
   differentialDetailed?: Array<{ dxId: string; note?: string }>
   finalDxId: string | null
   missingMustNotMiss: string[]
+  offTopicCount?: number
 }): DebriefScoreBreakdown {
   const { scenario, askedCount, totalTopics, examCompleted, examTotal, orderedTests } = args
+  const offTopicCount = args.offTopicCount ?? 0
 
   const histRatio = totalTopics > 0 ? askedCount / totalTopics : 0
-  const history = Math.round(Math.min(5, histRatio * 5))
+  let history = Math.round(Math.min(5, histRatio * 5))
+  if (offTopicCount > 0) {
+    history = Math.max(0, history - Math.min(3, offTopicCount))
+  }
 
   const examRatio = examTotal > 0 ? examCompleted / examTotal : 0
   const exam = Math.round(Math.min(5, examRatio * 5))
@@ -253,6 +264,10 @@ function computeScoreBreakdown(args: {
     }
   }
   efficiency = Math.max(0, efficiency - Math.min(2, Math.floor(lowYield / 2)))
+  if (offTopicCount > 0) {
+    efficiency = Math.max(0, efficiency - Math.min(2, offTopicCount))
+    reasoning = Math.max(0, reasoning - Math.min(2, Math.ceil(offTopicCount / 2)))
+  }
 
   return { history, exam, testing, reasoning, diagnosis, efficiency }
 }
