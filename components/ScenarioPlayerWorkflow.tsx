@@ -175,6 +175,7 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
     try {
       const response = await fetch('/api/assess', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           scenarioId: scenario.id,

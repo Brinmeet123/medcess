@@ -54,6 +54,7 @@ export async function fetchMedicalDefinitionWithFallback(term: string): Promise<
   try {
     const res = await fetch('/api/vocab-ai-definition', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ term: k }),
     })

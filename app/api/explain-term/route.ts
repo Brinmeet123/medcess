@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMockTermExplanation } from '@/lib/mockResponses'
-import { callLLM } from '@/lib/llm'
+import { callManagedLLM } from '@/lib/ai/callManagedLLM'
+import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
+import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +11,7 @@ const USE_DEMO_MOCKS = process.env.DEMO_MODE === 'true'
 export async function POST(request: NextRequest) {
   // Store body data outside try block for fallback use
   let bodyData: { selectedText: string; contextText?: string } = { selectedText: '' }
+  const actor = await resolveAIActorFromRequest(request)
 
   try {
     const body = await request.json()
@@ -94,7 +97,7 @@ If the term is used as a clinical descriptor (like "tachycardic" meaning "having
       { role: 'user', content: userPrompt },
     ]
 
-    const responseText = await callLLM(messages)
+    const { content: responseText } = await callManagedLLM(messages, actor)
     
     // Try to extract JSON from the response
     let jsonText = responseText
@@ -136,17 +139,24 @@ If the term is used as a clinical descriptor (like "tachycardic" meaning "having
         source: 'ai'
       })
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in explain-term API:', error)
-    
+
+    if (isDailyLimitResponse(error)) {
+      const res = dailyLimitJsonResponse()
+      applyActorCookie(res, actor)
+      return res
+    }
+
+    const err = error as { message?: string }
     const shouldUseDemo =
       USE_DEMO_MOCKS || process.env.FALLBACK_TO_DEMO === 'true'
 
     if (
       shouldUseDemo &&
-      (error?.message?.includes('fetch failed') ||
-        error?.message?.includes('Ollama') ||
-        error?.message?.includes('ECONNREFUSED'))
+      (err?.message?.includes('fetch failed') ||
+        err?.message?.includes('Ollama') ||
+        err?.message?.includes('ECONNREFUSED'))
     ) {
       console.log('Ollama unavailable, falling back to demo mode')
       // Use stored body data from try block scope
@@ -154,15 +164,17 @@ If the term is used as a clinical descriptor (like "tachycardic" meaning "having
       return NextResponse.json(mockExplanation)
     }
     
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         error: 'Failed to explain term',
-        details: error.message || 'Unknown error',
+        details: err?.message || 'Unknown error',
         demoModeAvailable:
-          'Set DEMO_MODE=true for mocks, or fix Ollama (ollama serve, OLLAMA_BASE_URL, OLLAMA_MODEL).'
+          'Set DEMO_MODE=true for mocks, or configure OPENAI_API_KEY and AI_MODEL.',
       },
       { status: 500 }
     )
+    applyActorCookie(res, actor)
+    return res
   }
 }
 

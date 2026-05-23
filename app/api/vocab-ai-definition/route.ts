@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { callLLM } from '@/lib/llm'
+import { callManagedLLM } from '@/lib/ai/callManagedLLM'
+import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
+import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
 import { lookupDictionaryAny } from '@/lib/medicalDictionary'
 
 export const dynamic = 'force-dynamic'
@@ -8,6 +10,7 @@ const DEMO = process.env.DEMO_MODE === 'true'
 
 export async function POST(request: NextRequest) {
   let term = ''
+  const actor = await resolveAIActorFromRequest(request)
   try {
     const body = await request.json()
     term = typeof body.term === 'string' ? body.term.trim() : ''
@@ -47,11 +50,12 @@ The "definition" field should be 2–3 sentences. "shortDefinition" is one line.
 3. A category (e.g., cardiology, neurology, general, lab test, symptom)
 Avoid overly technical jargon.`
 
-    const text = await callLLM(
+    const { content: text } = await callManagedLLM(
       [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
+      actor,
       { responseFormatJson: true }
     )
 
@@ -72,11 +76,20 @@ Avoid overly technical jargon.`
       return NextResponse.json(mockMedicalTermLike(term, 'empty'))
     }
 
-    return NextResponse.json(out)
+    const res = NextResponse.json(out)
+    applyActorCookie(res, actor)
+    return res
   } catch (e: unknown) {
+    if (isDailyLimitResponse(e)) {
+      const res = dailyLimitJsonResponse()
+      applyActorCookie(res, actor)
+      return res
+    }
     const msg = e instanceof Error ? e.message : 'Unknown error'
     console.error('vocab-ai-definition:', msg)
-    return NextResponse.json(mockMedicalTermLike(term || 'term', 'error'))
+    const res = NextResponse.json(mockMedicalTermLike(term || 'term', 'error'))
+    applyActorCookie(res, actor)
+    return res
   }
 }
 

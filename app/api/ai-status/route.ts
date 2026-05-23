@@ -16,8 +16,8 @@ export async function GET() {
   const hint = demoMode
     ? 'Unset DEMO_MODE or set to false to use OpenAI for real AI.'
     : apiKeyConfigured
-      ? 'Optional: set OPENAI_MODEL and OPENAI_BASE_URL if you use a non-default endpoint.'
-      : 'In Vercel → Project → Settings → Environment Variables, set OPENAI_API_KEY (or OPENAI_API) for Production (and Preview if you use preview URLs), then redeploy. Optional: OPENAI_MODEL, OPENAI_BASE_URL.'
+      ? 'Optional: set AI_MODEL (or OPENAI_MODEL) and OPENAI_BASE_URL if you use a non-default endpoint.'
+      : 'In Vercel → Project → Settings → Environment Variables, set OPENAI_API_KEY (or OPENAI_API) for Production (and Preview if you use preview URLs), then redeploy. Optional: AI_MODEL, OPENAI_BASE_URL.'
 
   return NextResponse.json({
     ok: true,

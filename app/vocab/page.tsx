@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useVocabStore } from '@/lib/useVocabStore'
+import AIUsageCard from '@/components/AIUsageCard'
 
 export default function VocabPage() {
   const { status } = useSession()
@@ -56,6 +57,10 @@ export default function VocabPage() {
             to save and sync.
           </div>
         )}
+      </div>
+
+      <div className="mb-6 max-w-sm">
+        <AIUsageCard />
       </div>
 
       <div className="grid md:grid-cols-3 gap-4 mb-6">

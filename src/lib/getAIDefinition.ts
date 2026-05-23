@@ -31,10 +31,16 @@ export async function getAIDefinition(
   try {
     const res = await fetch('/api/vocab-ai-definition', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ term: term.trim() }),
       signal: options?.signal,
     })
+
+    if (res.status === 429) {
+      const err = (await res.json().catch(() => ({}))) as { error?: string }
+      throw new Error(err.error ?? 'Daily AI limit reached. Your usage resets tomorrow.')
+    }
 
     if (!res.ok) {
       return offlineFallback(term)

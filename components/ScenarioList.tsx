@@ -12,6 +12,7 @@ import {
 import ScenarioCard from './ScenarioCard'
 import SpecialtyFilter from './SpecialtyFilter'
 import SimulatorHelpButton from './simulator/SimulatorHelpButton'
+import AIUsageCard from './AIUsageCard'
 
 export type ScenarioProgressInfo = {
   status: string
@@ -85,6 +86,10 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <SimulatorHelpButton libraryPage />
+
+      <div className="mb-6 max-w-sm">
+        <AIUsageCard />
+      </div>
 
       <div className="mb-8">
         <p className="text-sm font-semibold text-primary-700 mb-2">Case library</p>

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { callLLM, getOllamaConfig } from '@/lib/llm'
+import { callLLMRaw, getOllamaConfig } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const response = await callLLM([
+    const { content: response } = await callLLMRaw([
       { role: 'user', content: 'Say "AI is working!" in one short sentence.' },
     ])
 

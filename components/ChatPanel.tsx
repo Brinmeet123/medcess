@@ -100,6 +100,7 @@ export default function ChatPanel({
       try {
         const response = await fetch('/api/patient-chat', {
           method: 'POST',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scenarioId: scenario.id,
@@ -157,6 +158,9 @@ export default function ChatPanel({
 
         const patientMessage: Message = { role: 'patient', content: data.message }
         setMessages([...newMessages, patientMessage])
+        if (data.source === 'ai') {
+          window.dispatchEvent(new Event('ai-usage-updated'))
+        }
       } catch (error: any) {
         if (error?.message?.includes('Failed to fetch') || error?.message?.includes('Load failed')) {
           if (shouldFallbackToPatientMocks()) {
@@ -183,6 +187,12 @@ export default function ChatPanel({
           if (errorMsg.includes('ollama') || errorMsg.includes('econnrefused')) {
             errorContent =
               '**Ollama** not reachable. Run `ollama serve`, pull a model, set **OLLAMA_BASE_URL** in `.env.local`. See **/api/test-key**.'
+          } else if (
+            errorMsg.includes('daily ai limit') ||
+            errorMsg.includes('daily limit reached')
+          ) {
+            errorContent =
+              'Daily AI limit reached. Your usage resets tomorrow.'
           } else if (errorMsg.includes('rate limit')) {
             errorContent = 'Rate limited or overloaded. Retry shortly or use a smaller model.'
           } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {

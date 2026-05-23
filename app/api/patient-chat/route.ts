@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { scenarios } from '@/data/scenarios'
 import { getMockPatientResponse } from '@/lib/mockResponses'
 import { getPresetPatientResponse } from '@/lib/presetPatientResponses'
-import { callLLM, shouldAttemptOllamaForPatientChat } from '@/lib/llm'
+import { callManagedLLM } from '@/lib/ai/callManagedLLM'
+import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
+import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
+import { shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +14,7 @@ const USE_PRESET_FALLBACK = process.env.USE_PRESET_FALLBACK !== 'false'
 
 export async function POST(request: NextRequest) {
   let bodyData: { scenarioId?: string; messages?: Array<{ role: string; content: string }> } = {}
+  const actor = await resolveAIActorFromRequest(request)
 
   try {
     const body = await request.json()
@@ -78,7 +82,7 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
       })),
     ]
 
-    const patientResponse = await callLLM(llmMessages)
+    const { content: patientResponse } = await callManagedLLM(llmMessages, actor)
 
     // If LLM returns empty or invalid content, use preset fallback
     if (!patientResponse || !String(patientResponse).trim()) {
@@ -96,12 +100,22 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
       )
     }
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       message: patientResponse,
       source: 'ai',
     })
-  } catch (error: any) {
+    applyActorCookie(res, actor)
+    return res
+  } catch (error: unknown) {
     console.error('Error in patient-chat:', error)
+
+    if (isDailyLimitResponse(error)) {
+      const res = dailyLimitJsonResponse()
+      applyActorCookie(res, actor)
+      return res
+    }
+
+    const err = error as { message?: string; name?: string }
 
     const scenario =
       scenarios.find(s => s.id === bodyData.scenarioId)
@@ -129,9 +143,9 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
 
     if (
       shouldUseDemo &&
-      (error?.message?.includes('fetch failed') ||
-        error?.message?.includes('OpenAI') ||
-        error?.message?.includes('ECONNREFUSED'))
+      (err.message?.includes('fetch failed') ||
+        err.message?.includes('OpenAI') ||
+        err.message?.includes('ECONNREFUSED'))
     ) {
       console.log('LLM unavailable, falling back to demo mode')
       const mockResponse = getMockPatientResponse(
@@ -144,7 +158,7 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
       })
     }
 
-    const errorMessage = error?.message || 'Failed to get patient response'
+    const errorMessage = err.message || 'Failed to get patient response'
     const isOpenAIIssue =
       errorMessage.includes('OpenAI') ||
       errorMessage.includes('OPENAI_API_KEY') ||
@@ -152,17 +166,19 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
       errorMessage.includes('fetch failed')
 
     const hint = isOpenAIIssue
-      ? 'Set OPENAI_API_KEY and optionally OPENAI_MODEL / OPENAI_BASE_URL. Preset fallback should handle most history questions automatically.'
+      ? 'Set OPENAI_API_KEY and optionally AI_MODEL / OPENAI_BASE_URL. Preset fallback should handle most history questions automatically.'
       : 'Check the error above. Preset fallback should handle many history questions even if AI is down.'
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         error: errorMessage,
         details: errorMessage,
-        type: error?.name || 'Error',
+        type: err?.name || 'Error',
         demoModeAvailable: hint,
       },
       { status: 500 }
     )
+    applyActorCookie(res, actor)
+    return res
   }
 }

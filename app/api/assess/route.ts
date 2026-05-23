@@ -3,12 +3,15 @@ import { scenarios } from '@/data/scenarios'
 import { getMockAssessment } from '@/lib/mockResponses'
 import { buildDeterministicAssessment } from '@/lib/debrief/generateDebrief'
 import { maybePolishDeterministicAssessment } from '@/lib/debrief/polishDebrief'
+import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
+import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
 
 export const dynamic = 'force-dynamic'
 
 const USE_DEMO_MOCKS = process.env.DEMO_MODE === 'true'
 
 export async function POST(request: NextRequest) {
+  const actor = await resolveAIActorFromRequest(request)
   try {
     const body = await request.json()
     const {
@@ -49,8 +52,10 @@ export async function POST(request: NextRequest) {
         finalDxId,
         redFlagsFound,
       })
-      const out = await maybePolishDeterministicAssessment(deterministic)
-      return NextResponse.json({ ...out, source: 'demo-mock' })
+      const out = await maybePolishDeterministicAssessment(deterministic, actor)
+      const res = NextResponse.json({ ...out, source: 'demo-mock' })
+      applyActorCookie(res, actor)
+      return res
     }
 
     void stability
@@ -77,32 +82,44 @@ export async function POST(request: NextRequest) {
       redFlagsFound,
     })
 
-    const out = await maybePolishDeterministicAssessment(deterministic)
+    const out = await maybePolishDeterministicAssessment(deterministic, actor)
 
-    return NextResponse.json(out)
-  } catch (error: any) {
+    const res = NextResponse.json(out)
+    applyActorCookie(res, actor)
+    return res
+  } catch (error: unknown) {
     console.error('Error in assess:', error)
+
+    if (isDailyLimitResponse(error)) {
+      const res = dailyLimitJsonResponse()
+      applyActorCookie(res, actor)
+      return res
+    }
+
+    const err = error as { message?: string }
 
     const shouldUseDemo = USE_DEMO_MOCKS || process.env.FALLBACK_TO_DEMO === 'true'
 
     if (
       shouldUseDemo &&
-      (error?.message?.includes('fetch failed') ||
-        error?.message?.includes('Ollama') ||
-        error?.message?.includes('ECONNREFUSED'))
+      (err?.message?.includes('fetch failed') ||
+        err?.message?.includes('Ollama') ||
+        err?.message?.includes('ECONNREFUSED'))
     ) {
       return NextResponse.json({ ...getMockAssessment(), source: 'demo-mock' })
     }
 
-    const errorMessage = error?.message || 'Failed to generate assessment'
-    return NextResponse.json(
+    const errorMessage = err?.message || 'Failed to generate assessment'
+    const res = NextResponse.json(
       {
         error: errorMessage,
-        details: error?.message || 'Unknown error',
+        details: err?.message || 'Unknown error',
         demoModeAvailable:
           'Set DEMO_MODE=true for mocks, or report this error if the deterministic debrief failed.',
       },
       { status: 500 }
     )
+    applyActorCookie(res, actor)
+    return res
   }
 }

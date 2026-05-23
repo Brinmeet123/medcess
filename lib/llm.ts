@@ -3,13 +3,27 @@
  *
  * Env:
  * - OPENAI_BASE_URL — default https://api.openai.com/v1
- * - OPENAI_MODEL — default gpt-4o-mini
+ * - AI_MODEL or OPENAI_MODEL — default gpt-5.4-mini
  * - OPENAI_API_KEY — required for real OpenAI calls (alias: OPENAI_API)
  * - DEMO_MODE=true — use mock responses in API routes (no OpenAI calls)
  * - USE_LOCAL_LLM_DEBRIEF_POLISH=true — optional prose-polish pass via LLM
  */
 
+import { readAIModel, DEFAULT_AI_MODEL } from '@/lib/ai/config'
+
 export type LLMMessage = { role: string; content: string }
+
+export type TokenUsageBreakdown = {
+  inputTokens: number
+  outputTokens: number
+  totalTokens: number
+}
+
+export type CallLLMResult = {
+  content: string
+  usage: TokenUsageBreakdown
+  fromCache?: boolean
+}
 
 /** Bracket access avoids build-time env inlining so Vercel runtime secrets resolve. */
 function readOpenAiApiKey(): string | undefined {
@@ -22,8 +36,16 @@ function readOpenAiBaseUrl(): string {
   return (process.env['OPENAI_BASE_URL'] || 'https://api.openai.com/v1').replace(/\/$/, '')
 }
 
-function readOpenAiModel(): string {
-  return process.env['OPENAI_MODEL'] || 'gpt-4o-mini'
+export function readAIModelForExport(): string {
+  return readAIModel()
+}
+
+function parseUsage(data: Record<string, unknown>): TokenUsageBreakdown {
+  const usage = (data.usage ?? {}) as Record<string, number>
+  const inputTokens = Number(usage.prompt_tokens ?? usage.input_tokens ?? 0) || 0
+  const outputTokens = Number(usage.completion_tokens ?? usage.output_tokens ?? 0) || 0
+  const totalTokens = Number(usage.total_tokens ?? inputTokens + outputTokens) || inputTokens + outputTokens
+  return { inputTokens, outputTokens, totalTokens }
 }
 
 function toChatRole(role: string): 'system' | 'user' | 'assistant' {
@@ -38,7 +60,7 @@ export function getOllamaConfig(): {
 } {
   return {
     baseUrl: readOpenAiBaseUrl(),
-    model: readOpenAiModel(),
+    model: readAIModel(),
     apiKeyConfigured: Boolean(readOpenAiApiKey()),
   }
 }
@@ -78,17 +100,18 @@ export type CallLLMOptions = {
   responseFormatJson?: boolean
 }
 
-export async function callLLM(
+/** Low-level OpenAI call (no quota). Prefer callManagedLLM in API routes. */
+export async function callLLMRaw(
   messages: LLMMessage[],
   options?: CallLLMOptions
-): Promise<string> {
+): Promise<CallLLMResult> {
   const OPENAI_API_KEY = readOpenAiApiKey()
   if (!OPENAI_API_KEY) {
     throw new Error('Missing OPENAI_API_KEY')
   }
 
   const OPENAI_BASE_URL = readOpenAiBaseUrl()
-  const OPENAI_MODEL = readOpenAiModel()
+  const OPENAI_MODEL = readAIModel()
 
   const url = `${OPENAI_BASE_URL}/chat/completions`
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -114,8 +137,23 @@ export async function callLLM(
     )
   }
 
-  const data = await res.json()
-  const content = data.choices?.[0]?.message?.content
+  const data = (await res.json()) as Record<string, unknown>
+  const content = (data.choices as { message?: { content?: string } }[] | undefined)?.[0]?.message
+    ?.content
   if (content == null) throw new Error('OpenAI returned no content')
-  return content
+  return {
+    content,
+    usage: parseUsage(data),
+  }
 }
+
+/** @deprecated Use callManagedLLM from API routes for quota-aware calls. */
+export async function callLLM(
+  messages: LLMMessage[],
+  options?: CallLLMOptions
+): Promise<string> {
+  const result = await callLLMRaw(messages, options)
+  return result.content
+}
+
+export { DEFAULT_AI_MODEL }

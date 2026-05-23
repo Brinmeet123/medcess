@@ -1,4 +1,5 @@
-import { callLLM } from '@/lib/llm'
+import { callManagedLLM } from '@/lib/ai/callManagedLLM'
+import type { AIActor } from '@/lib/ai/resolveActor'
 import { shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 import type { DeterministicAssessment } from '@/types/debrief'
 
@@ -8,12 +9,13 @@ import type { DeterministicAssessment } from '@/types/debrief'
  * Does not run when Ollama is not reachable (e.g. Vercel with localhost URL).
  */
 export async function maybePolishDeterministicAssessment(
-  assessment: DeterministicAssessment
+  assessment: DeterministicAssessment,
+  actor?: AIActor
 ): Promise<DeterministicAssessment> {
   if (process.env.USE_LOCAL_LLM_DEBRIEF_POLISH !== 'true') {
     return assessment
   }
-  if (!shouldAttemptOllamaForPatientChat()) {
+  if (!shouldAttemptOllamaForPatientChat() || !actor) {
     return assessment
   }
 
@@ -36,10 +38,13 @@ Rules: Do NOT add new facts, diagnoses, or recommendations. Do NOT remove items 
 Output ONLY valid JSON with the same keys: summary (string), strengths (array), missedOpportunities (array), correctApproach (array), improvementTip (string), diagnosticReasoning (array), nextStepAdvice (array), clinicalPearls (array), vocabToReview (array).`
 
   try {
-    const text = await callLLM([
-      { role: 'system', content: system },
-      { role: 'user', content: JSON.stringify(payload) },
-    ])
+    const { content: text } = await callManagedLLM(
+      [
+        { role: 'system', content: system },
+        { role: 'user', content: JSON.stringify(payload) },
+      ],
+      actor
+    )
     const m = text.match(/\{[\s\S]*\}/)
     const jsonStr = m ? m[0] : text
     const parsed = JSON.parse(jsonStr) as typeof payload
