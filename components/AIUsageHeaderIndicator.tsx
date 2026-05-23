@@ -70,19 +70,24 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
 
   return (
     <div
-      className={`flex flex-col justify-center gap-0.5 min-w-[4.5rem] max-w-[5.5rem] shrink-0 ${className}`}
+      className={`flex items-center gap-2 shrink-0 ${className}`}
       title={tooltip}
       aria-label={tooltip}
     >
-      <div className="h-0.5 w-full rounded-full bg-slate-100 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-300 ${barColor}`}
-          style={{ width: `${Math.max(pct, pct > 0 ? 4 : 0)}%` }}
-        />
-      </div>
-      <span className={`text-[10px] leading-none tabular-nums text-right ${labelColor}`}>
-        {formatTokens(usage.tokensUsed)}/{formatTokens(usage.dailyLimit)}
+      <span className={`text-[10px] font-medium leading-none whitespace-nowrap ${labelColor}`}>
+        AI usage
       </span>
+      <div className="flex flex-col justify-center gap-0.5 min-w-[3.5rem] max-w-[4.5rem]">
+        <div className="h-0.5 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+            style={{ width: `${Math.max(pct, pct > 0 ? 4 : 0)}%` }}
+          />
+        </div>
+        <span className={`text-[10px] leading-none tabular-nums text-right ${labelColor}`}>
+          {formatTokens(usage.tokensUsed)}/{formatTokens(usage.dailyLimit)}
+        </span>
+      </div>
     </div>
   )
 }
