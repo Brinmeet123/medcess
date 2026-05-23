@@ -25,7 +25,6 @@ import { useInstructionModal } from '@/hooks/useInstructionModal'
 import { INSTRUCTION_COPY, type InstructionPageKey } from '@/lib/instructionCopy'
 import { isGuestAccessible } from '@/lib/caseAccess'
 import { recordGuestScenarioCompletion } from '@/lib/guestScenarioProgress'
-import AIUsageCard from './AIUsageCard'
 
 type Message = {
   role: 'doctor' | 'patient'
@@ -465,10 +464,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
         <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-2">Active case</p>
         <h1 className="text-3xl font-bold text-gray-900 mb-3">{scenario.title}</h1>
         <p className="text-base text-slate-600 leading-relaxed line-clamp-3">{scenario.description}</p>
-      </div>
-
-      <div className="mb-6 max-w-sm">
-        <AIUsageCard />
       </div>
 
       <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">

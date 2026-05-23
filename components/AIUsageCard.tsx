@@ -1,49 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-
-type UsagePayload = {
-  tokensUsed: number
-  dailyLimit: number
-  percentUsed: number
-  requestCount: number
-  isRegistered: boolean
-}
+import { useAIUsage } from '@/components/AIUsageHeaderIndicator'
 
 function formatTokens(n: number): string {
   return n.toLocaleString()
 }
 
 export default function AIUsageCard({ className = '' }: { className?: string }) {
-  const [usage, setUsage] = useState<UsagePayload | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch('/api/ai-usage', { credentials: 'same-origin' })
-      if (!res.ok) throw new Error('Could not load usage')
-      const data = (await res.json()) as UsagePayload
-      setUsage(data)
-      setError(null)
-    } catch {
-      setError('Usage unavailable')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void load()
-    const onFocus = () => void load()
-    const onUsageUpdated = () => void load()
-    window.addEventListener('focus', onFocus)
-    window.addEventListener('ai-usage-updated', onUsageUpdated)
-    return () => {
-      window.removeEventListener('focus', onFocus)
-      window.removeEventListener('ai-usage-updated', onUsageUpdated)
-    }
-  }, [load])
+  const { usage, loading } = useAIUsage()
 
   if (loading) {
     return (
@@ -53,10 +17,10 @@ export default function AIUsageCard({ className = '' }: { className?: string }) 
     )
   }
 
-  if (error || !usage) {
+  if (!usage) {
     return (
       <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}>
-        <p className="text-sm text-slate-500">{error ?? 'Usage unavailable'}</p>
+        <p className="text-sm text-slate-500">Usage unavailable</p>
       </div>
     )
   }

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import AIUsageHeaderIndicator from '@/components/AIUsageHeaderIndicator'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -35,6 +36,8 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
+
+            <AIUsageHeaderIndicator className="hidden sm:flex mx-1" />
 
             {status === 'loading' ? (
               <span className="text-sm text-gray-400 px-2" aria-live="polite">
@@ -98,6 +101,9 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
+            <div className="px-3 py-2 sm:hidden">
+              <AIUsageHeaderIndicator className="max-w-[5.5rem]" />
+            </div>
             {status === 'loading' ? (
               <p className="px-3 py-2 text-sm text-gray-400">Loading</p>
             ) : session?.user ? (

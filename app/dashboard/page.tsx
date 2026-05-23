@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import NextStepGuidance from '@/components/ux/NextStepGuidance'
-import AIUsageCard from '@/components/AIUsageCard'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { scoreToLevel } from '@/lib/scoring'
@@ -64,10 +63,6 @@ export default async function DashboardPage() {
         <NextStepGuidance compact>
           Ask a few more questions — then head to the exam when you feel ready.
         </NextStepGuidance>
-      </div>
-
-      <div className="mb-6 max-w-md">
-        <AIUsageCard />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
