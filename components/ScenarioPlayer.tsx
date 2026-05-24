@@ -734,7 +734,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         <>
           {isLoadingAssessment ? (
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-600">Building your report — scoring feedback and teaching points…</p>
+              <p className="text-gray-600 animate-pulse-soft">Medcess is building your report — scoring feedback and teaching points…</p>
             </div>
           ) : assessment ? (
             <SummaryPanel 

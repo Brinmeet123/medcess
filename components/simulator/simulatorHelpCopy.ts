@@ -1,4 +1,5 @@
 import type { ClinicalSection } from '@/components/SectionNav'
+import { APP_NAME } from '@/lib/branding'
 import type { SimulatorStep } from './SimulatorProgressBar'
 
 export type HelpBlock = {
@@ -11,7 +12,7 @@ export type HelpBlock = {
 export function getScenarioLibraryHelpCopy(): HelpBlock {
   return {
     stepName: 'Scenario library',
-    whatToDo: 'Pick a case. Everything here is fictional, built for practice.',
+    whatToDo: `Pick a case on ${APP_NAME}. Everything here is fictional, built for practice.`,
     nextStep: 'Open a card, then use Start Case.',
   }
 }

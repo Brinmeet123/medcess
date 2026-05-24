@@ -1,6 +1,6 @@
-# Virtual Diagnostic Simulator
+# Medcess
 
-A Next.js-based medical training simulator that allows students to practice clinical reasoning by interviewing AI patients, performing examinations, ordering tests, and making diagnoses in a safe, fictional environment.
+**Medcess** helps students practice clinical reasoning through interactive virtual patient cases. Interview patients, order tests, analyze symptoms, and build diagnoses in realistic medical simulations — in a safe, fictional environment built for high school and pre-med learners.
 
 ## Features
 
@@ -22,7 +22,7 @@ A Next.js-based medical training simulator that allows students to practice clin
 
 🚀 **[Try the Live Demo](https://brinmeet123.github.io/VirtualDiagnosticSimulator.github.io/)**
 
-The GitHub Pages demo uses mock responses (no server). For **real AI**, run the app with **Ollama** (`ollama serve`, `ollama pull <model>`) or host with a reachable `OLLAMA_BASE_URL` (e.g. Vercel + remote Ollama).
+The GitHub Pages demo uses mock responses (no server). For **real AI**, run Medcess with **Ollama** (`ollama serve`, `ollama pull <model>`) or host with a reachable `OLLAMA_BASE_URL` (e.g. Vercel + remote Ollama).
 
 ---
 
@@ -58,7 +58,7 @@ OLLAMA_MODEL=llama3.2
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Open [http://localhost:3001](http://localhost:3001) in your browser.
 
 ### How to Get Real AI (Not Mocks)
 
@@ -84,11 +84,11 @@ npm run dev
 ### Testing Your AI Connection
 
 **Option 1: Test endpoint**
-1. Run the app (`npm run dev`) and open [http://localhost:3000/api/test-key](http://localhost:3000/api/test-key)
+1. Run the app (`npm run dev`) and open [http://localhost:3001/api/test-key](http://localhost:3001/api/test-key)
 2. You should see `"success": true` and `"provider": "Ollama"` when Ollama is up
 
 **Option 2: Test in a scenario**
-1. Go to [http://localhost:3000/scenarios](http://localhost:3000/scenarios), open a scenario, and ask the patient a question
+1. Go to [http://localhost:3001/scenarios](http://localhost:3001/scenarios), open a scenario, and ask the patient a question
 2. If you get an error, start Ollama or set `DEMO_MODE=true` for mocks
 
 **Common issues:**
@@ -101,7 +101,7 @@ npm run dev
 ```
 project-root/
   app/
-    layout.tsx              # Root layout with Navbar and Footer
+    layout.tsx              # Root layout, Medcess metadata
     page.tsx                # Landing page
     about/
       page.tsx              # About page with disclaimer
@@ -115,21 +115,17 @@ project-root/
       assess/
         route.ts            # POST: AI assessment
   components/
+    MedcessLogo.tsx
     Navbar.tsx
     Footer.tsx
     ScenarioCard.tsx
     ScenarioList.tsx
     ScenarioPlayer.tsx
-    DoctorPatientScene.tsx
-    ChatPanel.tsx
-    PhysicalExamPanel.tsx
-    TestsPanel.tsx
-    DiagnosisPanel.tsx
-    SummaryPanel.tsx
+    ...
+  lib/
+    branding.ts             # App name and marketing copy
   data/
     scenarios.ts            # Scenario data and types
-  styles/
-    globals.css
 ```
 
 ## Adding New Scenarios
@@ -229,9 +225,8 @@ See `.github/workflows/README.md` for more details.
 
 ## Important Disclaimer
 
-**This website is for educational purposes only. All patients and scenarios are fictional. The site does not provide medical advice, diagnosis, or treatment. If you have health concerns, please see a licensed healthcare professional.**
+**Medcess is for educational purposes only. All patients and scenarios are fictional. The site does not provide medical advice, diagnosis, or treatment. If you have health concerns, please see a licensed healthcare professional.**
 
 ## License
 
 This project is for educational use only.
-

@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { DEFAULT_RESEND_FROM } from '@/lib/branding'
 
 /**
  * Read the key at call time (not module load). Next.js can inline `process.env` at build;
@@ -20,7 +21,7 @@ export function getResend(): Resend | null {
 }
 
 export function getResendFromAddress(): string {
-  return (process.env.RESEND_FROM ?? 'VDS <onboarding@resend.dev>').trim()
+  return (process.env.RESEND_FROM ?? DEFAULT_RESEND_FROM).trim()
 }
 
 /** Log once per process if production still uses Resend’s test sender (often not delivered to real inboxes). */

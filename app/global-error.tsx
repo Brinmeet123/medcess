@@ -1,5 +1,7 @@
 'use client'
 
+import { APP_NAME } from '@/lib/branding'
+
 /**
  * Root-level error UI. Must define <html> and <body> (replaces root layout when active).
  * @see https://nextjs.org/docs/app/building-your-application/routing/error-handling
@@ -15,6 +17,7 @@ export default function GlobalError({
     <html lang="en">
       <body className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="max-w-md text-center">
+          <p className="text-sm font-semibold text-cyan-700 mb-2">{APP_NAME}</p>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
           <p className="text-sm text-gray-600 mb-6">{error.message || 'Please refresh the page.'}</p>
           {error.digest ? (

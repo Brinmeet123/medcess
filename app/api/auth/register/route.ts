@@ -7,6 +7,7 @@ import {
 } from '@prisma/client/runtime/library'
 import { prisma } from '@/lib/prisma'
 import { getResend, getResendFromAddress, warnIfDefaultFromInProduction } from '@/lib/resend'
+import { APP_NAME, EMAIL_TEAM_SIGNOFF, TAGLINE_SHORT } from '@/lib/branding'
 
 function registerErrorResponse(e: unknown): { error: string; status: number } {
   console.error('register error:', e)
@@ -112,7 +113,7 @@ export async function POST(req: Request) {
         const result = await resend.emails.send({
           from: getResendFromAddress(),
           to: user.email,
-          subject: 'Welcome to Virtual Diagnostic Simulator',
+          subject: 'Welcome to Medcess',
           html: welcomeHtml(user.name ?? user.username),
           text: welcomeText,
         })
@@ -152,11 +153,12 @@ function welcomeHtml(displayName: string): string {
 <!DOCTYPE html>
 <html>
   <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #1e293b;">
-    <h1 style="color: #0f766e;">Welcome${displayName ? `, ${escapeHtml(displayName)}` : ''}!</h1>
-    <p>Thank you for joining the <strong>Virtual Diagnostic Simulator</strong>.</p>
+    <h1 style="color: #0891b2;">Welcome${displayName ? `, ${escapeHtml(displayName)}` : ''}!</h1>
+    <p>Thank you for joining <strong>${APP_NAME}</strong>.</p>
+    <p>${escapeHtml(TAGLINE_SHORT)}</p>
     <p>Your saved terms and scenario scores live on your dashboard.</p>
     <p>We will also share occasional updates about new cases and—down the road—shadowing and observation opportunities.</p>
-    <p style="margin-top: 24px; font-size: 14px; color: #64748b;">— The VDS team</p>
+    <p style="margin-top: 24px; font-size: 14px; color: #64748b;">${EMAIL_TEAM_SIGNOFF}</p>
   </body>
 </html>`
 }
@@ -165,13 +167,15 @@ function welcomePlainText(displayName: string): string {
   const greeting = displayName ? `Welcome, ${displayName}!` : 'Welcome!'
   return `${greeting}
 
-Thank you for joining the Virtual Diagnostic Simulator.
+Thank you for joining ${APP_NAME}.
+
+${TAGLINE_SHORT}
 
 Your saved terms and scenario scores live on your dashboard.
 
 We will also share occasional updates about new cases and—down the road—shadowing and observation opportunities.
 
-— The VDS team`
+${EMAIL_TEAM_SIGNOFF}`
 }
 
 function escapeHtml(s: string): string {

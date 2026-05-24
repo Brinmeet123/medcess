@@ -12,6 +12,7 @@ import {
 import ScenarioCard from './ScenarioCard'
 import SpecialtyFilter from './SpecialtyFilter'
 import SimulatorHelpButton from './simulator/SimulatorHelpButton'
+import { APP_NAME } from '@/lib/branding'
 
 export type ScenarioProgressInfo = {
   status: string
@@ -87,9 +88,9 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
       <SimulatorHelpButton libraryPage />
 
       <div className="mb-8">
-        <p className="text-sm font-semibold text-primary-700 mb-2">Case library</p>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">🧩 Choose a Patient Case</h1>
-        <p className="text-lg text-slate-700 mb-2 max-w-2xl">Pick a scenario to start diagnosing.</p>
+        <p className="text-sm font-semibold text-primary-700 mb-2">{APP_NAME} case library</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose a patient case</h1>
+        <p className="text-lg text-slate-700 mb-2 max-w-2xl">Pick a scenario to practice clinical reasoning.</p>
         <p className="text-sm text-slate-600 mb-8 max-w-2xl">
           You&apos;ll ask questions, gather clues, order tests, and make the call — then see how you did.
         </p>
@@ -141,7 +142,9 @@ export default function ScenarioList({ scenarios, progressByScenario = {} }: Pro
 
       {filteredScenarios.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">No cases match these filters. Try widening specialty, difficulty, or search.</p>
+          <p className="text-gray-500">
+            No cases match these filters on {APP_NAME}. Try widening specialty, difficulty, or search.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

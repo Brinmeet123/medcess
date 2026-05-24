@@ -32,7 +32,7 @@ export async function maybePolishDeterministicAssessment(
     vocabToReview: d.vocabToReview,
   }
 
-  const system = `You are an editor. You receive JSON with debrief strings from a medical simulator.
+  const system = `You are an editor. You receive JSON with debrief strings from Medcess, a medical education simulation.
 Rewrite values for clearer, more natural prose only.
 Rules: Do NOT add new facts, diagnoses, or recommendations. Do NOT remove items from arrays—keep the same length for each array. Do not change vocabToReview terms (return them unchanged).
 Output ONLY valid JSON with the same keys: summary (string), strengths (array), missedOpportunities (array), correctApproach (array), improvementTip (string), diagnosticReasoning (array), nextStepAdvice (array), clinicalPearls (array), vocabToReview (array).`

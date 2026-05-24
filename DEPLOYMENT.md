@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying the Virtual Diagnostic Simulator using GitHub Actions.
+This guide covers deploying **Medcess** using GitHub Actions.
 
 ## Prerequisites
 
@@ -78,7 +78,7 @@ Deploy using Docker containers.
    docker run -p 3000:3000 \
      -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
      -e OLLAMA_MODEL=llama3.2 \
-     your-username/virtual-diagnostic-simulator
+     your-username/medcess
    ```
 
 ### Option 3: Static Site (GitHub Pages)

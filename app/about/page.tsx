@@ -1,21 +1,26 @@
 import Link from 'next/link'
+import { APP_NAME, TAGLINE, TAGLINE_SHORT } from '@/lib/branding'
 
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <p className="text-sm font-semibold text-primary-700 mb-2">What this is</p>
-      <h1 className="text-4xl font-bold text-gray-900 mb-3">About the simulator</h1>
-      <p className="text-lg text-slate-700 mb-6">A safe place to practice clinical thinking — no real patients, no grades that follow you.</p>
+      <h1 className="text-4xl font-bold text-gray-900 mb-3">About {APP_NAME}</h1>
+      <p className="text-lg text-slate-700 mb-6">
+        A safe place to practice clinical thinking — no real patients, no grades that follow you.
+      </p>
 
       <div className="prose prose-lg max-w-none mb-8">
+        <p className="text-gray-700 mb-4">{TAGLINE}</p>
+        <p className="text-gray-700 mb-4">{TAGLINE_SHORT}</p>
         <p className="text-gray-700 mb-4">
-          The <strong>Virtual Diagnostic Simulator</strong> is a fictional case trainer: interview, exam, tests,
-          diagnosis, then structured feedback. For learning only.
+          <strong>{APP_NAME}</strong> is a fictional case trainer: interview, exam, tests, diagnosis, then structured
+          feedback. For learning only.
         </p>
 
         <h2 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Who it&apos;s for</h2>
         <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-          <li>Students exploring medicine</li>
+          <li>High school students exploring medicine</li>
           <li>Pre-med learners stacking clinical reps</li>
           <li>Anyone curious how workups are sequenced</li>
         </ul>
@@ -31,8 +36,7 @@ export default function AboutPage() {
 
         <h2 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Note</h2>
         <p className="text-gray-700 mb-4">
-          Inspired by tools like Full Code and Body Interact; scenarios here are original and simplified for
-          teaching.
+          Inspired by tools like Full Code and Body Interact; scenarios here are original and simplified for teaching.
         </p>
 
         <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mt-8 mb-8">
@@ -40,8 +44,7 @@ export default function AboutPage() {
           <div className="text-red-900 space-y-3">
             <p className="font-semibold">Educational use only. All cases and patients are fictional.</p>
             <p>
-              Not medical advice. Not a substitute for licensed care. Don&apos;t use this to decide real
-              treatment.
+              Not medical advice. Not a substitute for licensed care. Don&apos;t use this to decide real treatment.
             </p>
             <p>For real symptoms or emergencies, see a qualified clinician.</p>
           </div>

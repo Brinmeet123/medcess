@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import AIUsageHeaderIndicator from '@/components/AIUsageHeaderIndicator'
+import MedcessLogo from '@/components/MedcessLogo'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -21,9 +22,7 @@ export default function Navbar() {
     <nav className="bg-white shadow-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="text-xl font-bold text-primary-600 hover:text-primary-700 shrink-0">
-            Virtual Diagnostic Simulator
-          </Link>
+          <MedcessLogo size="sm" className="shrink-0" />
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center space-x-4">

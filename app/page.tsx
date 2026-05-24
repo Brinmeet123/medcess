@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { FREE_CASE_IDS } from '@/lib/caseAccess'
 import { scenarios } from '@/data/scenarios'
+import { APP_NAME, TAGLINE, TAGLINE_SHORT } from '@/lib/branding'
+import { MedcessLogoMark } from '@/components/MedcessLogo'
 
 export default function Home() {
   const starterCases = FREE_CASE_IDS.map((id) => scenarios.find((s) => s.id === id)).filter(
@@ -8,19 +10,29 @@ export default function Home() {
   )
   return (
     <div className="min-h-screen">
-      <section className="bg-gradient-to-b from-primary-50 via-white to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary-700 mb-3">Clinical simulation</p>
+      <section className="relative overflow-hidden bg-gradient-to-b from-cyan-50/80 via-white to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          aria-hidden
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 20% 20%, rgb(6 182 212 / 0.12), transparent 45%), radial-gradient(circle at 80% 0%, rgb(13 148 136 / 0.1), transparent 40%)',
+          }}
+        />
+        <div className="relative max-w-4xl mx-auto text-center animate-fade-in">
+          <div className="inline-flex items-center justify-center gap-2 mb-6">
+            <MedcessLogoMark size="lg" />
+          </div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-primary-700 mb-3">
+            Clinical reasoning simulations
+          </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-5 text-balance">
-            Virtual Diagnostic Simulator
+            {APP_NAME}
           </h1>
           <p className="text-lg sm:text-xl text-gray-700 mb-3 max-w-2xl mx-auto leading-relaxed">
-            Step into real-feel scenarios. Ask questions, analyze symptoms, and make the diagnosis.
+            {TAGLINE}
           </p>
-          <p className="text-sm text-slate-600 mb-10 max-w-xl mx-auto">
-            You&apos;ll interview a patient, review the exam, order tests, commit to a diagnosis, then see structured
-            feedback — same rhythm as the wards, none of the risk.
-          </p>
+          <p className="text-sm text-slate-600 mb-10 max-w-xl mx-auto">{TAGLINE_SHORT}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-stretch sm:items-center">
             <Link
               href="/scenarios"
@@ -78,16 +90,16 @@ export default function Home() {
 
       <section className="py-14 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-100">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Why use this</h2>
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Why {APP_NAME}</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                emoji: '🧠',
-                title: 'Realistic Patient Cases',
+                emoji: '🩺',
+                title: 'Realistic Virtual Patients',
                 desc: 'Work through presentations that feel like the clinic — history, exam, data, then your call.',
               },
               {
-                emoji: '📊',
+                emoji: '✨',
                 title: 'Instant Feedback & Scoring',
                 desc: 'Get a debrief tied to what you asked, ordered, and concluded — not a generic quiz score.',
               },
@@ -139,8 +151,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Who it&apos;s for</h2>
           <p className="text-lg text-gray-700 mb-8">
-            Built for <strong>high school</strong> and <strong>pre-med</strong> learners who want reps without the
-            clinic — and anyone curious how workups are sequenced.
+            Built for <strong>high school</strong> and <strong>pre-med</strong> learners exploring medicine through
+            immersive simulations — and anyone curious how workups are sequenced.
           </p>
           <div className="grid md:grid-cols-2 gap-6 text-left">
             <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -161,7 +173,7 @@ export default function Home() {
               href="/about"
               className="btn-press text-primary-700 font-semibold hover:underline"
             >
-              Learn more about the simulator
+              Learn more about {APP_NAME}
             </Link>
           </div>
         </div>

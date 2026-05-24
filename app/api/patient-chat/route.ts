@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const { patientPersona, aiInstructions } = scenario
 
-    const systemPrompt = `You are a fictional patient in a medical training simulator.
+    const systemPrompt = `You are a fictional patient in a Medcess clinical simulation (educational only).
 Your name is ${patientPersona.name}, age ${patientPersona.age}, gender ${patientPersona.gender}.
 Chief complaint: ${patientPersona.chiefComplaint}.
 Background: ${patientPersona.background}.

@@ -4,6 +4,7 @@ import React from 'react'
 import HighlightProvider from './HighlightProvider'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import MedcessLogo from './MedcessLogo'
 
 type Props = { children: React.ReactNode }
 
@@ -26,7 +27,7 @@ class LayoutErrorBoundary extends React.Component<
       return (
         <div className="min-h-screen flex flex-col bg-gray-50">
           <nav className="bg-white shadow border-b px-4 py-3">
-            <a href="/" className="font-bold text-gray-800">Virtual Diagnostic Simulator</a>
+            <MedcessLogo size="sm" href="/" />
           </nav>
           <main className="flex-1 p-6">
             <p className="text-gray-600 mb-4">Part of the app failed to load. Try refreshing the page.</p>

@@ -6,11 +6,11 @@ export type EmailCampaignKind = 'newsletter' | 'shadowing_alert'
 
 export const campaignPlaceholders = {
   newsletter: {
-    subject: '[VDS] Clinical reasoning tips',
+    subject: '[Medcess] Clinical reasoning tips',
     description: 'Periodic study tips and product updates.',
   },
   shadowing_alert: {
-    subject: '[VDS] Shadowing opportunities near you',
+    subject: '[Medcess] Shadowing opportunities near you',
     description: 'Alerts when shadowing or observation slots are announced.',
   },
 } as const

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { SimulatorStep } from './SimulatorProgressBar'
 import type { ClinicalSection } from '@/components/SectionNav'
 import { getScenarioLibraryHelpCopy, getSimulatorHelpCopy } from './simulatorHelpCopy'
+import { APP_NAME } from '@/lib/branding'
 
 type Props =
   | { libraryPage: true; currentStep?: never; activeSection?: never }
@@ -45,7 +46,7 @@ export default function SimulatorHelpButton(props: Props) {
             className="relative z-10 m-4 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
           >
             <h2 id="simulator-help-title" className="text-lg font-bold text-slate-900">
-              Help
+              {APP_NAME} help
             </h2>
             <p className="mt-1 text-sm text-slate-600">{stepName}</p>
             <div className="mt-4 space-y-4 text-sm text-slate-700">

@@ -1,4 +1,4 @@
-# GitHub Pages Setup Instructions
+# GitHub Pages Setup Instructions (Medcess)
 
 Repository: **https://github.com/Brinmeet123/VirtualDiagnosticSimulator.github.io**
 

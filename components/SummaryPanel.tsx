@@ -7,6 +7,7 @@ import type { DebriefRubric100 } from '@/types/debrief'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
 import { vocab, getVocabTerm } from '@/data/vocab'
+import { APP_NAME } from '@/lib/branding'
 
 type DebriefStructured = {
   summary: string
@@ -259,7 +260,7 @@ export default function SummaryPanel({
       <VocabContextBlock source="debrief" scenarioId={scenario.id} text={debriefContext}>
         <h2 className="mb-2 text-2xl font-bold text-gray-900">Diagnosis report</h2>
         <p className="mb-6 text-sm leading-relaxed text-slate-600">
-          Structured feedback for this run. Each section is limited to a few high-yield points.
+          {APP_NAME} structured feedback for this run. Each section is limited to a few high-yield points.
         </p>
 
         {showDeterministicRubric && rubricFromAssessment ? (

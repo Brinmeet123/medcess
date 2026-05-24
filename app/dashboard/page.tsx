@@ -6,6 +6,7 @@ import { scoreToLevel } from '@/lib/scoring'
 import { scenarios } from '@/data/scenarios'
 import { orderWithFreeCasesFirst } from '@/lib/caseAccess'
 import { countDistinctCompletedScenarios, getScenarioSummariesForUser } from '@/lib/scenarioMastery'
+import { APP_NAME } from '@/lib/branding'
 
 function performanceLevelFromCompleted(avgScore: number, completedCount: number): string {
   if (completedCount === 0) return 'Building foundation'
@@ -54,9 +55,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <p className="text-sm font-semibold text-teal-800 mb-1">Your learning hub</p>
+      <p className="text-sm font-semibold text-teal-800 mb-1">{APP_NAME} · Your learning hub</p>
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Track Your Progress</h1>
-      <p className="text-slate-600 mb-2">See completed cases, scores, and where to drill next.</p>
+      <p className="text-slate-600 mb-2">See completed cases, scores, and where to drill next on Medcess.</p>
       <p className="text-sm text-slate-500 mb-8">Open any scenario below to resume or replay — your best scores stay on record.</p>
 
       <div className="grid md:grid-cols-2 gap-6">

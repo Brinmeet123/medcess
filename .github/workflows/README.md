@@ -1,6 +1,6 @@
 # GitHub Actions Workflows
 
-This directory contains GitHub Actions workflows for CI/CD of the Virtual Diagnostic Simulator.
+This directory contains GitHub Actions workflows for CI/CD of **Medcess**.
 
 ## Available Workflows
 

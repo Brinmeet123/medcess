@@ -24,13 +24,13 @@ jobs:
         run: |
           if [ -z "${{ secrets.DOCKER_USERNAME }}" ] || [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
             echo "secrets_available=false" >> $GITHUB_OUTPUT
-            echo "image=virtual-diagnostic-simulator" >> $GITHUB_OUTPUT
-            echo "tag=virtual-diagnostic-simulator:latest" >> $GITHUB_OUTPUT
+            echo "image=medcess" >> $GITHUB_OUTPUT
+            echo "tag=medcess:latest" >> $GITHUB_OUTPUT
             echo "⚠️ Docker Hub secrets not configured. Building image without pushing."
           else
             echo "secrets_available=true" >> $GITHUB_OUTPUT
-            echo "image=${{ secrets.DOCKER_USERNAME }}/virtual-diagnostic-simulator" >> $GITHUB_OUTPUT
-            echo "tag=${{ secrets.DOCKER_USERNAME }}/virtual-diagnostic-simulator:${GITHUB_REF#refs/heads/}-${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+            echo "image=${{ secrets.DOCKER_USERNAME }}/medcess" >> $GITHUB_OUTPUT
+            echo "tag=${{ secrets.DOCKER_USERNAME }}/medcess:${GITHUB_REF#refs/heads/}-${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
           fi
 
       - name: Login to Docker Hub
