@@ -54,6 +54,22 @@ model Vocab {
   @@unique([userId, term])
 }
 
+/// Globally shared medical vocabulary cache (AI-generated or manually curated).
+model SharedVocab {
+  id               String   @id @default(cuid())
+  term             String
+  normalizedTerm   String   @unique
+  definition       String
+  simpleDefinition String
+  category         String?
+  source           String   @default("ai_generated")
+  usageCount       Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([usageCount(sort: Desc)])
+}
+
 model ScenarioAttempt {
   id         String   @id @default(cuid())
   userId     String

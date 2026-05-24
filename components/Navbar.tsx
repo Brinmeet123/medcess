@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import AIUsageHeaderIndicator from '@/components/AIUsageHeaderIndicator'
 import MedcessLogo from '@/components/MedcessLogo'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -19,34 +20,30 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <nav className="bg-white shadow-md border-b border-gray-200">
+    <nav className="sticky top-0 z-50 bg-white/95 dark:bg-[#020817]/95 backdrop-blur-md border-b border-slate-200/90 dark:border-[#14345C] shadow-medcess-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <MedcessLogo size="sm" className="shrink-0" />
+          <MedcessLogo size="sm" variant="full" className="shrink-0" />
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-1">
             {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition"
-              >
+              <Link key={href} href={href} className="medcess-nav-link">
                 {label}
               </Link>
             ))}
 
-            <AIUsageHeaderIndicator className="hidden sm:flex mx-1" />
+            <ThemeToggle className="hidden sm:inline-flex mx-1" />
+            <AIUsageHeaderIndicator className="hidden sm:flex mx-2" />
 
             {status === 'loading' ? (
-              <span className="text-sm text-gray-400 px-2" aria-live="polite">
+              <span className="text-sm text-slate-400 px-2" aria-live="polite">
                 Loading
               </span>
             ) : session?.user ? (
-              <div className="flex items-center gap-3 pl-2 border-l border-gray-200">
+              <div className="flex items-center gap-3 pl-3 ml-1 border-l border-slate-200">
                 <Link
                   href="/dashboard"
-                  className="text-sm font-medium text-teal-800 hover:text-teal-900 max-w-[140px] truncate"
+                  className="text-sm font-medium text-primary-800 hover:text-primary-600 max-w-[140px] truncate transition-colors"
                   title={session.user.email ?? ''}
                 >
                   {session.user.name ?? session.user.username ?? 'Profile'}
@@ -54,26 +51,23 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-slate-600 hover:text-medcess-navy transition-colors"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="text-sm font-semibold text-teal-700 hover:text-teal-800 px-3 py-2 rounded-md border border-teal-200 bg-teal-50/80"
-              >
+              <Link href="/login" className="medcess-btn-primary text-sm !py-2 !px-4 ml-2">
                 Login / Sign Up
               </Link>
             )}
           </div>
 
-          {/* Mobile menu toggle */}
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle compact />
             <button
               type="button"
-              className="btn-press p-2 rounded-md text-gray-700 hover:bg-gray-100 border border-gray-200"
+              className="btn-press p-2 rounded-xl text-medcess-navy hover:bg-primary-50 border border-slate-200"
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
@@ -84,17 +78,16 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile dropdown */}
         {mobileOpen && (
           <div
             id="mobile-nav"
-            className="md:hidden border-t border-gray-200 py-3 space-y-1 pb-4"
+            className="md:hidden border-t border-slate-100 dark:border-[#14345C] py-3 space-y-1 pb-4 bg-white dark:bg-[#020817]"
           >
             {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600"
+                className="block px-3 py-2.5 rounded-xl text-base font-medium text-medcess-navy hover:bg-primary-50 hover:text-primary-600 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 {label}
@@ -104,19 +97,19 @@ export default function Navbar() {
               <AIUsageHeaderIndicator className="max-w-[5.5rem]" />
             </div>
             {status === 'loading' ? (
-              <p className="px-3 py-2 text-sm text-gray-400">Loading</p>
+              <p className="px-3 py-2 text-sm text-slate-400">Loading</p>
             ) : session?.user ? (
-              <div className="pt-2 mt-2 border-t border-gray-100 space-y-1">
+              <div className="pt-2 mt-2 border-t border-slate-100 space-y-1">
                 <Link
                   href="/dashboard"
-                  className="block px-3 py-2 text-sm font-medium text-teal-800"
+                  className="block px-3 py-2 text-sm font-medium text-primary-800"
                   onClick={() => setMobileOpen(false)}
                 >
                   {session.user.name ?? session.user.username ?? 'Profile'}
                 </Link>
                 <button
                   type="button"
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-gray-600"
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600"
                   onClick={() => {
                     setMobileOpen(false)
                     void signOut({ callbackUrl: '/' })
@@ -128,7 +121,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="block mt-2 mx-3 py-2.5 text-center text-sm font-semibold text-teal-700 rounded-md border border-teal-200 bg-teal-50/80"
+                className="block mx-3 mt-2 medcess-btn-primary text-center text-sm"
                 onClick={() => setMobileOpen(false)}
               >
                 Login / Sign Up

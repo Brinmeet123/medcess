@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12">
         <p className="text-slate-600">User profile not found.</p>
-        <Link href="/login" className="text-teal-700 hover:underline mt-4 inline-block">
+        <Link href="/login" className="text-primary-700 hover:underline mt-4 inline-block">
           Sign in
         </Link>
       </div>
@@ -55,14 +55,14 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <p className="text-sm font-semibold text-teal-800 mb-1">{APP_NAME} · Your learning hub</p>
+      <p className="text-sm font-semibold text-primary-800 mb-1">{APP_NAME} · Your learning hub</p>
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Track Your Progress</h1>
       <p className="text-slate-600 mb-2">See completed cases, scores, and where to drill next on Medcess.</p>
       <p className="text-sm text-slate-500 mb-8">Open any scenario below to resume or replay — your best scores stay on record.</p>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-teal-800 uppercase tracking-wide mb-4">Profile</h2>
+          <h2 className="text-sm font-semibold text-primary-800 uppercase tracking-wide mb-4">Profile</h2>
           <dl className="space-y-3 text-sm">
             <div>
               <dt className="text-slate-500">Name</dt>
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-teal-800 uppercase tracking-wide mb-4">Performance</h2>
+          <h2 className="text-sm font-semibold text-primary-800 uppercase tracking-wide mb-4">Performance</h2>
           <dl className="space-y-3 text-sm">
             <div>
               <dt className="text-slate-500">Total score</dt>
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-10">
-        <h2 className="text-sm font-semibold text-teal-800 uppercase tracking-wide mb-4">Scenario progress</h2>
+        <h2 className="text-sm font-semibold text-primary-800 uppercase tracking-wide mb-4">Scenario progress</h2>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
           {orderedForDashboard.map((s) => {
             const sum = summaries.get(s.id)!
@@ -152,7 +152,7 @@ export default async function DashboardPage() {
       <div className="mt-8 flex flex-wrap gap-4">
         <Link
           href="/scenarios"
-          className="btn-press inline-flex items-center rounded-lg bg-teal-700 text-white px-5 py-2.5 text-sm font-semibold hover:bg-teal-800 transition"
+          className="btn-press inline-flex items-center rounded-lg bg-primary-700 text-white px-5 py-2.5 text-sm font-semibold hover:bg-primary-800 transition"
         >
           Open case library
         </Link>

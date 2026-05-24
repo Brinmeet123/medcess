@@ -22,7 +22,7 @@ export default function SimulatorHelpButton(props: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-lg shadow-slate-900/10 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#071A33] px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-[#F8FAFC] shadow-lg shadow-slate-900/10 dark:shadow-[0_8px_30px_rgba(20,184,255,0.12)] transition hover:bg-slate-50 dark:hover:bg-[#0a1f3d] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="simulator-help-panel"
@@ -43,13 +43,13 @@ export default function SimulatorHelpButton(props: Props) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="simulator-help-title"
-            className="relative z-10 m-4 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+            className="relative z-10 m-4 w-full max-w-md rounded-2xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#071A33] p-6 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
           >
-            <h2 id="simulator-help-title" className="text-lg font-bold text-slate-900">
+            <h2 id="simulator-help-title" className="text-lg font-bold text-slate-900 dark:text-[#F8FAFC]">
               {APP_NAME} help
             </h2>
-            <p className="mt-1 text-sm text-slate-600">{stepName}</p>
-            <div className="mt-4 space-y-4 text-sm text-slate-700">
+            <p className="mt-1 text-sm text-slate-600 dark:text-[#CBD5E1]">{stepName}</p>
+            <div className="mt-4 space-y-4 text-sm text-slate-700 dark:text-[#CBD5E1]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Now</p>
                 <p className="mt-1 leading-relaxed">{whatToDo}</p>

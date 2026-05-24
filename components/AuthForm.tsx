@@ -97,7 +97,7 @@ export default function AuthForm() {
             setError(null)
           }}
           className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition ${
-            tab === 'login' ? 'bg-white text-teal-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            tab === 'login' ? 'bg-white text-primary-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           Login
@@ -109,7 +109,7 @@ export default function AuthForm() {
             setError(null)
           }}
           className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition ${
-            tab === 'signup' ? 'bg-white text-teal-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            tab === 'signup' ? 'bg-white text-primary-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           Sign Up
@@ -138,7 +138,7 @@ export default function AuthForm() {
               required
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
           <div>
@@ -152,13 +152,13 @@ export default function AuthForm() {
               required
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-teal-700 text-white py-3 font-semibold hover:bg-teal-800 disabled:opacity-60 transition"
+            className="medcess-btn-primary w-full disabled:opacity-60"
           >
             {loading ? 'Signing in…' : 'Login'}
           </button>
@@ -176,7 +176,7 @@ export default function AuthForm() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
           <div>
@@ -192,7 +192,7 @@ export default function AuthForm() {
               title="Letters, numbers, underscores only"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
           <div>
@@ -206,7 +206,7 @@ export default function AuthForm() {
               required
               value={signupEmail}
               onChange={(e) => setSignupEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
           <div>
@@ -221,14 +221,14 @@ export default function AuthForm() {
               minLength={8}
               value={signupPassword}
               onChange={(e) => setSignupPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
             <p className="text-xs text-slate-500 mt-1">At least 8 characters.</p>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-teal-700 text-white py-3 font-semibold hover:bg-teal-800 disabled:opacity-60 transition"
+            className="medcess-btn-primary w-full disabled:opacity-60"
           >
             {loading ? 'Creating account…' : 'Create Account'}
           </button>

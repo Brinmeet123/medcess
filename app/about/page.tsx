@@ -4,8 +4,10 @@ import { APP_NAME, TAGLINE, TAGLINE_SHORT } from '@/lib/branding'
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <p className="text-sm font-semibold text-primary-700 mb-2">What this is</p>
-      <h1 className="text-4xl font-bold text-gray-900 mb-3">About {APP_NAME}</h1>
+      <p className="medcess-section-label mb-2">What this is</p>
+      <h1 className="text-4xl font-bold text-medcess-navy mb-3">
+        About <span className="text-gradient-medcess">{APP_NAME}</span>
+      </h1>
       <p className="text-lg text-slate-700 mb-6">
         A safe place to practice clinical thinking — no real patients, no grades that follow you.
       </p>
@@ -53,7 +55,7 @@ export default function AboutPage() {
         <div className="mt-8 not-prose">
           <Link
             href="/scenarios"
-            className="btn-press inline-block px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-semibold"
+            className="medcess-btn-primary inline-block"
           >
             Choose a case →
           </Link>

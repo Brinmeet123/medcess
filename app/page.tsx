@@ -2,67 +2,48 @@ import Link from 'next/link'
 import { FREE_CASE_IDS } from '@/lib/caseAccess'
 import { scenarios } from '@/data/scenarios'
 import { APP_NAME, TAGLINE, TAGLINE_SHORT } from '@/lib/branding'
-import { MedcessLogoMark } from '@/components/MedcessLogo'
+import MedcessLogo from '@/components/MedcessLogo'
+import MedcessDivider from '@/components/brand/MedcessDivider'
 
 export default function Home() {
   const starterCases = FREE_CASE_IDS.map((id) => scenarios.find((s) => s.id === id)).filter(
     (s): s is (typeof scenarios)[number] => Boolean(s)
   )
   return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden bg-gradient-to-b from-cyan-50/80 via-white to-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-40"
-          aria-hidden
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 20% 20%, rgb(6 182 212 / 0.12), transparent 45%), radial-gradient(circle at 80% 0%, rgb(13 148 136 / 0.1), transparent 40%)',
-          }}
-        />
+    <div className="min-h-screen bg-white dark:bg-[#020817]">
+      <section className="relative overflow-hidden bg-medcess-hero dark:bg-medcess-hero-dark py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="relative max-w-4xl mx-auto text-center animate-fade-in">
-          <div className="inline-flex items-center justify-center gap-2 mb-6">
-            <MedcessLogoMark size="lg" />
+          <div className="flex justify-center mb-8">
+            <MedcessLogo size="lg" variant="full" href="/" />
           </div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary-700 mb-3">
-            Clinical reasoning simulations
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-5 text-balance">
-            {APP_NAME}
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-700 mb-3 max-w-2xl mx-auto leading-relaxed">
-            {TAGLINE}
-          </p>
+          <p className="medcess-section-label mb-4">Clinical reasoning simulations</p>
+          <p className="text-lg sm:text-xl text-slate-700 mb-3 max-w-2xl mx-auto leading-relaxed">{TAGLINE}</p>
           <p className="text-sm text-slate-600 mb-10 max-w-xl mx-auto">{TAGLINE_SHORT}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-stretch sm:items-center">
-            <Link
-              href="/scenarios"
-              className="btn-press inline-flex items-center justify-center px-8 py-3.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition font-semibold text-lg shadow-md shadow-primary-600/20"
-            >
+            <Link href="/scenarios" className="medcess-btn-primary text-lg !px-8 !py-3.5">
               Start First Case →
             </Link>
-            <Link
-              href="/dashboard"
-              className="btn-press inline-flex items-center justify-center px-8 py-3.5 bg-white text-primary-700 border-2 border-primary-200 rounded-xl hover:bg-primary-50 transition font-semibold text-lg"
-            >
+            <Link href="/dashboard" className="medcess-btn-secondary text-lg !px-8 !py-3.5">
               View Progress
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-100">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-[#020817]">
         <div className="max-w-6xl mx-auto">
+          <MedcessDivider className="mb-10" />
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
             <div>
-              <p className="text-sm font-semibold text-primary-700 mb-1">Featured — play free</p>
-              <h2 className="text-2xl font-bold text-gray-900">Five starter cases</h2>
+              <p className="medcess-section-label mb-1">Featured — play free</p>
+              <h2 className="text-2xl font-bold text-medcess-navy">Five starter cases</h2>
               <p className="text-sm text-slate-600 mt-1 max-w-xl">
                 No sign-in required. Full cases, scoring, and debrief — jump in from any device.
               </p>
             </div>
             <Link
               href="/scenarios"
-              className="btn-press shrink-0 text-sm font-semibold text-primary-700 hover:text-primary-900"
+              className="btn-press shrink-0 text-sm font-semibold text-primary-600 hover:text-primary-700"
             >
               View all cases →
             </Link>
@@ -72,12 +53,14 @@ export default function Home() {
               <li key={s.id}>
                 <Link
                   href={`/scenarios/${s.id}`}
-                  className="block rounded-xl border border-slate-200 bg-slate-50/80 p-4 hover:border-primary-200 hover:bg-primary-50/40 transition h-full"
+                  className="medcess-card block p-4 hover:border-primary-200 h-full group"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="font-semibold text-slate-900">{s.title}</span>
-                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-emerald-300/90 bg-emerald-50 px-1.5 py-[3px] text-[11px] font-semibold leading-none text-emerald-900">
-                      <span aria-hidden>🟢</span> Guest
+                    <span className="font-semibold text-medcess-navy group-hover:text-primary-600 transition-colors">
+                      {s.title}
+                    </span>
+                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-primary-200 bg-primary-50 px-2 py-0.5 text-[11px] font-semibold leading-none text-primary-800">
+                      Guest
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 line-clamp-2">{s.description}</p>
@@ -88,35 +71,31 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-100">
+      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-medcess-surface">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Why {APP_NAME}</h2>
+          <h2 className="text-2xl font-bold text-center text-medcess-navy mb-10">
+            Why <span className="text-gradient-medcess">{APP_NAME}</span>
+          </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                emoji: '🩺',
                 title: 'Realistic Virtual Patients',
                 desc: 'Work through presentations that feel like the clinic — history, exam, data, then your call.',
               },
               {
-                emoji: '✨',
                 title: 'Instant Feedback & Scoring',
                 desc: 'Get a debrief tied to what you asked, ordered, and concluded — not a generic quiz score.',
               },
               {
-                emoji: '📈',
                 title: 'Track Your Progress',
                 desc: 'See completed runs and scores on your dashboard so you know where to drill next.',
               },
             ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="text-3xl mb-3" aria-hidden>
-                  {item.emoji}
+              <div key={item.title} className="medcess-card p-6 text-center">
+                <div className="mx-auto mb-4 flex justify-center">
+                  <span className="h-1 w-12 rounded-full bg-gradient-medcess" aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <h3 className="text-lg font-semibold text-medcess-navy mb-2">{item.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
               </div>
             ))}
@@ -124,9 +103,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-slate-50">
+      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-white dark:bg-[#020817]">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">How a case flows</h2>
+          <h2 className="text-2xl font-bold text-center text-medcess-navy dark:text-[#F8FAFC] mb-10">How a case flows</h2>
           <div className="grid md:grid-cols-5 gap-6">
             {[
               { step: '1', title: 'Interview', desc: 'Ask about symptoms and context.' },
@@ -136,44 +115,41 @@ export default function Home() {
               { step: '5', title: 'Debrief', desc: 'See strengths, gaps, and teaching points.' },
             ].map((item) => (
               <div key={item.step} className="text-center">
-                <div className="w-14 h-14 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-md">
+                <div className="w-14 h-14 bg-gradient-medcess text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-medcess">
                   {item.step}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm leading-snug">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-medcess-navy mb-2">{item.title}</h3>
+                <p className="text-slate-600 text-sm leading-snug">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-medcess-surface">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Who it&apos;s for</h2>
-          <p className="text-lg text-gray-700 mb-8">
+          <h2 className="text-2xl font-bold text-medcess-navy mb-4">Who it&apos;s for</h2>
+          <p className="text-lg text-slate-700 mb-8">
             Built for <strong>high school</strong> and <strong>pre-med</strong> learners exploring medicine through
             immersive simulations — and anyone curious how workups are sequenced.
           </p>
           <div className="grid md:grid-cols-2 gap-6 text-left">
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Orientation</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+            <div className="medcess-card p-6">
+              <h3 className="text-lg font-semibold text-medcess-navy mb-2">Orientation</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
                 See how an encounter is structured before you shadow or rotate.
               </p>
             </div>
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Reps</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+            <div className="medcess-card p-6">
+              <h3 className="text-lg font-semibold text-medcess-navy mb-2">Reps</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
                 Drill questions, data interpretation, and committing to a diagnosis under a little time pressure.
               </p>
             </div>
           </div>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/about"
-              className="btn-press text-primary-700 font-semibold hover:underline"
-            >
-              Learn more about {APP_NAME}
+          <div className="mt-10">
+            <Link href="/about" className="text-primary-600 font-semibold hover:text-primary-700 transition-colors">
+              Learn more about {APP_NAME} →
             </Link>
           </div>
         </div>

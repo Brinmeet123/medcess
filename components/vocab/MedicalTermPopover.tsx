@@ -14,6 +14,7 @@ type Props = {
   canSave: boolean
   isLoading?: boolean
   isAIGenerated?: boolean
+  fromCache?: boolean
   errorMessage?: string | null
   /** Shown when save is disabled because the user is not signed in */
   authHint?: string | null
@@ -30,6 +31,7 @@ export default function MedicalTermPopover({
   canSave,
   isLoading = false,
   isAIGenerated = false,
+  fromCache = false,
   errorMessage = null,
   authHint = null,
 }: Props) {
@@ -106,7 +108,10 @@ export default function MedicalTermPopover({
           {medicalTerm && (
             <p className="text-[11px] uppercase tracking-wide text-primary-600 mt-0.5">{medicalTerm.category}</p>
           )}
-          {isAIGenerated && !isLoading && (
+          {fromCache && !isLoading && (
+            <p className="text-[11px] text-emerald-800/90 mt-1">Saved definition (shared cache)</p>
+          )}
+          {isAIGenerated && !isLoading && !fromCache && (
             <p className="text-[11px] italic text-amber-800/90 mt-1">AI-generated definition</p>
           )}
         </div>

@@ -1,9 +1,17 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import { Suspense } from 'react'
 import './styles/globals.css'
 import SessionRoot from '@/components/SessionRoot'
 import RootLoadingFallback from '@/components/RootLoadingFallback'
+import ThemeScript from '@/components/ThemeScript'
 import { APP_NAME, META_DESCRIPTION, TAGLINE_SHORT } from '@/lib/branding'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -44,8 +52,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body
+        className={`${inter.className} min-h-screen flex flex-col bg-white dark:bg-[#020817] text-medcess-navy dark:text-[#F8FAFC] antialiased transition-colors duration-200`}
+      >
         <Suspense fallback={<RootLoadingFallback />}>
           <SessionRoot>{children}</SessionRoot>
         </Suspense>

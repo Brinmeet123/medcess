@@ -3,21 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 15, 23, 42;
-  --background-start-rgb: 248, 250, 252;
-  --background-end-rgb: 255, 255, 255;
-  --medcess-brand: 8 145 178;
-  --medcess-accent: 13 148 136;
+  --medcess-cyan: #14b8ff;
+  --medcess-bright: #149cff;
+  --medcess-royal: #1e5bff;
+  --medcess-navy: #061b49;
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-muted: #f8fafc;
+  --border-color: #e2e8f0;
+  --text-primary: #061b49;
+  --text-secondary: #64748b;
+  --foreground: #061b49;
+  --background: #ffffff;
+  --surface: #f8fafc;
+  --border: #e2e8f0;
+}
+
+html.dark {
+  --bg-page: #020817;
+  --bg-card: #071a33;
+  --bg-muted: #0a1f3d;
+  --border-color: #14345c;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --foreground: #f8fafc;
+  --background: #020817;
+  --surface: #071a33;
+  --border: #14345c;
+  color-scheme: dark;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--text-primary);
+  background: var(--bg-page);
 }
 
 @layer utilities {
@@ -25,13 +43,197 @@ body {
     text-wrap: balance;
   }
 
-  /** Subtle press feedback for primary actions (gamified but professional) */
+  .text-gradient-medcess {
+    background: linear-gradient(90deg, #14b8ff 0%, #149cff 45%, #1e5bff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-gradient-medcess {
+    background: linear-gradient(90deg, #14b8ff 0%, #149cff 45%, #1e5bff 100%);
+  }
+
+  .border-gradient-medcess {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(white, white) padding-box,
+      linear-gradient(90deg, #14b8ff, #1e5bff) border-box;
+  }
+
+  html.dark .border-gradient-medcess {
+    background:
+      linear-gradient(#071a33, #071a33) padding-box,
+      linear-gradient(90deg, #14b8ff, #1e5bff) border-box;
+  }
+
   .btn-press {
-    @apply transition-transform duration-150 ease-out active:scale-[0.98];
+    @apply transition-all duration-200 ease-out active:scale-[0.98];
   }
 }
 
-/* Resizable panels styling */
+@layer components {
+  .medcess-card {
+    @apply rounded-2xl border border-slate-200/90 bg-white shadow-medcess-sm transition-shadow duration-200 hover:shadow-medcess;
+    @apply dark:bg-medcess-dark-card dark:border-medcess-dark-border dark:shadow-none dark:hover:shadow-[0_4px_24px_-4px_rgba(20,184,255,0.15)];
+  }
+
+  .medcess-btn-primary {
+    @apply btn-press inline-flex items-center justify-center rounded-xl bg-gradient-medcess px-6 py-3 font-semibold text-white shadow-medcess transition-all duration-200 hover:shadow-medcess-glow hover:brightness-105;
+  }
+
+  .medcess-btn-secondary {
+    @apply btn-press inline-flex items-center justify-center rounded-xl border-2 border-primary-200 bg-white px-6 py-3 font-semibold text-primary-700 transition-all duration-200 hover:border-primary-300 hover:bg-primary-50;
+    @apply dark:border-[#14345C] dark:bg-medcess-dark-card dark:text-[#F8FAFC] dark:hover:bg-medcess-dark-muted dark:hover:border-primary-500/50;
+  }
+
+  .medcess-nav-link {
+    @apply text-medcess-navy/80 hover:text-primary-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200;
+    @apply dark:text-[#CBD5E1] dark:hover:text-primary-400;
+  }
+
+  .medcess-section-label {
+    @apply text-sm font-semibold uppercase tracking-wide text-primary-600;
+    @apply dark:text-primary-400;
+  }
+
+  .medcess-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-primary-300/60 to-transparent;
+    @apply dark:via-primary-500/40;
+  }
+
+  .medcess-input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-medcess-navy shadow-sm transition duration-200 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/25;
+    @apply dark:border-medcess-dark-border dark:bg-medcess-dark-muted dark:text-[#F8FAFC] dark:placeholder:text-[#94a3b8] dark:focus:border-primary-400 dark:focus:ring-primary-400/30;
+  }
+
+  .medcess-surface {
+    @apply bg-medcess-surface dark:bg-medcess-dark-bg;
+  }
+
+  .medcess-panel {
+    @apply bg-white dark:bg-medcess-dark-card border-slate-200 dark:border-medcess-dark-border;
+  }
+}
+
+/**
+ * Broad dark-mode coverage for legacy utility classes across case UI, modals, and forms.
+ * Gradient / primary action colors are intentionally excluded.
+ */
+@layer utilities {
+  .dark .bg-white {
+    @apply bg-medcess-dark-card;
+  }
+
+  .dark .bg-slate-50,
+  .dark .bg-slate-50\/80,
+  .dark .bg-slate-50\/90 {
+    @apply bg-medcess-dark-bg;
+  }
+
+  .dark .bg-gray-50,
+  .dark .bg-gray-100 {
+    @apply bg-medcess-dark-muted;
+  }
+
+  .dark .text-slate-900,
+  .dark .text-gray-900,
+  .dark .text-medcess-navy {
+    @apply text-[#F8FAFC];
+  }
+
+  .dark .text-slate-800,
+  .dark .text-slate-700,
+  .dark .text-gray-800,
+  .dark .text-gray-700 {
+    @apply text-[#CBD5E1];
+  }
+
+  .dark .text-slate-600,
+  .dark .text-gray-600 {
+    @apply text-[#CBD5E1];
+  }
+
+  .dark .text-slate-500,
+  .dark .text-gray-500,
+  .dark .text-slate-400,
+  .dark .text-gray-400 {
+    @apply text-slate-400;
+  }
+
+  .dark .border-slate-100,
+  .dark .border-slate-200,
+  .dark .border-slate-200\/90,
+  .dark .border-slate-300,
+  .dark .border-gray-100,
+  .dark .border-gray-200,
+  .dark .border-gray-300 {
+    @apply border-medcess-dark-border;
+  }
+
+  .dark .shadow-md,
+  .dark .shadow-lg,
+  .dark .shadow-xl {
+    --tw-shadow-color: rgba(20, 184, 255, 0.08);
+  }
+
+  .dark .bg-primary-50,
+  .dark .bg-primary-50\/40,
+  .dark .bg-primary-50\/80 {
+    @apply bg-primary-900/25;
+  }
+
+  .dark .hover\:bg-primary-50:hover,
+  .dark .hover\:bg-gray-50:hover {
+    @apply bg-medcess-dark-muted;
+  }
+
+  .dark .bg-red-50 {
+    @apply bg-red-950/30 border-red-900/50;
+  }
+
+  .dark .text-red-900,
+  .dark .text-red-800 {
+    @apply text-red-200;
+  }
+
+  .dark .border-red-200 {
+    @apply border-red-900/60;
+  }
+
+  .dark .bg-amber-50 {
+    @apply bg-amber-950/25;
+  }
+
+  .dark .text-amber-950,
+  .dark .text-amber-900 {
+    @apply text-amber-200;
+  }
+
+  .dark .border-amber-200,
+  .dark .border-amber-200\/90 {
+    @apply border-amber-800/50;
+  }
+
+  .dark .bg-emerald-50 {
+    @apply bg-emerald-950/30;
+  }
+
+  .dark .text-emerald-900 {
+    @apply text-emerald-200;
+  }
+
+  .dark .border-emerald-300,
+  .dark .border-emerald-300\/90 {
+    @apply border-emerald-700/50;
+  }
+
+  .dark .bg-teal-50 {
+    @apply bg-primary-900/25;
+  }
+}
+
+/* Resizable panels — brand blue handles */
 [data-panel-group] {
   display: flex;
 }
@@ -42,10 +244,9 @@ body {
 }
 
 [data-panel-resize-handle]:hover {
-  background-color: rgb(96 165 250);
+  background-color: #14b8ff;
 }
 
-[data-panel-resize-handle][data-resize-handle-state="drag"] {
-  background-color: rgb(59 130 246);
+[data-panel-resize-handle][data-resize-handle-state='drag'] {
+  background-color: #1e5bff;
 }
-

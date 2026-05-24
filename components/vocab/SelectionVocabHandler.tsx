@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { MedicalTerm } from '@/src/types/medicalTerm'
 import { lookupMedicalTerm, normalizeLookupKey } from '@/src/lib/medicalTerms'
-import { getAIDefinition } from '@/src/lib/getAIDefinition'
+import { fetchVocabDefinition } from '@/src/lib/fetchVocabDefinition'
 import { medicalTermLikeToMedicalTerm } from '@/src/lib/aiTermToMedicalTerm'
 import { getScrollableAncestors } from '@/src/lib/scrollAnchor'
+import { getVocabContextFromRange } from '@/src/lib/vocabSelectionContext'
 import MedicalTermPopover from '@/components/vocab/MedicalTermPopover'
 import { useVocabStore } from '@/lib/useVocabStore'
 
@@ -54,6 +55,7 @@ export default function SelectionVocabHandler() {
   const [medicalTerm, setMedicalTerm] = useState<MedicalTerm | null>(null)
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [fromCache, setFromCache] = useState(false)
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rangeRef = useRef<Range | null>(null)
@@ -71,6 +73,7 @@ export default function SelectionVocabHandler() {
     setMedicalTerm(null)
     setIsLoadingAI(false)
     setAiError(null)
+    setFromCache(false)
     setSaveError(null)
     setIsSaving(false)
     rangeRef.current = null
@@ -149,19 +152,24 @@ export default function SelectionVocabHandler() {
       if (local) {
         setMedicalTerm(local)
         setIsLoadingAI(false)
+        setFromCache(false)
         return
       }
 
       setMedicalTerm(null)
       setIsLoadingAI(true)
+      setFromCache(false)
       const ac = new AbortController()
       abortRef.current = ac
 
-      getAIDefinition(trimmed, { signal: ac.signal })
-        .then((like) => {
+      const { contextSentence, caseId } = getVocabContextFromRange(range)
+
+      fetchVocabDefinition(trimmed, { signal: ac.signal, contextSentence, caseId })
+        .then((result) => {
           if (ac.signal.aborted) return
           const nk = trimmed.trim().toLowerCase().replace(/\s+/g, ' ')
-          setMedicalTerm(medicalTermLikeToMedicalTerm(like, nk))
+          setMedicalTerm(medicalTermLikeToMedicalTerm(result, nk))
+          setFromCache(result.cached)
           setIsLoadingAI(false)
           setAiError(null)
         })
@@ -243,7 +251,8 @@ export default function SelectionVocabHandler() {
       isSaving={isSaving}
       canSave={canSave}
       isLoading={isLoadingAI}
-      isAIGenerated={isAIGeneratedTerm(medicalTerm)}
+      isAIGenerated={isAIGeneratedTerm(medicalTerm) && !fromCache}
+      fromCache={fromCache}
       errorMessage={combinedError}
       authHint={!sessionCanSave && medicalTerm ? 'Sign in to save terms to your account.' : null}
     />

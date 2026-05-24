@@ -25,13 +25,13 @@ class LayoutErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-          <nav className="bg-white shadow border-b px-4 py-3">
-            <MedcessLogo size="sm" href="/" />
+        <div className="min-h-screen flex flex-col bg-white">
+          <nav className="bg-white shadow-medcess-sm border-b border-slate-200 px-4 py-3">
+            <MedcessLogo size="sm" variant="full" href="/" />
           </nav>
           <main className="flex-1 p-6">
-            <p className="text-gray-600 mb-4">Part of the app failed to load. Try refreshing the page.</p>
-            <a href="/" className="text-blue-600 underline">Go home</a>
+            <p className="text-slate-600 mb-4">Part of the app failed to load. Try refreshing the page.</p>
+            <a href="/" className="text-primary-600 font-medium hover:text-primary-700">Go home</a>
           </main>
         </div>
       )

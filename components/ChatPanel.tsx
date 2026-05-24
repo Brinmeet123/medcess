@@ -284,14 +284,14 @@ export default function ChatPanel({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 flex flex-col h-full min-h-0 max-h-[min(85vh,720px)]">
+    <div className="bg-white dark:bg-[#071A33] rounded-lg shadow-md dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-transparent dark:border-[#14345C] p-6 flex flex-col h-full min-h-0 max-h-[min(85vh,720px)]">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 className="text-sm font-semibold text-slate-800">Patient interview</h2>
         {lastReplyMeta ? (
           <span
             className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
               lastReplyMeta.source === 'ai'
-                ? 'text-teal-800 bg-teal-50 border-teal-200'
+                ? 'text-primary-800 bg-primary-50 border-primary-200'
                 : 'text-amber-900 bg-amber-50 border-amber-200'
             }`}
             title={
@@ -328,7 +328,7 @@ export default function ChatPanel({
               className={`max-w-[80%] rounded-lg px-4 py-2 ${
                 msg.role === 'doctor'
                   ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-900'
+                  : 'bg-gray-100 dark:bg-[#0a1f3d] text-gray-900 dark:text-[#F8FAFC]'
               }`}
             >
               <p className="text-sm font-medium mb-1">

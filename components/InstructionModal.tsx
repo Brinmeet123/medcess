@@ -34,14 +34,14 @@ export default function InstructionModal({
         aria-label="Close"
         onClick={() => onBackdropClose?.()}
       />
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xl ring-1 ring-slate-200/60">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200/90 dark:border-[#14345C] bg-white dark:bg-[#071A33] p-6 shadow-xl ring-1 ring-slate-200/60 dark:ring-[#14345C]/60">
         <h2
           id="instruction-modal-title"
-          className="text-lg font-bold text-slate-900 sm:text-xl"
+          className="text-lg font-bold text-slate-900 dark:text-[#F8FAFC] sm:text-xl"
         >
           {title}
         </h2>
-        <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-slate-700 sm:text-[0.9375rem]">
+        <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1] sm:text-[0.9375rem]">
           {description.map((line, i) => (
             <li key={i} className="flex gap-2">
               <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary-500" aria-hidden />

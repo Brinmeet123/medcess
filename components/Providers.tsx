@@ -3,6 +3,7 @@
 import { SessionProvider } from 'next-auth/react'
 import type { Session } from 'next-auth'
 import type { ReactNode } from 'react'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 type Props = {
   children: ReactNode
@@ -12,12 +13,14 @@ type Props = {
 
 export default function Providers({ children, session }: Props) {
   return (
-    <SessionProvider
-      session={session ?? undefined}
-      refetchOnWindowFocus={false}
-      refetchWhenOffline={false}
-    >
-      {children}
-    </SessionProvider>
+    <ThemeProvider>
+      <SessionProvider
+        session={session ?? undefined}
+        refetchOnWindowFocus={false}
+        refetchWhenOffline={false}
+      >
+        {children}
+      </SessionProvider>
+    </ThemeProvider>
   )
 }

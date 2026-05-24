@@ -30,11 +30,18 @@ function writeSessionCache(k: string, definition: string): void {
   }
 }
 
+export type FetchMedicalDefinitionOptions = {
+  contextSentence?: string
+  caseId?: string
+}
+
 /**
- * Local dictionary first, then optional AI via /api/vocab-ai-definition.
- * Safe in demo mode: the route resolves known terms from the dictionary without an LLM.
+ * Local dictionary first, then shared vocabulary cache + AI via /api/vocab/define.
  */
-export async function fetchMedicalDefinitionWithFallback(term: string): Promise<string> {
+export async function fetchMedicalDefinitionWithFallback(
+  term: string,
+  options?: FetchMedicalDefinitionOptions
+): Promise<string> {
   const k = term.trim().toLowerCase()
   if (!k) return ''
   if (memoryCache.has(k)) return memoryCache.get(k)!
@@ -52,11 +59,15 @@ export async function fetchMedicalDefinitionWithFallback(term: string): Promise<
   }
 
   try {
-    const res = await fetch('/api/vocab-ai-definition', {
+    const res = await fetch('/api/vocab/define', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term: k }),
+      body: JSON.stringify({
+        term: k,
+        contextSentence: options?.contextSentence,
+        caseId: options?.caseId,
+      }),
     })
     if (!res.ok) throw new Error('definition fetch failed')
     const data = (await res.json()) as {

@@ -1,6 +1,7 @@
 'use client'
 
 import { APP_NAME } from '@/lib/branding'
+import { THEME_INIT_SCRIPT } from '@/lib/theme'
 
 /**
  * Root-level error UI. Must define <html> and <body> (replaces root layout when active).
@@ -14,24 +15,29 @@ export default function GlobalError({
   reset: () => void
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-screen bg-white dark:bg-[#020817] text-medcess-navy dark:text-[#F8FAFC] flex items-center justify-center p-6">
         <div className="max-w-md text-center">
-          <p className="text-sm font-semibold text-cyan-700 mb-2">{APP_NAME}</p>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
-          <p className="text-sm text-gray-600 mb-6">{error.message || 'Please refresh the page.'}</p>
+          <p className="text-sm font-semibold text-gradient-medcess mb-2">{APP_NAME}</p>
+          <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+          <p className="text-sm text-slate-600 dark:text-[#CBD5E1] mb-6">
+            {error.message || 'Please refresh the page.'}
+          </p>
           {error.digest ? (
-            <p className="text-xs text-gray-400 mb-4">Reference: {error.digest}</p>
+            <p className="text-xs text-slate-400 mb-4">Reference: {error.digest}</p>
           ) : null}
           <button
             type="button"
             onClick={() => reset()}
-            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-xl bg-gradient-medcess px-5 py-2 text-sm font-medium text-white shadow-medcess hover:brightness-105"
           >
             Try again
           </button>
-          <p className="mt-6 text-sm text-gray-500">
-            <a href="/" className="text-blue-600 underline">
+          <p className="mt-6 text-sm text-slate-500 dark:text-[#CBD5E1]">
+            <a href="/" className="text-primary-600 dark:text-primary-400 underline">
               Go home
             </a>
           </p>
