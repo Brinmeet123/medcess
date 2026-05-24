@@ -3,15 +3,16 @@ import Link from 'next/link'
 import { APP_NAME } from '@/lib/branding'
 import MedcessECGIcon from '@/components/brand/MedcessECGIcon'
 
-type Size = 'sm' | 'md' | 'lg'
+type Size = 'sm' | 'md' | 'lg' | 'xl'
 
 /** Stacked logo (ECG + wordmark) — aspect from transparent asset 558×447. */
 const LOGO_ASPECT = 558 / 447
 
 const fullHeights: Record<Size, number> = {
-  sm: 36,
-  md: 44,
+  sm: 42,
+  md: 48,
   lg: 72,
+  xl: 100,
 }
 
 type Props = {
@@ -63,7 +64,7 @@ function FullLogo({ size, glow }: { size: Size; glow?: boolean }) {
         height={height}
         className="medcess-logo-img block h-auto w-auto object-contain object-left bg-transparent"
         style={{ height, width: 'auto', maxWidth: width }}
-        priority={size === 'lg'}
+        priority={size === 'lg' || size === 'xl'}
       />
     </span>
   )

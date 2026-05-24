@@ -23,7 +23,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-white/95 dark:bg-[#020817]/95 backdrop-blur-md border-b border-slate-200/90 dark:border-[#14345C] shadow-medcess-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <MedcessLogo size="sm" variant="full" className="shrink-0 bg-transparent" />
+          <MedcessLogo size="md" variant="full" className="shrink-0 bg-transparent" />
 
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map(({ href, label }) => (
