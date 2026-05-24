@@ -108,7 +108,11 @@ body {
   }
 
   .medcess-surface {
-    @apply bg-medcess-surface dark:bg-medcess-dark-bg;
+    background-color: #f8fafc;
+  }
+
+  html.dark .medcess-surface {
+    background-color: #020817;
   }
 
   .medcess-panel {
@@ -230,12 +234,41 @@ body {
     @apply border-amber-800/50;
   }
 
-  .dark .bg-emerald-50 {
-    @apply bg-emerald-950/30;
+  .dark .bg-emerald-50,
+  .dark .bg-emerald-100 {
+    @apply bg-emerald-950/50;
   }
 
   .dark .text-emerald-900 {
     @apply text-emerald-200;
+  }
+
+  .dark .bg-amber-100 {
+    @apply bg-amber-950/50;
+  }
+
+  .dark .text-amber-900 {
+    @apply text-amber-200;
+  }
+
+  .dark .bg-rose-100 {
+    @apply bg-rose-950/50;
+  }
+
+  .dark .text-rose-900 {
+    @apply text-rose-200;
+  }
+
+  .dark .text-primary-800 {
+    @apply text-primary-300;
+  }
+
+  .dark .text-primary-600 {
+    @apply text-primary-400;
+  }
+
+  .dark .text-primary-700 {
+    @apply text-primary-400;
   }
 
   .dark .border-emerald-300,

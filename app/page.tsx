@@ -17,8 +17,10 @@ export default function Home() {
             <MedcessLogo size="lg" variant="full" href="/" glow />
           </div>
           <p className="medcess-section-label mb-4">Clinical reasoning simulations</p>
-          <p className="text-lg sm:text-xl text-slate-700 mb-3 max-w-2xl mx-auto leading-relaxed">{TAGLINE}</p>
-          <p className="text-sm text-slate-600 mb-10 max-w-xl mx-auto">{TAGLINE_SHORT}</p>
+          <p className="text-lg sm:text-xl text-slate-700 dark:text-[#CBD5E1] mb-3 max-w-2xl mx-auto leading-relaxed">
+            {TAGLINE}
+          </p>
+          <p className="text-sm text-slate-600 dark:text-[#CBD5E1]/90 mb-10 max-w-xl mx-auto">{TAGLINE_SHORT}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-stretch sm:items-center">
             <Link href="/scenarios" className="medcess-btn-primary text-lg !px-8 !py-3.5">
               Start First Case →
@@ -36,8 +38,8 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
             <div>
               <p className="medcess-section-label mb-1">Featured — play free</p>
-              <h2 className="text-2xl font-bold text-medcess-navy">Five starter cases</h2>
-              <p className="text-sm text-slate-600 mt-1 max-w-xl">
+              <h2 className="text-2xl font-bold text-medcess-navy dark:text-[#F8FAFC]">Five starter cases</h2>
+              <p className="text-sm text-slate-600 dark:text-[#CBD5E1] mt-1 max-w-xl">
                 No sign-in required. Full cases, scoring, and debrief — jump in from any device.
               </p>
             </div>
@@ -71,9 +73,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-medcess-surface">
+      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-medcess-surface dark:bg-[#020817]">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-medcess-navy mb-10">
+          <h2 className="text-2xl font-bold text-center text-medcess-navy dark:text-[#F8FAFC] mb-10">
             Why <span className="text-gradient-medcess">{APP_NAME}</span>
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
@@ -95,8 +97,8 @@ export default function Home() {
                 <div className="mx-auto mb-4 flex justify-center">
                   <span className="h-1 w-12 rounded-full bg-gradient-medcess" aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold text-medcess-navy mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-medcess-navy dark:text-[#F8FAFC] mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-600 dark:text-[#CBD5E1] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -118,37 +120,40 @@ export default function Home() {
                 <div className="w-14 h-14 bg-gradient-medcess text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-medcess">
                   {item.step}
                 </div>
-                <h3 className="text-lg font-semibold text-medcess-navy mb-2">{item.title}</h3>
-                <p className="text-slate-600 text-sm leading-snug">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-medcess-navy dark:text-[#F8FAFC] mb-2">{item.title}</h3>
+                <p className="text-slate-600 dark:text-[#CBD5E1] text-sm leading-snug">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-medcess-surface">
+      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-medcess-surface dark:bg-[#020817]">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-medcess-navy mb-4">Who it&apos;s for</h2>
-          <p className="text-lg text-slate-700 mb-8">
+          <h2 className="text-2xl font-bold text-medcess-navy dark:text-[#F8FAFC] mb-4">Who it&apos;s for</h2>
+          <p className="text-lg text-slate-700 dark:text-[#CBD5E1] mb-8">
             Built for <strong>high school</strong> and <strong>pre-med</strong> learners exploring medicine through
             immersive simulations — and anyone curious how workups are sequenced.
           </p>
           <div className="grid md:grid-cols-2 gap-6 text-left">
             <div className="medcess-card p-6">
-              <h3 className="text-lg font-semibold text-medcess-navy mb-2">Orientation</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <h3 className="text-lg font-semibold text-medcess-navy dark:text-[#F8FAFC] mb-2">Orientation</h3>
+              <p className="text-slate-600 dark:text-[#CBD5E1] text-sm leading-relaxed">
                 See how an encounter is structured before you shadow or rotate.
               </p>
             </div>
             <div className="medcess-card p-6">
-              <h3 className="text-lg font-semibold text-medcess-navy mb-2">Reps</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <h3 className="text-lg font-semibold text-medcess-navy dark:text-[#F8FAFC] mb-2">Reps</h3>
+              <p className="text-slate-600 dark:text-[#CBD5E1] text-sm leading-relaxed">
                 Drill questions, data interpretation, and committing to a diagnosis under a little time pressure.
               </p>
             </div>
           </div>
           <div className="mt-10">
-            <Link href="/about" className="text-primary-600 font-semibold hover:text-primary-700 transition-colors">
+            <Link
+              href="/about"
+              className="text-primary-600 dark:text-primary-400 font-semibold hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+            >
               Learn more about {APP_NAME} →
             </Link>
           </div>
