@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import NextStepGuidance from '@/components/ux/NextStepGuidance'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { scoreToLevel } from '@/lib/scoring'
@@ -58,12 +57,7 @@ export default async function DashboardPage() {
       <p className="text-sm font-semibold text-teal-800 mb-1">Your learning hub</p>
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Track Your Progress</h1>
       <p className="text-slate-600 mb-2">See completed cases, scores, and where to drill next.</p>
-      <p className="text-sm text-slate-500 mb-6">Open any scenario below to resume or replay — your best scores stay on record.</p>
-      <div className="mb-8 max-w-lg">
-        <NextStepGuidance compact>
-          Ask a few more questions — then head to the exam when you feel ready.
-        </NextStepGuidance>
-      </div>
+      <p className="text-sm text-slate-500 mb-8">Open any scenario below to resume or replay — your best scores stay on record.</p>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
