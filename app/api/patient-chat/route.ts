@@ -5,7 +5,7 @@ import { getPresetPatientResponse } from '@/lib/presetPatientResponses'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
-import { shouldAttemptOllamaForPatientChat } from '@/lib/llm'
+import { readAIModelForExport, shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,7 +70,7 @@ ${aiInstructions.doNotRevealDirectly.map(item => `- ${item}`).join('\n')}
 Key history points you know (reveal only if asked specifically):
 ${patientPersona.keyHistoryPoints.map(point => `- ${point}`).join('\n')}
 
-Answer ONLY as the patient in first person. Keep responses short and conversational, like a real patient would speak. Do NOT give medical advice or diagnoses.
+Answer ONLY as the patient in first person. Sound like a real patient in the exam room: usually 2–4 sentences, natural and conversational, with enough detail that the doctor can follow your story (timing, location, quality, what worries you). When asked an open question, include one concrete symptom detail and how you feel. Do not lecture or list bullet points. Do NOT give medical advice or diagnoses.
 
 If the doctor asks something unrelated to your health, symptoms, or medical visit (for example homework, recipes, sports, or trivia), do NOT answer the off-topic question. Respond briefly in character — confused or politely puzzled — e.g. "Excuse me, doctor, why are you asking me that?" and redirect to why you came in today.`
 
@@ -82,7 +82,10 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
       })),
     ]
 
-    const { content: patientResponse } = await callManagedLLM(llmMessages, actor)
+    const { content: patientResponse } = await callManagedLLM(llmMessages, actor, {
+      maxTokens: 400,
+      temperature: 0.75,
+    })
 
     // If LLM returns empty or invalid content, use preset fallback
     if (!patientResponse || !String(patientResponse).trim()) {
@@ -103,6 +106,7 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
     const res = NextResponse.json({
       message: patientResponse,
       source: 'ai',
+      model: readAIModelForExport(),
     })
     applyActorCookie(res, actor)
     return res

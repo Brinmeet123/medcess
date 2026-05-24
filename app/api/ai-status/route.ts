@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { DEFAULT_AI_MODEL } from '@/lib/ai/config'
 import { getOllamaConfig, shouldUseOllamaLLM } from '@/lib/llm'
 
 /** Read OPENAI_* and DEMO_MODE at request time (Vercel / Next 14). */
@@ -23,12 +24,20 @@ export async function GET() {
     ok: true,
     provider: 'openai',
     model,
+    defaultModel: DEFAULT_AI_MODEL,
+    modelMatchesDefault: model === DEFAULT_AI_MODEL,
     openaiBaseUrl: baseUrl,
     openaiApiKeyConfigured: apiKeyConfigured,
     demoModeEnv: demoMode,
     openaiEnabled: useOllama,
     aiWillUse,
+    patientChatMode: demoMode
+      ? 'demo-mock'
+      : useOllama
+        ? `openai (${model})`
+        : 'preset-only',
     hint,
     openAIConfigured: apiKeyConfigured,
+    healthCheckUrl: '/api/ai-health',
   })
 }

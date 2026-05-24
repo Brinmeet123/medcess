@@ -12,6 +12,23 @@ type Message = {
   content: string
 }
 
+type PatientReplySource = 'ai' | 'preset' | 'preset-fallback' | 'demo-mock'
+
+function replySourceLabel(source: PatientReplySource, model?: string): string {
+  switch (source) {
+    case 'ai':
+      return model ? `Live AI · ${model}` : 'Live AI'
+    case 'preset':
+      return 'Scripted patient (no API key)'
+    case 'preset-fallback':
+      return 'Scripted backup (AI unavailable)'
+    case 'demo-mock':
+      return 'Demo mode'
+    default:
+      return source
+  }
+}
+
 type Props = {
   scenario: Scenario
   messages?: Message[]
@@ -49,6 +66,10 @@ export default function ChatPanel({
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [questionHint, setQuestionHint] = useState<string | null>(null)
+  const [lastReplyMeta, setLastReplyMeta] = useState<{
+    source: PatientReplySource
+    model?: string
+  } | null>(null)
   const messagesScrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const onChatUpdateRef = useRef(onChatUpdate)
@@ -158,6 +179,12 @@ export default function ChatPanel({
 
         const patientMessage: Message = { role: 'patient', content: data.message }
         setMessages([...newMessages, patientMessage])
+        if (data.source) {
+          setLastReplyMeta({
+            source: data.source as PatientReplySource,
+            model: typeof data.model === 'string' ? data.model : undefined,
+          })
+        }
         if (data.source === 'ai') {
           window.dispatchEvent(new Event('ai-usage-updated'))
         }
@@ -255,7 +282,21 @@ export default function ChatPanel({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 flex flex-col h-full min-h-0 max-h-[min(85vh,720px)]">
-      <h2 className="sr-only">Patient interview</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 className="text-sm font-semibold text-slate-800">Patient interview</h2>
+        {lastReplyMeta ? (
+          <span
+            className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
+              lastReplyMeta.source === 'ai'
+                ? 'text-teal-800 bg-teal-50 border-teal-200'
+                : 'text-amber-900 bg-amber-50 border-amber-200'
+            }`}
+            title="How the last patient message was generated"
+          >
+            {replySourceLabel(lastReplyMeta.source, lastReplyMeta.model)}
+          </span>
+        ) : null}
+      </div>
       <VocabContextBlock
         source="chat"
         scenarioId={scenario.id}

@@ -98,6 +98,10 @@ export function shouldAttemptOllamaForPatientChat(): boolean {
 export type CallLLMOptions = {
   /** Ask OpenAI for JSON-only output (helps structured routes like vocab definitions). */
   responseFormatJson?: boolean
+  /** Cap completion length (patient chat uses ~350 for richer replies). */
+  maxTokens?: number
+  /** Sampling temperature (patient chat uses 0.75 for natural variation). */
+  temperature?: number
 }
 
 /** Low-level OpenAI call (no quota). Prefer callManagedLLM in API routes. */
@@ -123,6 +127,12 @@ export async function callLLMRaw(
   }
   if (options?.responseFormatJson) {
     body.response_format = { type: 'json_object' }
+  }
+  if (options?.maxTokens != null) {
+    body.max_tokens = options.maxTokens
+  }
+  if (options?.temperature != null) {
+    body.temperature = options.temperature
   }
   const res = await fetch(url, {
     method: 'POST',
