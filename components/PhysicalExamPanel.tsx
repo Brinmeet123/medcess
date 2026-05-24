@@ -49,27 +49,27 @@ export default function PhysicalExamPanel({ sections, mentalStatusExam = [], sce
               onClick={() => handleSectionClick(section.id)}
               className={`w-full px-4 py-3 rounded-lg border-2 transition ${
                 isViewed
-                  ? 'border-primary-500 bg-primary-50 text-primary-900'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-primary-300'
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/40 text-primary-900 dark:text-[#F8FAFC]'
+                  : 'border-gray-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] text-gray-700 dark:text-[#CBD5E1] hover:border-primary-300 dark:hover:border-primary-500'
               }`}
             >
               <p className="font-medium text-sm">{section.label}</p>
               {isViewed && (
-                <p className="text-xs text-primary-600 mt-1">Opened</p>
+                <p className="text-xs text-primary-600 dark:text-primary-400 mt-1">Opened</p>
               )}
             </button>
             {isExpanded && (
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-medium text-gray-900 mb-1">Summary:</p>
-                <p className="text-sm text-gray-700 mb-2">
+              <div className="mt-2 p-3 bg-gray-50 dark:bg-[#020817] rounded-lg border border-gray-200 dark:border-[#14345C]">
+                <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC] mb-1">Summary:</p>
+                <p className="text-sm text-gray-700 dark:text-[#CBD5E1] mb-2">
                   <VocabText
                     text={section.summary}
                     onTermClick={onTermClick}
                     onTermSave={onTermSave}
                   />
                 </p>
-                <p className="text-sm font-medium text-gray-900 mb-1">Details:</p>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC] mb-1">Details:</p>
+                <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">
                   <VocabText
                     text={section.details}
                     onTermClick={onTermClick}
@@ -85,13 +85,13 @@ export default function PhysicalExamPanel({ sections, mentalStatusExam = [], sce
   )
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="case-panel">
       <VocabContextBlock source="exam" scenarioId={scenarioId} text={examContextText}>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Physical Examination</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC] mb-4">Physical Examination</h2>
         {renderGrid(sections)}
         {mentalStatusExam.length > 0 && (
           <>
-            <h2 className="text-lg font-semibold text-gray-900 mt-8 mb-4">Mental Status Examination</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC] mt-8 mb-4">Mental Status Examination</h2>
             {renderGrid(mentalStatusExam)}
           </>
         )}

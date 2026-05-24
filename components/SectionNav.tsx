@@ -55,22 +55,21 @@ function tabButtonClasses(opts: {
   isUnlockedAhead: boolean
 }) {
   const { isActive, isCompleted, isLocked, isUnlockedAhead } = opts
-  /** Fixed height + bottom border slot keeps labels optically centered; inset shadow skewed perceived vertical balance. */
   const base =
-    'flex flex-1 min-w-0 h-14 sm:h-16 items-center justify-center border-r border-slate-200/90 last:border-r-0 border-b-4 border-b-transparent box-border transition-colors duration-300 ease-out'
+    'flex flex-1 min-w-0 h-14 sm:h-16 items-center justify-center border-r border-slate-200/90 dark:border-[#14345C] last:border-r-0 border-b-4 border-b-transparent box-border transition-colors duration-300 ease-out'
   if (isLocked) {
-    return `${base} bg-slate-100/95 text-slate-400 opacity-[0.72] cursor-not-allowed font-medium`
+    return `${base} bg-slate-100/95 dark:bg-[#020817] text-slate-400 dark:text-slate-500 opacity-[0.72] cursor-not-allowed font-medium`
   }
   if (isActive) {
-    return `${base} bg-primary-100 text-primary-900 font-bold cursor-pointer border-b-primary-600`
+    return `${base} bg-primary-100 dark:bg-primary-900/50 text-primary-900 dark:text-[#F8FAFC] font-bold cursor-pointer border-b-primary-600 dark:border-b-primary-400`
   }
   if (isCompleted) {
-    return `${base} bg-emerald-50 text-emerald-900 font-semibold cursor-pointer hover:bg-emerald-100/90`
+    return `${base} bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-semibold cursor-pointer hover:bg-emerald-100/90 dark:hover:bg-emerald-950/60`
   }
   if (isUnlockedAhead) {
-    return `${base} bg-slate-50 text-slate-600 font-medium cursor-pointer hover:bg-slate-100/90`
+    return `${base} bg-slate-50 dark:bg-[#0a1f3d] text-slate-600 dark:text-[#CBD5E1] font-medium cursor-pointer hover:bg-slate-100/90 dark:hover:bg-[#14345C]/40`
   }
-  return `${base} bg-slate-50 text-slate-600 font-medium cursor-pointer hover:bg-slate-100/90`
+  return `${base} bg-slate-50 dark:bg-[#0a1f3d] text-slate-600 dark:text-[#CBD5E1] font-medium cursor-pointer hover:bg-slate-100/90 dark:hover:bg-[#14345C]/40`
 }
 
 export default function SectionNav({
@@ -113,7 +112,7 @@ export default function SectionNav({
           title={lockTitle}
         >
           <span className="flex w-full min-w-0 items-center justify-center gap-1.5 text-center">
-            {isCompleted && <CheckIcon className="shrink-0 text-emerald-600" />}
+            {isCompleted && <CheckIcon className="shrink-0 text-emerald-600 dark:text-emerald-400" />}
             <span className="truncate">{section.label}</span>
           </span>
         </button>
@@ -122,7 +121,7 @@ export default function SectionNav({
 
   return (
     <div
-      className="sticky top-0 z-10 mb-6 w-full rounded-lg border border-slate-200/90 bg-white shadow-sm overflow-hidden"
+      className="sticky top-0 z-10 mb-6 w-full rounded-lg border border-slate-200/90 dark:border-[#14345C] bg-white dark:bg-[#071A33] shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)] overflow-hidden"
       role="navigation"
       aria-label="Case steps"
     >

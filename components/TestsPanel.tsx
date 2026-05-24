@@ -72,20 +72,20 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Diagnostic Tests</h2>
+    <div className="case-panel">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC] mb-4">Diagnostic Tests</h2>
 
       <VocabContextBlock source="tests" scenarioId={scenario.id} text={testsVocabText}>
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Category Sidebar */}
         <div className="lg:w-48 flex-shrink-0">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#CBD5E1] mb-2">Category</label>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               <button
                 onClick={() => setSelectedCategory('All')}
                 className={`w-full text-left px-3 py-2 rounded text-sm ${
-                  selectedCategory === 'All' ? 'bg-primary-100 text-primary-800 font-medium' : 'text-gray-700 hover:bg-gray-50'
+                  selectedCategory === 'All' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 font-medium' : 'text-gray-700 dark:text-[#CBD5E1] hover:bg-gray-50 dark:hover:bg-[#14345C]/40'
                 }`}
               >
                 All Categories
@@ -95,7 +95,7 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`w-full text-left px-3 py-2 rounded text-sm ${
-                    selectedCategory === cat ? 'bg-primary-100 text-primary-800 font-medium' : 'text-gray-700 hover:bg-gray-50'
+                    selectedCategory === cat ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 font-medium' : 'text-gray-700 dark:text-[#CBD5E1] hover:bg-gray-50 dark:hover:bg-[#14345C]/40'
                   }`}
                 >
                   {cat}
@@ -105,14 +105,14 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Kind</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#CBD5E1] mb-2">Kind</label>
             <div className="space-y-1">
               {(['All', 'Lab', 'Imaging', 'Bedside', 'Procedure'] as const).map(kind => (
                 <button
                   key={kind}
                   onClick={() => setSelectedKind(kind as TestKind | 'All')}
                   className={`w-full text-left px-3 py-2 rounded text-sm ${
-                    selectedKind === kind ? 'bg-primary-100 text-primary-800 font-medium' : 'text-gray-700 hover:bg-gray-50'
+                    selectedKind === kind ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 font-medium' : 'text-gray-700 dark:text-[#CBD5E1] hover:bg-gray-50 dark:hover:bg-[#14345C]/40'
                   }`}
                 >
                   {kind}
@@ -129,7 +129,7 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
                 onChange={(e) => setCommonOnly(e.target.checked)}
                 className="mr-2"
               />
-              <span className="text-sm text-gray-700">Common only</span>
+              <span className="text-sm text-gray-700 dark:text-[#CBD5E1]">Common only</span>
             </label>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
               placeholder="Search tests..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#14345C] dark:bg-[#020817] dark:text-[#F8FAFC] rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
@@ -155,29 +155,29 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
                   key={test.id}
                   className={`border-2 rounded-lg p-4 ${
                     isOrdered
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-gray-200 bg-white'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                      : 'border-gray-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d]'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-gray-900">{test.name}</h3>
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                        <h3 className="font-medium text-gray-900 dark:text-[#F8FAFC]">{test.name}</h3>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-[#14345C] text-gray-700 dark:text-[#CBD5E1] text-xs rounded">
                           {test.kind}
                         </span>
                         {test.common && (
-                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
+                          <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-xs rounded">
                             Common
                           </span>
                         )}
                         {isOrdered && (
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">
+                          <span className="px-2 py-0.5 bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300 text-xs rounded">
                             Ordered
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">
+                      <p className="text-sm text-gray-600 dark:text-[#CBD5E1] mb-1">
                         <VocabText 
                           text={test.description} 
                           onTermClick={onTermClick}
@@ -185,7 +185,7 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
                         />
                       </p>
                       {test.typicalUses.length > 0 && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                           Typical uses: {test.typicalUses.join(', ')}
                         </p>
                       )}
@@ -200,9 +200,9 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
                     )}
                   </div>
                   {isOrdered && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-sm font-medium text-gray-900 mb-1">Result:</p>
-                      <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-200">
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-[#14345C]">
+                      <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC] mb-1">Result:</p>
+                      <p className="text-sm text-gray-700 dark:text-[#CBD5E1] bg-white dark:bg-[#020817] p-2 rounded border border-gray-200 dark:border-[#14345C]">
                         <VocabText 
                           text={orderedTests.get(test.id)?.result || ''} 
                           onTermClick={onTermClick}

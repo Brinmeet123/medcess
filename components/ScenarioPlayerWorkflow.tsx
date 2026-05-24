@@ -277,8 +277,8 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
           scenarioId={scenario.id}
           text={`${scenario.title}\n${scenario.description}\n${chiefComplaint}`}
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{scenario.title}</h1>
-          <p className="text-gray-600">{scenario.description}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-2">{scenario.title}</h1>
+          <p className="text-gray-600 dark:text-[#CBD5E1]">{scenario.description}</p>
         </VocabContextBlock>
       </div>
 
@@ -300,23 +300,28 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
         </div>
       </div>
 
-      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">Vital Signs</h3>
+      <div className="case-vitals-banner">
+        <h3>Vital Signs</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
           <div>
-            <span className="text-blue-700 font-medium">HR:</span> {scenario.patientPersona.vitals.heartRate} bpm
+            <span className="vitals-label">HR:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.heartRate} bpm</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">BP:</span> {scenario.patientPersona.vitals.bloodPressure}
+            <span className="vitals-label">BP:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.bloodPressure}</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">RR:</span> {scenario.patientPersona.vitals.respiratoryRate} /min
+            <span className="vitals-label">RR:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.respiratoryRate} /min</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">O2 Sat:</span> {scenario.patientPersona.vitals.oxygenSat}
+            <span className="vitals-label">O2 Sat:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.oxygenSat}</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">Temp:</span> {scenario.patientPersona.vitals.temperature}
+            <span className="vitals-label">Temp:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.temperature}</span>
           </div>
         </div>
       </div>
@@ -324,8 +329,8 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
       {(scenario.patientPersona.medicationList?.length ||
         scenario.patientPersona.baselineFunctionalStatus ||
         scenario.patientPersona.cognitiveBaseline) && (
-        <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-800">
-          <h3 className="font-semibold text-slate-900 mb-2">Patient context</h3>
+        <div className="mb-6 bg-slate-50 dark:bg-[#071A33] border border-slate-200 dark:border-[#14345C] rounded-lg p-4 text-sm text-slate-800 dark:text-[#CBD5E1]">
+          <h3 className="font-semibold text-slate-900 dark:text-[#F8FAFC] mb-2">Patient context</h3>
           <ul className="space-y-2 list-none">
             {scenario.patientPersona.medicationList &&
               scenario.patientPersona.medicationList.length > 0 && (
@@ -357,14 +362,14 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
 
       {/* Step 1: Chief Complaint */}
       {currentStep === 'chief-complaint' && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Step 1: Chief Complaint</h2>
-          <p className="text-gray-600 mb-4">
+        <div className="case-panel">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-4">Step 1: Chief Complaint</h2>
+          <p className="text-gray-600 dark:text-[#CBD5E1] mb-4">
             Record why the patient is here in their words.
           </p>
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-            <p className="text-lg font-medium text-gray-900">Chief Complaint:</p>
-            <p className="text-gray-700">{chiefComplaint}</p>
+          <div className="mb-4 p-4 bg-gray-50 dark:bg-[#020817] dark:border dark:border-[#14345C] rounded-lg">
+            <p className="text-lg font-medium text-gray-900 dark:text-[#F8FAFC]">Chief Complaint:</p>
+            <p className="text-gray-700 dark:text-[#CBD5E1]">{chiefComplaint}</p>
           </div>
           <button
             onClick={handleChiefComplaintComplete}
@@ -485,14 +490,14 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
       {currentStep === 'debrief' && (
         <>
           {isLoadingAssessment ? (
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-600">Loading assessment…</p>
+            <div className="case-panel p-12 text-center">
+              <p className="text-gray-600 dark:text-[#CBD5E1]">Loading assessment…</p>
             </div>
           ) : assessment ? (
             <SummaryPanel scenario={scenario} assessment={assessment} />
           ) : (
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-600">No assessment yet.</p>
+            <div className="case-panel p-12 text-center">
+              <p className="text-gray-600 dark:text-[#CBD5E1]">No assessment yet.</p>
             </div>
           )}
         </>

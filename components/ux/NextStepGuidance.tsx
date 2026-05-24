@@ -22,7 +22,9 @@ export default function NextStepGuidance({
   return (
     <div
       className={[
-        'rounded-xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-orange-50/80 text-amber-950 shadow-sm',
+        'rounded-xl border shadow-sm',
+        'border-amber-200/90 bg-gradient-to-br from-amber-50 to-orange-50/80 text-amber-950',
+        'dark:border-[#14345C] dark:bg-[#071A33] dark:from-[#071A33] dark:to-[#0a1f3d] dark:text-[#CBD5E1]',
         compact ? 'px-4 py-3 text-sm' : 'px-4 py-3 text-sm',
         centered ? 'text-center' : '',
         action ? 'w-full' : '',
@@ -31,7 +33,14 @@ export default function NextStepGuidance({
       role="note"
     >
       {showHeading && (
-        <p className={['font-medium text-amber-900', centered && 'text-center'].filter(Boolean).join(' ')}>
+        <p
+          className={[
+            'font-medium text-amber-900 dark:text-primary-400',
+            centered && 'text-center',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <span className="mr-1.5" aria-hidden>
             👉
           </span>
@@ -41,7 +50,7 @@ export default function NextStepGuidance({
       <p
         className={[
           showHeading ? 'mt-1' : '',
-          'text-amber-950/90 leading-snug',
+          'text-amber-950/90 dark:text-[#CBD5E1] leading-snug',
           centered ? 'text-center' : '',
         ]
           .filter(Boolean)
@@ -50,7 +59,7 @@ export default function NextStepGuidance({
         {children}
       </p>
       {action != null && (
-        <div className="mt-4 border-t border-amber-200/80 pt-4">{action}</div>
+        <div className="mt-4 border-t border-amber-200/80 dark:border-[#14345C] pt-4">{action}</div>
       )}
     </div>
   )

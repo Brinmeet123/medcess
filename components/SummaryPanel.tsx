@@ -256,7 +256,7 @@ export default function SummaryPanel({
       : (ds?.diagnosticReasoning ?? []).slice(0, 4)
 
   return (
-    <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
+    <div className="case-panel">
       <VocabContextBlock source="debrief" scenarioId={scenario.id} text={debriefContext}>
         <h2 className="mb-2 text-2xl font-bold text-gray-900">Diagnosis report</h2>
         <p className="mb-6 text-sm leading-relaxed text-slate-600">
@@ -329,7 +329,7 @@ export default function SummaryPanel({
                         key={term}
                         type="button"
                         onClick={() => onTermClick?.(term)}
-                        className="rounded-md border border-purple-300 bg-white px-3 py-1 text-sm text-purple-700 transition hover:bg-purple-100"
+                        className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300 transition hover:bg-purple-100 dark:hover:bg-purple-950/50"
                       >
                         {termData.display}
                       </button>
@@ -404,7 +404,7 @@ export default function SummaryPanel({
         </div>
 
         {ds?.improvementTip ? (
-          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-800">
+          <div className="mt-4 rounded-lg border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-4 text-sm text-slate-800 dark:text-[#CBD5E1]">
             <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Next step
             </h3>
@@ -430,7 +430,7 @@ export default function SummaryPanel({
                 onClick={() => {
                   window.location.href = `/scenarios/${scenario.id}`
                 }}
-                className="btn-press flex-1 rounded-lg border border-primary-300 bg-white px-4 py-3 text-center text-sm font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50"
+                className="btn-press flex-1 rounded-lg border border-primary-300 dark:border-primary-600 bg-white dark:bg-[#0a1f3d] px-4 py-3 text-center text-sm font-semibold text-primary-800 dark:text-primary-300 shadow-sm transition hover:bg-primary-50 dark:hover:bg-primary-950/40"
               >
                 Try again to improve score
               </button>

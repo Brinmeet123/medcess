@@ -133,6 +133,28 @@ body {
   html.dark .medcess-logo-wrap:not(.medcess-logo-glow-host) .medcess-logo-img {
     filter: drop-shadow(0 0 6px rgba(20, 184, 255, 0.28));
   }
+
+  .case-panel {
+    @apply bg-white dark:bg-[#071A33] rounded-lg shadow-md dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] p-6 mb-6 border border-transparent dark:border-[#14345C];
+  }
+
+  .case-vitals-banner {
+    @apply mb-6 rounded-lg border p-4;
+    @apply bg-primary-50 border-primary-200;
+    @apply dark:bg-[#071A33] dark:border-[#14345C];
+  }
+
+  .case-vitals-banner h3 {
+    @apply font-semibold text-primary-900 dark:text-[#F8FAFC] mb-2;
+  }
+
+  .case-vitals-banner .vitals-label {
+    @apply text-primary-700 dark:text-primary-400 font-medium;
+  }
+
+  .case-vitals-banner .vitals-value {
+    @apply text-medcess-navy dark:text-[#CBD5E1];
+  }
 }
 
 /**

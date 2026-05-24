@@ -461,28 +461,37 @@ export default function ScenarioPlayer({ scenario }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-10">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-2">Active case</p>
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">{scenario.title}</h1>
-        <p className="text-base text-slate-600 leading-relaxed line-clamp-3">{scenario.description}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8] mb-2">
+          Active case
+        </p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
+        <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
+          {scenario.description}
+        </p>
       </div>
 
-      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">Vital Signs</h3>
+      <div className="case-vitals-banner">
+        <h3>Vital Signs</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
           <div>
-            <span className="text-blue-700 font-medium">HR:</span> {scenario.patientPersona.vitals.heartRate} bpm
+            <span className="vitals-label">HR:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.heartRate} bpm</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">BP:</span> {scenario.patientPersona.vitals.bloodPressure}
+            <span className="vitals-label">BP:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.bloodPressure}</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">RR:</span> {scenario.patientPersona.vitals.respiratoryRate} /min
+            <span className="vitals-label">RR:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.respiratoryRate} /min</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">SpO₂:</span> {scenario.patientPersona.vitals.oxygenSat}
+            <span className="vitals-label">SpO₂:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.oxygenSat}</span>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">T:</span> {scenario.patientPersona.vitals.temperature}
+            <span className="vitals-label">T:</span>{' '}
+            <span className="vitals-value">{scenario.patientPersona.vitals.temperature}</span>
           </div>
         </div>
       </div>
@@ -490,25 +499,25 @@ export default function ScenarioPlayer({ scenario }: Props) {
       {(scenario.patientPersona.medicationList?.length ||
         scenario.patientPersona.baselineFunctionalStatus ||
         scenario.patientPersona.cognitiveBaseline) && (
-        <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-800">
-          <h3 className="font-semibold text-slate-900 mb-2">Patient context</h3>
+        <div className="mb-6 bg-slate-50 dark:bg-[#071A33] border border-slate-200 dark:border-[#14345C] rounded-lg p-4 text-sm text-slate-800 dark:text-[#CBD5E1]">
+          <h3 className="font-semibold text-slate-900 dark:text-[#F8FAFC] mb-2">Patient context</h3>
           <ul className="space-y-2 list-none">
             {scenario.patientPersona.medicationList &&
               scenario.patientPersona.medicationList.length > 0 && (
                 <li>
-                  <span className="font-medium text-slate-700">Medications: </span>
+                  <span className="font-medium text-slate-700 dark:text-[#CBD5E1]">Medications: </span>
                   {scenario.patientPersona.medicationList.join('; ')}
                 </li>
               )}
             {scenario.patientPersona.baselineFunctionalStatus && (
               <li>
-                <span className="font-medium text-slate-700">Baseline function: </span>
+                <span className="font-medium text-slate-700 dark:text-[#CBD5E1]">Baseline function: </span>
                 {scenario.patientPersona.baselineFunctionalStatus}
               </li>
             )}
             {scenario.patientPersona.cognitiveBaseline && (
               <li>
-                <span className="font-medium text-slate-700">Cognitive baseline: </span>
+                <span className="font-medium text-slate-700 dark:text-[#CBD5E1]">Cognitive baseline: </span>
                 {scenario.patientPersona.cognitiveBaseline}
               </li>
             )}
@@ -536,13 +545,13 @@ export default function ScenarioPlayer({ scenario }: Props) {
           {isMobile ? (
             <div className="mb-6">
               {/* Tab Buttons */}
-              <div className="flex border-b border-gray-200 mb-4">
+              <div className="flex border-b border-gray-200 dark:border-[#14345C] mb-4">
                 <button
                   onClick={() => setMobileTab('helper')}
                   className={`flex-1 px-4 py-2 text-sm font-medium transition ${
                     mobileTab === 'helper'
                       ? 'border-b-2 border-primary-600 text-primary-600'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 dark:text-[#CBD5E1] hover:text-gray-900 dark:hover:text-[#F8FAFC]'
                   }`}
                 >
                   Quick prompts
@@ -552,7 +561,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
                   className={`flex-1 px-4 py-2 text-sm font-medium transition ${
                     mobileTab === 'chat'
                       ? 'border-b-2 border-primary-600 text-primary-600'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 dark:text-[#CBD5E1] hover:text-gray-900 dark:hover:text-[#F8FAFC]'
                   }`}
                 >
                   Chat
@@ -585,7 +594,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
             <div className="mb-6" style={{ height: '600px' }}>
               <div className="h-full flex gap-4">
                 {/* Left Panel: Helper */}
-                <div className="w-2/5 bg-gray-50 rounded-lg overflow-hidden p-4">
+                <div className="w-2/5 bg-gray-50 dark:bg-[#071A33] dark:border dark:border-[#14345C] rounded-lg overflow-hidden p-4">
                   <HistoryHelperPanel
                     onInsertQuestion={handleInsertQuestion}
                     messages={chatMessages}
@@ -593,7 +602,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
                 </div>
 
                 {/* Right Panel: Chat */}
-                <div className="flex-1 bg-white rounded-lg overflow-hidden p-4 flex flex-col">
+                <div className="flex-1 bg-white dark:bg-[#071A33] dark:border dark:border-[#14345C] rounded-lg overflow-hidden p-4 flex flex-col">
                   <div id="chat-panel" className="flex-1 min-h-0">
                     <ChatPanel
                       scenario={scenario}
@@ -621,7 +630,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
                     setMaxUnlockedStep((m) => Math.max(m, 2))
                     setActiveSection('exam')
                   }}
-                  className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+                  className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
                 </button>
@@ -656,7 +665,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
                     setMaxUnlockedStep((m) => Math.max(m, 3))
                     setActiveSection('tests')
                   }}
-                  className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+                  className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
                 </button>
@@ -685,7 +694,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <>
                   {!canAccessDiagnosis && (
-                    <p className="mb-3 text-center text-xs text-slate-600">
+                    <p className="mb-3 text-center text-xs text-slate-600 dark:text-[#94a3b8]">
                       Open the exam and order a test to continue.
                     </p>
                   )}
@@ -733,8 +742,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
       {activeSection === 'debrief' && (
         <>
           {isLoadingAssessment ? (
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-600 animate-pulse-soft">Medcess is building your report — scoring feedback and teaching points…</p>
+            <div className="case-panel p-12 text-center">
+              <p className="text-gray-600 dark:text-[#CBD5E1] animate-pulse-soft">Medcess is building your report — scoring feedback and teaching points…</p>
             </div>
           ) : assessment ? (
             <SummaryPanel 
@@ -747,8 +756,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
               scenarioScore={scenarioScore ?? undefined}
             />
           ) : (
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-600">No assessment yet.</p>
+            <div className="case-panel p-12 text-center">
+              <p className="text-gray-600 dark:text-[#CBD5E1]">No assessment yet.</p>
             </div>
           )}
         </>
