@@ -94,6 +94,7 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
         return NextResponse.json({
           message: presetResponse,
           source: 'preset-fallback',
+          fallbackReason: 'OpenAI returned an empty response',
         })
       }
 
@@ -132,9 +133,14 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
           bodyData.messages || []
         )
 
+        const safeReason =
+          err.message && err.message.length < 280
+            ? err.message
+            : err.message?.slice(0, 280) ?? 'Unknown error'
         return NextResponse.json({
           message: presetResponse,
           source: 'preset-fallback',
+          fallbackReason: safeReason,
         })
       } catch (presetError) {
         console.error('Preset fallback failed:', presetError)

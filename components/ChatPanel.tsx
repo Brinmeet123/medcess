@@ -69,6 +69,7 @@ export default function ChatPanel({
   const [lastReplyMeta, setLastReplyMeta] = useState<{
     source: PatientReplySource
     model?: string
+    fallbackReason?: string
   } | null>(null)
   const messagesScrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -183,6 +184,8 @@ export default function ChatPanel({
           setLastReplyMeta({
             source: data.source as PatientReplySource,
             model: typeof data.model === 'string' ? data.model : undefined,
+            fallbackReason:
+              typeof data.fallbackReason === 'string' ? data.fallbackReason : undefined,
           })
         }
         if (data.source === 'ai') {
@@ -291,7 +294,11 @@ export default function ChatPanel({
                 ? 'text-teal-800 bg-teal-50 border-teal-200'
                 : 'text-amber-900 bg-amber-50 border-amber-200'
             }`}
-            title="How the last patient message was generated"
+            title={
+              lastReplyMeta.fallbackReason
+                ? `AI error: ${lastReplyMeta.fallbackReason}`
+                : 'How the last patient message was generated'
+            }
           >
             {replySourceLabel(lastReplyMeta.source, lastReplyMeta.model)}
           </span>
