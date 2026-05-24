@@ -5,26 +5,24 @@ import MedcessECGIcon from '@/components/brand/MedcessECGIcon'
 
 type Size = 'sm' | 'md' | 'lg'
 
-/** Full logo image heights (includes ECG + wordmark). */
-const fullHeights: Record<Size, number> = {
-  sm: 32,
-  md: 40,
-  lg: 56,
-}
+/** Stacked logo (ECG + wordmark) — aspect from transparent asset 558×447. */
+const LOGO_ASPECT = 558 / 447
 
-const fullWidths: Record<Size, number> = {
-  sm: 120,
-  md: 150,
-  lg: 210,
+const fullHeights: Record<Size, number> = {
+  sm: 36,
+  md: 44,
+  lg: 72,
 }
 
 type Props = {
   size?: Size
-  /** Use ECG icon + gradient wordmark instead of the full PNG (compact nav). */
+  /** SVG ECG + gradient text (no PNG). */
   variant?: 'full' | 'compact'
   showWordmark?: boolean
   href?: string | null
   className?: string
+  /** Soft cyan glow behind logo in dark mode (hero / loading). */
+  glow?: boolean
 }
 
 function CompactLogo({ size, showWordmark }: { size: Size; showWordmark: boolean }) {
@@ -42,19 +40,32 @@ function CompactLogo({ size, showWordmark }: { size: Size; showWordmark: boolean
   )
 }
 
-function FullLogo({ size }: { size: Size }) {
-  const h = fullHeights[size]
-  const w = fullWidths[size]
+function FullLogo({ size, glow }: { size: Size; glow?: boolean }) {
+  const height = fullHeights[size]
+  const width = Math.round(height * LOGO_ASPECT)
+
   return (
-    <Image
-      src="/brand/medcess-logo.png"
-      alt={APP_NAME}
-      width={w}
-      height={h}
-      className="h-auto w-auto max-h-full object-contain object-left"
-      style={{ height: h, width: 'auto', maxWidth: w }}
-      priority={size === 'lg'}
-    />
+    <span
+      className={`medcess-logo-wrap relative inline-flex items-center justify-center shrink-0 ${
+        glow ? 'medcess-logo-glow-host' : ''
+      }`}
+    >
+      {glow ? (
+        <span
+          className="pointer-events-none absolute inset-0 -z-10 scale-[1.35] rounded-full bg-primary-400/0 dark:bg-primary-400/20 blur-2xl"
+          aria-hidden
+        />
+      ) : null}
+      <Image
+        src="/brand/medcess-logo.png"
+        alt={APP_NAME}
+        width={width}
+        height={height}
+        className="medcess-logo-img block h-auto w-auto object-contain object-left bg-transparent"
+        style={{ height, width: 'auto', maxWidth: width }}
+        priority={size === 'lg'}
+      />
+    </span>
   )
 }
 
@@ -69,20 +80,21 @@ export default function MedcessLogo({
   showWordmark = true,
   href = '/',
   className = '',
+  glow = false,
 }: Props) {
   const linked = href != null && href !== ''
   const inner =
     variant === 'compact' ? (
       <CompactLogo size={size} showWordmark={showWordmark} />
     ) : (
-      <FullLogo size={size} />
+      <FullLogo size={size} glow={glow} />
     )
 
   const layout = `inline-flex items-center gap-2.5 ${className}`
 
   if (linked) {
     return (
-      <Link href={href!} className={`${layout} hover:opacity-92 transition-opacity duration-200`}>
+      <Link href={href!} className={`${layout} hover:opacity-90 transition-opacity duration-200`}>
         {inner}
       </Link>
     )

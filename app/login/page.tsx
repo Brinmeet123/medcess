@@ -11,7 +11,7 @@ export default function LoginPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <MedcessLogo size="lg" variant="full" href="/" />
+            <MedcessLogo size="lg" variant="full" href="/" glow />
           </div>
           <h1 className="text-3xl font-bold text-medcess-navy tracking-tight">Welcome back</h1>
           <p className="text-slate-600 mt-2 max-w-md mx-auto">{TAGLINE_SHORT}</p>

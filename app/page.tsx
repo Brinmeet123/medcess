@@ -14,7 +14,7 @@ export default function Home() {
       <section className="relative overflow-hidden bg-medcess-hero dark:bg-medcess-hero-dark py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="relative max-w-4xl mx-auto text-center animate-fade-in">
           <div className="flex justify-center mb-8">
-            <MedcessLogo size="lg" variant="full" href="/" />
+            <MedcessLogo size="lg" variant="full" href="/" glow />
           </div>
           <p className="medcess-section-label mb-4">Clinical reasoning simulations</p>
           <p className="text-lg sm:text-xl text-slate-700 mb-3 max-w-2xl mx-auto leading-relaxed">{TAGLINE}</p>

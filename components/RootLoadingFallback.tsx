@@ -10,7 +10,7 @@ export default function RootLoadingFallback() {
       </div>
       <main className="flex-1 flex flex-col items-center justify-center p-8 bg-medcess-hero dark:bg-medcess-hero-dark">
         <div className="flex flex-col items-center gap-6 animate-pulse-soft">
-          <MedcessLogo size="lg" variant="full" href={null} />
+          <MedcessLogo size="lg" variant="full" href={null} glow />
           <p className="text-sm text-slate-500">Loading {APP_NAME}…</p>
         </div>
         <div className="mt-12 w-full max-w-md space-y-3" aria-hidden>

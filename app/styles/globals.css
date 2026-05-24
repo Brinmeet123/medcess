@@ -114,6 +114,21 @@ body {
   .medcess-panel {
     @apply bg-white dark:bg-medcess-dark-card border-slate-200 dark:border-medcess-dark-border;
   }
+
+  /* Transparent PNG logo — never pick up card/surface backgrounds */
+  .medcess-logo-wrap,
+  .medcess-logo-img {
+    background: transparent !important;
+  }
+
+  html.dark .medcess-logo-glow-host .medcess-logo-img {
+    filter: drop-shadow(0 0 10px rgba(20, 184, 255, 0.35))
+      drop-shadow(0 0 22px rgba(30, 91, 255, 0.2));
+  }
+
+  html.dark .medcess-logo-wrap:not(.medcess-logo-glow-host) .medcess-logo-img {
+    filter: drop-shadow(0 0 6px rgba(20, 184, 255, 0.28));
+  }
 }
 
 /**
