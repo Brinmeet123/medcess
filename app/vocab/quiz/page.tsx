@@ -103,7 +103,7 @@ export default function QuizPage() {
   if (!isLoaded) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <p className="text-gray-600">Loading…</p>
+        <p className="text-gray-600 dark:text-[#CBD5E1]">Loading…</p>
       </div>
     )
   }
@@ -143,9 +143,9 @@ export default function QuizPage() {
   if (questions.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md p-12 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Quiz</h1>
-          <p className="text-gray-600 mb-6">Preparing…</p>
+        <div className="case-panel p-12 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-4">Quiz</h1>
+          <p className="text-gray-600 dark:text-[#CBD5E1] mb-6">Preparing…</p>
         </div>
       </div>
     )
@@ -155,11 +155,11 @@ export default function QuizPage() {
     const percentage = Math.round((score / questions.length) * 100)
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Done</h1>
+        <div className="case-panel p-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-4">Done</h1>
           <div className="mb-6">
-            <p className="text-5xl font-bold text-primary-600 mb-2">{percentage}%</p>
-            <p className="text-lg text-gray-700">
+            <p className="text-5xl font-bold text-primary-600 dark:text-primary-400 mb-2">{percentage}%</p>
+            <p className="text-lg text-gray-700 dark:text-[#CBD5E1]">
               {score}/{questions.length} correct.
             </p>
           </div>
@@ -171,7 +171,10 @@ export default function QuizPage() {
             >
               New quiz
             </button>
-            <Link href="/vocab" className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+            <Link
+              href="/vocab"
+              className="px-6 py-3 bg-gray-200 dark:bg-[#0a1f3d] text-gray-700 dark:text-[#CBD5E1] rounded-md hover:bg-gray-300 dark:hover:bg-[#14345C]/50 transition border border-transparent dark:border-[#14345C]"
+            >
               Vocabulary
             </Link>
           </div>
@@ -186,30 +189,32 @@ export default function QuizPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Quiz</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Quiz</h1>
       </div>
 
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
             Question {currentQuestion + 1} of {questions.length}
           </span>
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-[#CBD5E1]">
             Score: {score} / {currentQuestion + (showResult ? 1 : 0)}
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-primary-600 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
+        <div className="w-full bg-gray-200 dark:bg-[#14345C] rounded-full h-2">
+          <div className="bg-primary-600 dark:bg-primary-500 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+      <div className="case-panel p-8 mb-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-primary-900 mb-4">
-            What best matches <span className="text-primary-600">{question.term.display}</span>?
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-4">
+            What best matches{' '}
+            <span className="text-primary-600 dark:text-primary-400">{question.term.display}</span>?
           </h2>
-          <p className="text-sm text-gray-600 mb-2">
-            <strong>Why it matters:</strong> {question.term.whyItMatters}
+          <p className="text-sm text-gray-600 dark:text-[#94a3b8] mb-2">
+            <strong className="text-gray-700 dark:text-[#CBD5E1]">Why it matters:</strong>{' '}
+            {question.term.whyItMatters}
           </p>
         </div>
 
@@ -228,12 +233,12 @@ export default function QuizPage() {
                 disabled={showResult}
                 className={`w-full text-left p-4 rounded-lg border-2 transition ${
                   showCorrect
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-950/40 dark:border-green-600'
                     : showIncorrect
-                      ? 'border-red-500 bg-red-50'
+                      ? 'border-red-500 bg-red-50 dark:bg-red-950/40 dark:border-red-600'
                       : isSelected
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 bg-white hover:border-primary-300 hover:bg-gray-50'
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 dark:border-primary-500'
+                        : 'border-gray-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] hover:border-primary-300 dark:hover:border-primary-500 hover:bg-gray-50 dark:hover:bg-[#14345C]/50'
                 } ${showResult ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 <div className="flex items-center gap-3">
@@ -245,12 +250,12 @@ export default function QuizPage() {
                           ? 'border-red-500 bg-red-500 text-white'
                           : isSelected
                             ? 'border-primary-500 bg-primary-500 text-white'
-                            : 'border-gray-300'
+                            : 'border-gray-300 dark:border-[#475569]'
                     }`}
                   >
                     {showCorrect ? '✓' : showIncorrect ? '×' : String.fromCharCode(65 + index)}
                   </div>
-                  <span className="text-gray-900">{option}</span>
+                  <span className="text-gray-900 dark:text-[#F8FAFC]">{option}</span>
                 </div>
               </button>
             )
@@ -260,12 +265,16 @@ export default function QuizPage() {
         {showResult && (
           <div
             className={`p-4 rounded-lg mb-4 ${
-              selectedAnswer === question.correctIndex ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+              selectedAnswer === question.correctIndex
+                ? 'bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-700'
+                : 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-700'
             }`}
           >
             <p
               className={`font-medium ${
-                selectedAnswer === question.correctIndex ? 'text-green-800' : 'text-red-800'
+                selectedAnswer === question.correctIndex
+                  ? 'text-green-800 dark:text-green-300'
+                  : 'text-red-800 dark:text-red-300'
               }`}
             >
               {selectedAnswer === question.correctIndex
@@ -273,7 +282,9 @@ export default function QuizPage() {
                 : `Incorrect. Correct: ${question.options[question.correctIndex]}`}
             </p>
             {question.term.exampleSimple && (
-              <p className="text-sm text-gray-700 mt-2 italic">Example: {question.term.exampleSimple}</p>
+              <p className="text-sm text-gray-700 dark:text-[#CBD5E1] mt-2 italic">
+                Example: {question.term.exampleSimple}
+              </p>
             )}
           </div>
         )}
