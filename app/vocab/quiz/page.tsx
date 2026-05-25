@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { vocab, VocabTerm } from '@/data/vocab'
 import Link from 'next/link'
 import { useVocabStore } from '@/lib/useVocabStore'
-import { medicalTermToLegacyVocabTerm } from '@/src/lib/medicalTermAdapters'
+import { enrichedSavedToVocabTerm } from '@/src/lib/medicalTermAdapters'
 type QuizQuestion = {
   term: VocabTerm
   options: string[]
@@ -22,8 +22,8 @@ export default function QuizPage() {
 
   const savedVocabTerms = useMemo((): VocabTerm[] => {
     return list()
-      .filter((row) => row.term != null)
-      .map((row) => medicalTermToLegacyVocabTerm(row.term!))
+      .map(enrichedSavedToVocabTerm)
+      .filter((t): t is VocabTerm => t != null)
   }, [list])
 
   const generateQuiz = () => {

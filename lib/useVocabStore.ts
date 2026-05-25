@@ -114,8 +114,8 @@ export function useVocabStore() {
       const saved: import('@/src/types/medicalTerm').SavedVocabTerm = {
         ...base,
         termId: term.id,
-        sourceLabel: base.sourceLabel,
-        sourceDefinition: base.sourceDefinition,
+        sourceLabel: term.term,
+        sourceDefinition: term.shortDefinition || term.definition,
       }
 
       setData((prev) => {
@@ -169,10 +169,16 @@ export function useVocabStore() {
   const list = useCallback((): EnrichedSavedTerm[] => {
     return [...data.saved]
       .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
-      .map((saved) => ({
-        saved,
-        term: getMedicalTermById(saved.termId) ?? null,
-      }))
+      .map((saved) => {
+        let term = getMedicalTermById(saved.termId) ?? null
+        if (!term && saved.sourceLabel) {
+          term = lookupMedicalTerm(saved.sourceLabel) ?? null
+        }
+        if (!term && saved.termId && !saved.termId.startsWith('db:')) {
+          term = lookupMedicalTerm(saved.termId) ?? null
+        }
+        return { saved, term }
+      })
   }, [data.saved])
 
   const getByTermId = useCallback(

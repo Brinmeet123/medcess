@@ -1,4 +1,5 @@
 import type { MedicalTerm } from '@/src/types/medicalTerm'
+import type { EnrichedSavedTerm } from '@/lib/useVocabStore'
 
 /** Legacy shape used by VocabText, quiz, and SummaryPanel. */
 export type LegacyVocabTerm = {
@@ -29,6 +30,25 @@ export function medicalTermToLegacyVocabTerm(m: MedicalTerm): LegacyVocabTerm {
     exampleSimple: m.example ?? '',
     tags: [m.category, ...m.relatedTerms.slice(0, 3)],
     aliases: m.synonyms.length ? m.synonyms : undefined,
+  }
+}
+
+/** Quiz + legacy UI: local catalog term, or saved row with server/AI definition. */
+export function enrichedSavedToVocabTerm(row: EnrichedSavedTerm): LegacyVocabTerm | null {
+  if (row.term) return medicalTermToLegacyVocabTerm(row.term)
+
+  const label = row.saved.sourceLabel?.trim()
+  const definition = row.saved.sourceDefinition?.trim()
+  if (!label || !definition) return null
+
+  return {
+    term: label,
+    display: titleCasePhrase(label),
+    definitionSimple: definition,
+    definitionClinical: definition,
+    whyItMatters: 'From your saved vocabulary.',
+    exampleSimple: '',
+    tags: ['Saved'],
   }
 }
 
