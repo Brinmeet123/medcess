@@ -1,5 +1,6 @@
 import type { MedicalTerm } from '@/src/types/medicalTerm'
 import type { EnrichedSavedTerm } from '@/lib/useVocabStore'
+import { isPlaceholderVocabDefinition } from '@/src/lib/vocabDefinitionQuality'
 
 /** Legacy shape used by VocabText, quiz, and SummaryPanel. */
 export type LegacyVocabTerm = {
@@ -35,11 +36,14 @@ export function medicalTermToLegacyVocabTerm(m: MedicalTerm): LegacyVocabTerm {
 
 /** Quiz + legacy UI: local catalog term, or saved row with server/AI definition. */
 export function enrichedSavedToVocabTerm(row: EnrichedSavedTerm): LegacyVocabTerm | null {
-  if (row.term) return medicalTermToLegacyVocabTerm(row.term)
+  if (row.term) {
+    if (isPlaceholderVocabDefinition(row.term.shortDefinition)) return null
+    return medicalTermToLegacyVocabTerm(row.term)
+  }
 
   const label = row.saved.sourceLabel?.trim()
   const definition = row.saved.sourceDefinition?.trim()
-  if (!label || !definition) return null
+  if (!label || !definition || isPlaceholderVocabDefinition(definition)) return null
 
   return {
     term: label,

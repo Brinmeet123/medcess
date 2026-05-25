@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useVocabStore } from '@/lib/useVocabStore'
+import { isPlaceholderVocabDefinition } from '@/src/lib/vocabDefinitionQuality'
 
 export default function VocabPage() {
   const { status } = useSession()
@@ -146,6 +147,7 @@ export default function VocabPage() {
                 ? term.shortDefinition
                 : saved.sourceDefinition ??
                   'Definition not found — term may have been removed from the local dictionary.'
+            const needsRealDefinition = isPlaceholderVocabDefinition(definition)
 
             return (
               <div
@@ -172,6 +174,12 @@ export default function VocabPage() {
                 </div>
 
                 <p className="text-sm text-gray-700 dark:text-[#CBD5E1] mb-3">{definition}</p>
+                {needsRealDefinition && (
+                  <p className="text-xs text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-md px-3 py-2 mb-3">
+                    Placeholder only — remove and re-save after <strong>OPENAI_API_KEY</strong> is set (or
+                    turn off <strong>DEMO_MODE</strong>).
+                  </p>
+                )}
 
                 <div className="flex flex-wrap gap-2 items-center">
                   <button
@@ -185,12 +193,14 @@ export default function VocabPage() {
                   >
                     {saved.mastered ? '✓ Mastered' : 'Mark mastered'}
                   </button>
-                  <Link
-                    href="/vocab/quiz"
-                    className="px-3 py-1.5 rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 transition"
-                  >
-                    Practice
-                  </Link>
+                  {!needsRealDefinition && (
+                    <Link
+                      href="/vocab/quiz"
+                      className="px-3 py-1.5 rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 transition"
+                    >
+                      Practice
+                    </Link>
+                  )}
                 </div>
 
                 {term && term.relatedTerms.length > 0 && (

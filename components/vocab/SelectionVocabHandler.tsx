@@ -9,6 +9,7 @@ import { getScrollableAncestors } from '@/src/lib/scrollAnchor'
 import { getVocabContextFromRange } from '@/src/lib/vocabSelectionContext'
 import MedicalTermPopover from '@/components/vocab/MedicalTermPopover'
 import { useVocabStore } from '@/lib/useVocabStore'
+import { isPlaceholderVocabDefinition } from '@/src/lib/vocabDefinitionQuality'
 
 function isFormFieldFocused(): boolean {
   const el = document.activeElement
@@ -236,9 +237,23 @@ export default function SelectionVocabHandler() {
 
   if (!selectedText || !selectionPosition) return null
 
-  const canSave = Boolean(medicalTerm) && !isLoadingAI && !aiError && sessionCanSave
+  const definitionText = medicalTerm
+    ? medicalTerm.shortDefinition || medicalTerm.definition
+    : ''
+  const definitionIsPlaceholder = isPlaceholderVocabDefinition(definitionText)
+  const canSave =
+    Boolean(medicalTerm) &&
+    !isLoadingAI &&
+    !aiError &&
+    !definitionIsPlaceholder &&
+    sessionCanSave
   const saved = medicalTerm ? hasTermId(medicalTerm.id) : false
-  const combinedError = saveError ?? aiError
+  const combinedError =
+    saveError ??
+    aiError ??
+    (definitionIsPlaceholder && medicalTerm
+      ? 'A real definition is required to save. Set OPENAI_API_KEY in .env.local (and redeploy on Vercel), or turn off DEMO_MODE.'
+      : null)
 
   return (
     <MedicalTermPopover

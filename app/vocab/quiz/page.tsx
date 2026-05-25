@@ -5,6 +5,7 @@ import { vocab, VocabTerm } from '@/data/vocab'
 import Link from 'next/link'
 import { useVocabStore } from '@/lib/useVocabStore'
 import { enrichedSavedToVocabTerm } from '@/src/lib/medicalTermAdapters'
+import { isPlaceholderVocabDefinition } from '@/src/lib/vocabDefinitionQuality'
 type QuizQuestion = {
   term: VocabTerm
   options: string[]
@@ -20,11 +21,20 @@ export default function QuizPage() {
   const [score, setScore] = useState(0)
   const [quizComplete, setQuizComplete] = useState(false)
 
+  const savedRows = useMemo(() => list(), [list])
+
   const savedVocabTerms = useMemo((): VocabTerm[] => {
-    return list()
+    return savedRows
       .map(enrichedSavedToVocabTerm)
       .filter((t): t is VocabTerm => t != null)
-  }, [list])
+  }, [savedRows])
+
+  const placeholderOnlyCount = useMemo(() => {
+    return savedRows.filter(({ saved, term }) => {
+      const def = term?.shortDefinition ?? saved.sourceDefinition ?? ''
+      return isPlaceholderVocabDefinition(def)
+    }).length
+  }, [savedRows])
 
   const generateQuiz = () => {
     if (savedVocabTerms.length === 0) return
@@ -33,7 +43,10 @@ export default function QuizPage() {
 
     const quizQuestions: QuizQuestion[] = shuffled.map((term) => {
       const wrongAnswers = vocab
-        .filter((t) => t.term !== term.term)
+        .filter(
+          (t) =>
+            t.term !== term.term && !isPlaceholderVocabDefinition(t.definitionSimple)
+        )
         .sort(() => Math.random() - 0.5)
         .slice(0, 3)
         .map((t) => t.definitionSimple)
@@ -96,12 +109,30 @@ export default function QuizPage() {
   }
 
   if (savedVocabTerms.length === 0) {
+    const onlyPlaceholders = savedRows.length > 0 && placeholderOnlyCount === savedRows.length
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md p-12 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Quiz</h1>
-          <p className="text-gray-600 mb-6">Save a few terms from scenarios first.</p>
-          <Link href="/vocab" className="inline-block px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition">
+        <div className="case-panel p-12 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-4">Quiz</h1>
+          {onlyPlaceholders ? (
+            <>
+              <p className="text-gray-600 dark:text-[#CBD5E1] mb-4">
+                Your saved terms only have placeholder definitions (AI was offline or not configured).
+              </p>
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-6">
+                Set <strong>OPENAI_API_KEY</strong> in <code className="text-xs">.env.local</code>, remove
+                these entries on the Vocabulary page, then highlight and save them again from a scenario.
+              </p>
+            </>
+          ) : (
+            <p className="text-gray-600 dark:text-[#CBD5E1] mb-6">
+              Save a few terms from scenarios first (with real definitions).
+            </p>
+          )}
+          <Link
+            href="/vocab"
+            className="inline-block px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition"
+          >
             Vocabulary
           </Link>
         </div>

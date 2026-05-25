@@ -11,6 +11,7 @@ import {
   toggleMastered,
   type VocabStorageV2,
 } from '@/src/lib/vocabStorage'
+import { isPlaceholderVocabDefinition } from '@/src/lib/vocabDefinitionQuality'
 
 export type EnrichedSavedTerm = {
   saved: import('@/src/types/medicalTerm').SavedVocabTerm
@@ -97,6 +98,9 @@ export function useVocabStore() {
   const saveMedicalTerm = useCallback(
     async (term: MedicalTerm): Promise<boolean> => {
       if (!isAuthed) return false
+
+      const definition = term.shortDefinition || term.definition
+      if (isPlaceholderVocabDefinition(definition)) return false
 
       const res = await fetch('/api/vocab', {
         method: 'POST',
