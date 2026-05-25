@@ -241,7 +241,7 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
       setAssessment({
         overallRating: 'Error',
         summary:
-          'There was an error generating your assessment. Run Ollama (ollama serve) or set DEMO_MODE=true for mocks.',
+          'There was an error generating your assessment. Set OPENAI_API_KEY or DEMO_MODE=true for mocks.',
         strengths: [],
         areasForImprovement: [errorMessage],
         diagnosisFeedback: '',

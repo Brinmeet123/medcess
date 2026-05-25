@@ -3,7 +3,7 @@
  *
  * Env:
  * - OPENAI_BASE_URL — default https://api.openai.com/v1
- * - AI_MODEL or OPENAI_MODEL — default gpt-5.4-mini
+ * - AI_MODEL or OPENAI_MODEL — default gpt-4o-mini
  * - OPENAI_API_KEY — required for real OpenAI calls (alias: OPENAI_API)
  * - DEMO_MODE=true — use mock responses in API routes (no OpenAI calls)
  * - USE_LOCAL_LLM_DEBRIEF_POLISH=true — optional prose-polish pass via LLM

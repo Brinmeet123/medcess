@@ -22,7 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NEXT_OUTPUT=standalone
 # Auth.js + Prisma: image build does not run DB migrations (no DB in build context).
-# Run `prisma migrate deploy` at deploy time with DATABASE_URL set, or use Vercel `npm run build`.
+# Run `npm run db:deploy` at deploy time with DATABASE_URL set (not during `npm run build`).
 ARG AUTH_SECRET=build-time-placeholder-change-in-deployment-min-32-chars
 ENV AUTH_SECRET=$AUTH_SECRET
 

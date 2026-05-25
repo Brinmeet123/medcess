@@ -50,7 +50,7 @@ This directory contains GitHub Actions workflows for CI/CD of **Medcess**.
 
 The following environment variables can be set as GitHub Secrets:
 
-- `OLLAMA_BASE_URL` / `OLLAMA_MODEL`: Configure on Vercel (or your host) for Ollama-backed AI
+- `OPENAI_API_KEY` / `AI_MODEL`: Configure on Vercel (or your host) for OpenAI-backed AI
 - `DEMO_MODE`: Set to `true` for mock-only
 
 ## Usage

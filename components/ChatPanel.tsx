@@ -150,9 +150,9 @@ export default function ChatPanel({
           } catch {
             /* ignore */
           }
-          if (/Ollama error|ECONNREFUSED|Cannot reach Ollama|fetch failed/i.test(detail)) {
+          if (/OpenAI error|ECONNREFUSED|Cannot reach OpenAI|fetch failed|OPENAI_API_KEY/i.test(detail)) {
             hint =
-              'Run **ollama serve**, **ollama pull** your model, and set **OLLAMA_BASE_URL** / **OLLAMA_MODEL** if needed. Or **DEMO_MODE=true** for mocks. See **/api/ai-status**.'
+              'Set **OPENAI_API_KEY** (or **OPENAI_API**) and optionally **AI_MODEL** in `.env.local` / Vercel. Or **DEMO_MODE=true** for mocks. See **/api/ai-status**.'
           }
           setMessages([
             ...newMessages,
@@ -214,9 +214,9 @@ export default function ChatPanel({
 
         if (error?.message) {
           const errorMsg = error.message.toLowerCase()
-          if (errorMsg.includes('ollama') || errorMsg.includes('econnrefused')) {
+          if (errorMsg.includes('openai') || errorMsg.includes('econnrefused') || errorMsg.includes('openai_api_key')) {
             errorContent =
-              '**Ollama** not reachable. Run `ollama serve`, pull a model, set **OLLAMA_BASE_URL** in `.env.local`. See **/api/test-key**.'
+              '**OpenAI** not reachable or not configured. Set **OPENAI_API_KEY** in `.env.local` (or Vercel env). See **/api/test-key**.'
           } else if (
             errorMsg.includes('daily ai limit') ||
             errorMsg.includes('daily limit reached')
@@ -227,10 +227,10 @@ export default function ChatPanel({
             errorContent = 'Rate limited or overloaded. Retry shortly or use a smaller model.'
           } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
             errorContent =
-              'Network error. Confirm Ollama is up and **OLLAMA_BASE_URL** is reachable.'
+              'Network error. Confirm **OPENAI_API_KEY** is set and the API is reachable.'
           } else if (errorMsg.includes('demo_mode') || errorMsg.includes('no llm')) {
             errorContent =
-              'Set **DEMO_MODE=true** for mocks, or run Ollama.'
+              'Set **DEMO_MODE=true** for mocks, or configure **OPENAI_API_KEY**.'
           } else {
             errorContent = `Error: ${error.message}`
           }

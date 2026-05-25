@@ -6,7 +6,8 @@ This guide covers deploying **Medcess** using GitHub Actions.
 
 - GitHub repository set up
 - Node.js 20+ installed locally (for testing)
-- **Ollama** running (or `DEMO_MODE=true` for mocks only)
+- **OpenAI API key** configured (or `DEMO_MODE=true` for mocks only)
+- **PostgreSQL** for auth/progress when not using static export
 
 ## Deployment Options
 
@@ -48,12 +49,16 @@ If you see **“No Next.js version detected”**, Vercel is not using the folder
 
 #### Environment Variables in Vercel:
 
-Add these in Vercel Dashboard → Project Settings → Environment Variables:
-- `OLLAMA_BASE_URL`: URL of your Ollama server (default locally: `http://127.0.0.1:11434`). On Vercel this must be a **publicly reachable** URL (tunnel, VPS, etc.); localhost on the Vercel VM will not reach your laptop.
-- `OLLAMA_MODEL`: Model name (default `llama3.2`) — run `ollama pull <name>` on the Ollama host first
-- `DEMO_MODE`: Set to `true` for mock-only deployment (no Ollama calls)
+Add these in Vercel Dashboard → Project Settings → Environment Variables (see `.env.example`):
+- `DATABASE_URL` / `DIRECT_URL`: PostgreSQL (required for auth and saved progress)
+- `AUTH_SECRET`, `AUTH_URL`: Auth.js session config
+- `OPENAI_API_KEY` (or `OPENAI_API`): OpenAI API key for real AI
+- `AI_MODEL`: Optional (default `gpt-4o-mini`)
+- `DEMO_MODE`: Set to `true` for mock-only deployment (no OpenAI calls)
 
-**Local dev:** Run `ollama serve`, pull a model, then `npm run dev`. Override URL/model with `OLLAMA_BASE_URL` / `OLLAMA_MODEL` in `.env.local`.
+**Local dev:** Copy `.env.example` to `.env.local`, run `npm run db:deploy` once, then `npm run dev`.
+
+**Migrations:** Run `npm run db:deploy` when deploying schema changes — not as part of `npm run build`.
 
 ### Option 2: Docker Deployment
 
@@ -76,8 +81,9 @@ Deploy using Docker containers.
 4. **Run Container**
    ```bash
    docker run -p 3000:3000 \
-     -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
-     -e OLLAMA_MODEL=llama3.2 \
+     -e OPENAI_API_KEY=sk-... \
+     -e DATABASE_URL=postgresql://... \
+     -e AUTH_SECRET=... \
      your-username/medcess
    ```
 
@@ -101,14 +107,15 @@ For static export (limited functionality - no API routes).
 
 ## Environment Variables
 
-### Production (real AI via Ollama)
+### Production (real AI via OpenAI)
 
-- `OLLAMA_BASE_URL`: Must be reachable from the app process (same machine, Docker host, or public URL)
-- `OLLAMA_MODEL`: Must exist on that Ollama server (`ollama pull <name>`)
+- `OPENAI_API_KEY`: Required for real AI (alias `OPENAI_API`)
+- `AI_MODEL` / `OPENAI_MODEL`: Optional model id (default `gpt-4o-mini`)
+- `OPENAI_BASE_URL`: Optional; default `https://api.openai.com/v1`
 
 ### Optional
 
-- `DEMO_MODE=true`: mocks only; no Ollama
+- `DEMO_MODE=true`: mocks only; no OpenAI
 - `NODE_ENV`: Set to `production` for production builds
 - `NEXT_PUBLIC_*`: Any public environment variables
 
@@ -164,8 +171,8 @@ npm start
 - Check workflow logs in GitHub Actions
 - Ensure environment variables are set
 
-### Ollama / AI issues
-- Ensure Ollama is running and the model is pulled; check `OLLAMA_BASE_URL` and `OLLAMA_MODEL`
+### OpenAI / AI issues
+- Ensure `OPENAI_API_KEY` is set for the deployment environment and redeploy
 - Open `/api/ai-status` and `/api/test-key` on your deployment
 ## Production Considerations
 
