@@ -1,5 +1,7 @@
 # Medcess
 
+**Repository:** [github.com/Brinmeet123/medcess](https://github.com/Brinmeet123/medcess)
+
 **Medcess** helps students practice clinical reasoning through interactive virtual patient cases. Interview patients, order tests, analyze symptoms, and build diagnoses in realistic medical simulations — in a safe, fictional environment built for high school and pre-med learners.
 
 ## Features
@@ -174,7 +176,7 @@ npm start
 
 ### Deploy with Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Brinmeet123/VirtualDiagnosticSimulator.github.io&env=DEMO_MODE%2COPENAI_API_KEY%2CAI_MODEL%2CDATABASE_URL%2CAUTH_SECRET&envDescription=DEMO_MODE%3Dtrue%20for%20mocks%3B%20otherwise%20set%20OPENAI_API_KEY%20and%20database%2Fauth%20vars%20from%20.env.example&envLink=https://github.com/Brinmeet123/VirtualDiagnosticSimulator.github.io%23environment-variables)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Brinmeet123/medcess&env=DEMO_MODE%2COPENAI_API_KEY%2CAI_MODEL%2CDATABASE_URL%2CAUTH_SECRET&envDescription=DEMO_MODE%3Dtrue%20for%20mocks%3B%20otherwise%20set%20OPENAI_API_KEY%20and%20database%2Fauth%20vars%20from%20.env.example&envLink=https://github.com/Brinmeet123/medcess%23environment-variables)
 
 **One-Click Deploy:**
 1. Click the "Deploy with Vercel" button above
