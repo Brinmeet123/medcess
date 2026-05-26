@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { GUEST_DAILY_TOKEN_LIMIT } from '@/lib/ai/config'
+import { msUntilNextUtcReset, utcUsageDayKey } from '@/src/lib/utcUsageDay'
 
 export type AIUsageData = {
+  /** UTC day bucket for this usage row (`YYYY-MM-DD`). */
+  date?: string
+  resetsAt?: string
   tokensUsed: number
   dailyLimit: number
   percentUsed: number
@@ -37,11 +41,23 @@ export function useAIUsage() {
     const onUsageUpdated = () => void load()
     window.addEventListener('focus', onFocus)
     window.addEventListener('ai-usage-updated', onUsageUpdated)
+
+    const resetTimer = window.setTimeout(() => void load(), msUntilNextUtcReset())
+
     return () => {
       window.removeEventListener('focus', onFocus)
       window.removeEventListener('ai-usage-updated', onUsageUpdated)
+      window.clearTimeout(resetTimer)
     }
   }, [load])
+
+  // If the tab stays open past UTC midnight, refetch when the usage day no longer matches today.
+  useEffect(() => {
+    if (!usage?.date) return
+    const today = utcUsageDayKey()
+    if (usage.date === today) return
+    void load()
+  }, [usage?.date, load])
 
   return { usage, loading, reload: load }
 }
@@ -86,7 +102,13 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
     : [
         `AI today: ${display.tokensUsed.toLocaleString()} / ${display.dailyLimit.toLocaleString()} tokens`,
         `${display.requestCount} request${display.requestCount === 1 ? '' : 's'}`,
-        atLimit ? 'Limit reached — resets tomorrow.' : warn ? 'Approaching daily limit.' : null,
+        atLimit
+          ? 'Limit reached — resets at midnight UTC.'
+          : warn
+            ? 'Approaching daily limit.'
+            : display.resetsAt
+              ? `Resets ${new Date(display.resetsAt).toLocaleString()}`
+              : null,
       ]
         .filter(Boolean)
         .join(' · ')

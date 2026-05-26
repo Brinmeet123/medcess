@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { utcCalendarDate } from '@/lib/ai/tokenUsage'
+import { utcCalendarDate } from '@/lib/ai/dailyQuota'
 
 type UsageRow = {
   tokensUsed: number

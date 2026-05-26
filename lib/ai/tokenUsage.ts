@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { getDailyTokenLimit } from '@/lib/ai/config'
 import { DailyAILimitError } from '@/lib/ai/errors'
+import { utcCalendarDate, utcUsageDayKey, nextUtcResetIso } from '@/lib/ai/dailyQuota'
 import { incrementDailyTokenUsage, readDailyTokenUsageRow } from '@/lib/ai/tokenUsageDb'
+
+export { utcCalendarDate, utcUsageDayKey, nextUtcResetIso }
 
 export type TokenUsageBreakdown = {
   inputTokens: number
@@ -18,15 +21,7 @@ export type DailyUsageSnapshot = {
   dailyLimit: number
   percentUsed: number
   lastUpdatedAt: string | null
-}
-
-/** UTC calendar date (matches DB @db.Date rows). */
-export function utcCalendarDate(d = new Date()): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
-}
-
-function formatDateKey(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  resetsAt: string
 }
 
 export async function getDailyUsageSnapshot(
@@ -43,12 +38,13 @@ export async function getDailyUsageSnapshot(
   return {
     actorId,
     isRegistered,
-    date: formatDateKey(date),
+    date: utcUsageDayKey(date),
     tokensUsed,
     requestCount,
     dailyLimit,
     percentUsed,
     lastUpdatedAt: row?.updatedAt?.toISOString() ?? null,
+    resetsAt: nextUtcResetIso(),
   }
 }
 
@@ -108,7 +104,7 @@ export async function listAdminUsageForDate(date: Date = utcCalendarDate()): Pro
       actorId: row.userId,
       displayUser,
       isGuest,
-      date: formatDateKey(date),
+      date: utcUsageDayKey(date),
       tokensUsed: row.tokensUsed,
       requestCount: row.requestCount,
       dailyLimit: getDailyTokenLimit(!isGuest),

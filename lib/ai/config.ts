@@ -1,7 +1,7 @@
-/** Centralized AI model and daily token limits. */
+/** Centralized AI model and daily token limits (reset 00:00 UTC per user / guest session). */
 
 export const DAILY_LIMIT_MESSAGE =
-  'Daily AI limit reached. Your usage resets tomorrow.'
+  'Daily AI limit reached. Your usage resets at midnight UTC.'
 
 export const GUEST_DAILY_TOKEN_LIMIT = 20_000
 export const REGISTERED_DAILY_TOKEN_LIMIT = 60_000
