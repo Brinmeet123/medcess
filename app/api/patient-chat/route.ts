@@ -10,6 +10,7 @@ import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
 import {
   assertWithinDailyPatientChatLimit,
+  isPatientChatLimitColumnAvailable,
   recordPatientChatAIUsage,
 } from '@/lib/ai/patientChatLimits'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
@@ -48,7 +49,8 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
 async function callPatientAI(
   scenario: (typeof scenarios)[0],
   messages: Array<{ role: string; content: string }>,
-  actor: Awaited<ReturnType<typeof resolveAIActorFromRequest>>
+  actor: Awaited<ReturnType<typeof resolveAIActorFromRequest>>,
+  usePatientMessageQuota: boolean
 ): Promise<string> {
   const systemPrompt = buildPatientSystemPrompt(scenario)
   const llmMessages = [
@@ -62,7 +64,8 @@ async function callPatientAI(
   const { content: patientResponse } = await callManagedLLM(llmMessages, actor, {
     maxTokens: 400,
     temperature: 0.75,
-    skipQuota: true,
+    /** When patientChatAiCount column is missing, count tokens toward the daily AI limit instead. */
+    skipQuota: usePatientMessageQuota,
   })
 
   const trimmed = String(patientResponse ?? '').trim()
@@ -114,13 +117,16 @@ export async function POST(request: NextRequest) {
 
     // Primary path: live AI for all clinical / unknown questions
     if (shouldAttemptOllamaForPatientChat()) {
+      const usePatientMessageQuota = await isPatientChatLimitColumnAvailable()
       await assertWithinDailyPatientChatLimit(actor.actorId, actor.isRegistered)
 
-      const trimmed = await callPatientAI(scenario, messages, actor)
+      const trimmed = await callPatientAI(scenario, messages, actor, usePatientMessageQuota)
       const lastDoctor =
         [...messages].reverse().find((m) => m.role === 'doctor' || m.role === 'user')?.content || ''
 
-      await recordPatientChatAIUsage(actor.actorId)
+      if (usePatientMessageQuota) {
+        await recordPatientChatAIUsage(actor.actorId)
+      }
 
       void saveLearnedPatientResponse(scenario.id, lastDoctor, trimmed).catch((err) => {
         console.error('Failed to cache learned patient response:', err)

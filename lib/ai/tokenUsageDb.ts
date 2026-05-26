@@ -32,6 +32,44 @@ function useLegacyTokenWrites(): boolean {
   return legacyTokenSchema === true
 }
 
+/** False when DB has not been migrated with patientChatAiCount yet. */
+export async function isPatientChatLimitColumnAvailable(): Promise<boolean> {
+  await ensureTokenSchemaMode()
+  return !useLegacyTokenWrites()
+}
+
+export async function readPatientChatAiCount(
+  actorId: string,
+  date: Date = utcCalendarDate()
+): Promise<number> {
+  await ensureTokenSchemaMode()
+  if (useLegacyTokenWrites()) return 0
+  const rows = await prisma.$queryRaw<{ count: number }[]>`
+    SELECT COALESCE("patientChatAiCount", 0)::int AS count
+    FROM "UserAITokenUsage"
+    WHERE "userId" = ${actorId} AND "date" = ${date}::date
+    LIMIT 1
+  `
+  return Number(rows[0]?.count ?? 0)
+}
+
+export async function incrementPatientChatAiCount(
+  actorId: string,
+  date: Date = utcCalendarDate()
+): Promise<void> {
+  await ensureTokenSchemaMode()
+  if (useLegacyTokenWrites()) return
+  await prisma.$executeRaw`
+    INSERT INTO "UserAITokenUsage" (
+      "id", "userId", "date", "tokensUsed", "requestCount", "patientChatAiCount", "createdAt", "updatedAt"
+    )
+    VALUES (gen_random_uuid()::text, ${actorId}, ${date}::date, 0, 0, 1, NOW(), NOW())
+    ON CONFLICT ("userId", "date") DO UPDATE SET
+      "patientChatAiCount" = "UserAITokenUsage"."patientChatAiCount" + 1,
+      "updatedAt" = NOW()
+  `
+}
+
 /** Read daily token usage without requiring newer schema columns. */
 export async function readDailyTokenUsageRow(
   actorId: string,
