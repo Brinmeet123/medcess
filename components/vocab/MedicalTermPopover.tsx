@@ -115,7 +115,7 @@ export default function MedicalTermPopover({
       onClick={(e) => e.stopPropagation()}
     >
       <p className="text-[11px] uppercase tracking-wide text-primary-600 mb-1">
-        {isSimplify ? 'Simpler Explanation' : 'Definition'}
+        {isSimplify ? 'SIMPLER EXPLANATION' : 'DEFINITION'}
       </p>
 
       <div className="flex justify-between items-start gap-2 mb-2">

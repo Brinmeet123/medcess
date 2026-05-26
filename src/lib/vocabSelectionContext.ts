@@ -10,6 +10,31 @@ export type SelectionContext = {
 }
 
 const SIMPLIFY_SOURCES = new Set(['debrief', 'summary'])
+const RESULT_CONTEXT_SELECTOR =
+  '[data-highlight-context="result"], [data-vocab-mode="simplify"], [data-highlight-mode="simplify"], .test-result, .debrief, .score-feedback, .results-section, .vocab-simplify-block'
+
+function elementFromNode(node: Node | null): Element | null {
+  if (!node) return null
+  if (node.nodeType === Node.TEXT_NODE) return (node as Text).parentElement
+  return node instanceof Element ? node : null
+}
+
+function isResultContext(range: Range, fallbackEl: Element | null): boolean {
+  const common = fallbackEl
+  const startEl = elementFromNode(range.startContainer)
+  const endEl = elementFromNode(range.endContainer)
+  return Boolean(
+    common?.closest(RESULT_CONTEXT_SELECTOR) ||
+      startEl?.closest(RESULT_CONTEXT_SELECTOR) ||
+      endEl?.closest(RESULT_CONTEXT_SELECTOR)
+  )
+}
+
+function wordCount(raw: string): number {
+  const t = raw.trim()
+  if (!t) return 0
+  return t.split(/\s+/).filter(Boolean).length
+}
 
 /** Extract context and mode from a text selection for vocabulary or result explanation. */
 export function getSelectionContextFromRange(range: Range): SelectionContext {
@@ -26,19 +51,23 @@ export function getSelectionContextFromRange(range: Range): SelectionContext {
   const modeAttr = modeEl?.getAttribute('data-vocab-mode')?.trim()
   const source = block?.getAttribute('data-vocab-source')?.trim() || undefined
 
+  const selected = range.toString().trim()
+  const selectionWords = wordCount(selected)
+  const inResultContext = isResultContext(range, element)
+
   let mode: SelectionMode = 'vocab'
-  if (modeAttr === 'simplify') {
+  if (inResultContext) {
+    mode = 'simplify'
+  } else if (modeAttr === 'simplify') {
     mode = 'simplify'
   } else if (source && SIMPLIFY_SOURCES.has(source)) {
     mode = 'simplify'
-  } else if (element?.closest('.vocab-simplify-block')) {
+  } else if (selectionWords > 3) {
     mode = 'simplify'
   }
 
   const caseId = block?.getAttribute('data-vocab-scenario-id')?.trim() || undefined
   const blockText = block?.getAttribute('data-vocab-text')?.trim()
-
-  const selected = range.toString().trim()
   const sourceText = blockText || getReadableBlockText(element as HTMLElement | null) || ''
   const contextSentence = extractSentenceAround(sourceText, selected)
 

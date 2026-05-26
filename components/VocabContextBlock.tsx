@@ -27,6 +27,7 @@ export default function VocabContextBlock({ children, source, scenarioId, text, 
     <div
       data-vocab-source={source}
       data-vocab-mode={mode}
+      data-highlight-context={mode === 'simplify' ? 'result' : 'case'}
       data-vocab-scenario-id={scenarioId || ''}
       data-vocab-text={blockText}
       className={['vocab-context-block', className].filter(Boolean).join(' ')}
