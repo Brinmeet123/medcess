@@ -222,11 +222,13 @@ export function tryPresetPatientResponse(
   }
 }
 
+/** Returns a preset answer only on a strong match — never the scenario default opener. */
 export function getPresetPatientResponse(
   scenario: Scenario,
   messages: ChatMessage[]
-): string {
-  return tryPresetPatientResponse(scenario, messages).answer
+): string | null {
+  const result = tryPresetPatientResponse(scenario, messages)
+  return result.matched ? result.answer : null
 }
 
 const FALLBACK_SCENARIOS: FallbackScenario[] = [

@@ -6,10 +6,8 @@ import {
   tryPresetPatientResponse,
   type ChatMessage,
 } from '@/lib/presetPatientResponses'
-import {
-  findLearnedPatientResponse,
-  saveLearnedPatientResponse,
-} from '@/lib/patientDialogue/learnedResponses'
+import { findExactLearnedPatientResponse } from '@/lib/patientDialogue/learnedResponses'
+import { PRESET_MATCH_THRESHOLD } from '@/lib/patientDialogue/matching'
 
 export type PatientReplySource =
   | 'preset'
@@ -32,9 +30,10 @@ export function getLastDoctorMessage(messages: ChatMessage[]): string {
 }
 
 /**
- * Scripted layer: preset case Q&A → learned cache. Returns null if AI is required.
+ * Fast path before AI: off-topic redirect and exact learned Q→A only.
+ * Does not use preset buckets or fuzzy cache (those caused repeated generic replies).
  */
-export async function resolveScriptedPatientReply(
+export async function resolvePreAiPatientReply(
   scenario: Scenario,
   messages: ChatMessage[]
 ): Promise<ResolvedPatientReply | null> {
@@ -55,28 +54,41 @@ export async function resolveScriptedPatientReply(
     }
   }
 
-  const presetTry = tryPresetPatientResponse(scenario, messages)
-  if (presetTry.matched) {
+  const exact = await findExactLearnedPatientResponse(scenario.id, lastDoctorMessage)
+  if (exact) {
     return {
-      message: presetTry.answer,
-      source: 'preset',
+      message: exact.response,
+      source: 'cache',
       scripted: true,
-    }
-  }
-
-  const bucket = detectScenarioBucket(scenario)
-  if (bucket) {
-    const cached = await findLearnedPatientResponse(scenario.id, lastDoctorMessage)
-    if (cached) {
-      return {
-        message: cached.response,
-        source: 'cache',
-        scripted: true,
-      }
     }
   }
 
   return null
 }
 
-export { saveLearnedPatientResponse, getPresetPatientResponse }
+/** Strong preset match only — used after AI failure, never the case defaultAnswer. */
+export function tryHighConfidencePresetReply(
+  scenario: Scenario,
+  messages: ChatMessage[]
+): ResolvedPatientReply | null {
+  const presetTry = tryPresetPatientResponse(scenario, messages)
+  if (!presetTry.matched || presetTry.score < PRESET_MATCH_THRESHOLD) {
+    return null
+  }
+  return {
+    message: presetTry.answer,
+    source: 'preset',
+    scripted: true,
+  }
+}
+
+/** @deprecated Use resolvePreAiPatientReply — kept for imports */
+export async function resolveScriptedPatientReply(
+  scenario: Scenario,
+  messages: ChatMessage[]
+): Promise<ResolvedPatientReply | null> {
+  return resolvePreAiPatientReply(scenario, messages)
+}
+
+export { saveLearnedPatientResponse } from '@/lib/patientDialogue/learnedResponses'
+export { getPresetPatientResponse, detectScenarioBucket }

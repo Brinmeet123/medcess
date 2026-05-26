@@ -6,7 +6,8 @@ import {
 } from '@/lib/patientDialogue/normalize'
 import { topicAliasBoost } from '@/lib/patientDialogue/questionAliases'
 
-export const PRESET_MATCH_THRESHOLD = 5
+/** Minimum score to use a preset instead of AI (avoids weak/fuzzy matches). */
+export const PRESET_MATCH_THRESHOLD = 15
 
 export function scorePresetQuestion(question: string, qa: FallbackQA): number {
   const normalized = normalizeQuestion(question)
@@ -62,7 +63,7 @@ export function pickBestPresetAnswer(
 
   if (!bestQA || bestScore < threshold) {
     return {
-      answer: defaultAnswer,
+      answer: '',
       score: bestScore,
       qaId: null,
       matched: false,

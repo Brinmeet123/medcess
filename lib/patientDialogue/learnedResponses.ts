@@ -1,11 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import {
-  normalizeQuestion,
-  questionSimilarity,
-  uniqueQuestionWords,
-} from '@/lib/patientDialogue/normalize'
-
-const CACHE_MATCH_THRESHOLD = 0.62
+import { normalizeQuestion, uniqueQuestionWords } from '@/lib/patientDialogue/normalize'
 
 export type LearnedMatch = {
   response: string
@@ -13,8 +7,8 @@ export type LearnedMatch = {
   similarity: number
 }
 
-/** Find a cached patient reply for this scenario + doctor question. */
-export async function findLearnedPatientResponse(
+/** Exact doctor question only — no fuzzy reuse (prevents wrong repeated answers). */
+export async function findExactLearnedPatientResponse(
   scenarioId: string,
   doctorQuestion: string
 ): Promise<LearnedMatch | null> {
@@ -22,28 +16,17 @@ export async function findLearnedPatientResponse(
   if (!normalized) return null
 
   try {
-    return await findLearnedPatientResponseInner(scenarioId, doctorQuestion, normalized)
-  } catch (err) {
-    console.error('Learned patient response lookup failed (run prisma migrate):', err)
-    return null
-  }
-}
-
-async function findLearnedPatientResponseInner(
-  scenarioId: string,
-  doctorQuestion: string,
-  normalized: string
-): Promise<LearnedMatch | null> {
-  const exact = await prisma.patientLearnedResponse.findUnique({
-    where: {
-      scenarioId_normalizedQuestion: {
-        scenarioId,
-        normalizedQuestion: normalized,
+    const exact = await prisma.patientLearnedResponse.findUnique({
+      where: {
+        scenarioId_normalizedQuestion: {
+          scenarioId,
+          normalizedQuestion: normalized,
+        },
       },
-    },
-  })
+    })
 
-  if (exact) {
+    if (!exact) return null
+
     void prisma.patientLearnedResponse
       .update({
         where: { id: exact.id },
@@ -52,32 +35,18 @@ async function findLearnedPatientResponseInner(
       .catch(() => {})
 
     return { response: exact.response, id: exact.id, similarity: 1 }
+  } catch (err) {
+    console.error('Learned patient response lookup failed (run prisma migrate):', err)
+    return null
   }
+}
 
-  const candidates = await prisma.patientLearnedResponse.findMany({
-    where: { scenarioId },
-    orderBy: { usageCount: 'desc' },
-    take: 40,
-  })
-
-  let best: LearnedMatch | null = null
-  for (const row of candidates) {
-    const sim = questionSimilarity(normalized, row.normalizedQuestion)
-    if (sim >= CACHE_MATCH_THRESHOLD && (!best || sim > best.similarity)) {
-      best = { response: row.response, id: row.id, similarity: sim }
-    }
-  }
-
-  if (best) {
-    void prisma.patientLearnedResponse
-      .update({
-        where: { id: best.id },
-        data: { usageCount: { increment: 1 } },
-      })
-      .catch(() => {})
-  }
-
-  return best
+/** @deprecated Fuzzy cache disabled — use findExactLearnedPatientResponse */
+export async function findLearnedPatientResponse(
+  scenarioId: string,
+  doctorQuestion: string
+): Promise<LearnedMatch | null> {
+  return findExactLearnedPatientResponse(scenarioId, doctorQuestion)
 }
 
 /** Persist a new AI-generated Q&A pair for future reuse in this scenario. */
