@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { GUEST_DAILY_TOKEN_LIMIT } from '@/lib/ai/config'
 
 export type AIUsageData = {
   tokensUsed: number
@@ -50,15 +51,13 @@ function formatTokens(n: number): string {
   return String(n)
 }
 
-const GUEST_TOKEN_LIMIT = 25_000
-
 /** Subtle header chip — thin bar + tiny label; full stats on hover. */
 export default function AIUsageHeaderIndicator({ className = '' }: { className?: string }) {
   const { usage, loading } = useAIUsage()
 
   const display = usage ?? {
     tokensUsed: 0,
-    dailyLimit: GUEST_TOKEN_LIMIT,
+    dailyLimit: GUEST_DAILY_TOKEN_LIMIT,
     percentUsed: 0,
     requestCount: 0,
     isRegistered: false,
