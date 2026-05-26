@@ -1,5 +1,8 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import { isLocalhostOrigin, resolveAppOrigin, sanitizeAuthEnvironment } from '@/lib/appOrigin'
+
+sanitizeAuthEnvironment()
 
 /**
  * Auth.js requires a secret to sign sessions. Without it, /api/auth/session returns 500 and
@@ -53,6 +56,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      const origin = resolveAppOrigin({ fallbackOrigin: baseUrl })
+
+      if (url.startsWith('/')) {
+        return `${origin}${url}`
+      }
+
+      try {
+        const target = new URL(url)
+        if (target.origin === origin) return url
+        if (isLocalhostOrigin(target.origin) && !isLocalhostOrigin(origin)) {
+          return `${origin}${target.pathname}${target.search}${target.hash}`
+        }
+      } catch {
+        /* fall through */
+      }
+
+      return `${origin}/`
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id

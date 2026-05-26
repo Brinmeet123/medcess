@@ -51,7 +51,9 @@ If you see **“No Next.js version detected”**, Vercel is not using the folder
 
 Add these in Vercel Dashboard → Project Settings → Environment Variables (see `.env.example`):
 - `DATABASE_URL` / `DIRECT_URL`: PostgreSQL (required for auth and saved progress)
-- `AUTH_SECRET`, `AUTH_URL`: Auth.js session config
+- `AUTH_SECRET`: Auth.js session signing (required in production)
+- `AUTH_URL`: Optional canonical URL. **Do not set to `localhost` on Production/Preview** — omit it on Vercel (Auth.js uses the deployment host) or set to your live URL (e.g. `https://your-domain.com`). Also accepts legacy `NEXTAUTH_URL`.
+- `NEXT_PUBLIC_APP_URL`: Recommended for a **custom domain** so logout and auth redirects always return to your production homepage (not `*.vercel.app`).
 - `OPENAI_API_KEY` (or `OPENAI_API`): OpenAI API key for real AI
 - `AI_MODEL`: Optional (default `gpt-4o-mini`)
 - `DEMO_MODE`: Set to `true` for mock-only deployment (no OpenAI calls)
