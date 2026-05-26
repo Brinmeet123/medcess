@@ -50,15 +50,26 @@ function formatTokens(n: number): string {
   return String(n)
 }
 
+const GUEST_TOKEN_LIMIT = 25_000
+
 /** Subtle header chip — thin bar + tiny label; full stats on hover. */
 export default function AIUsageHeaderIndicator({ className = '' }: { className?: string }) {
   const { usage, loading } = useAIUsage()
 
-  if (loading || !usage) return null
+  const display = usage ?? {
+    tokensUsed: 0,
+    dailyLimit: GUEST_TOKEN_LIMIT,
+    percentUsed: 0,
+    requestCount: 0,
+    isRegistered: false,
+    patientChatAiUsed: 0,
+    patientChatAiLimit: 15,
+    patientChatAiPercentUsed: 0,
+  }
 
-  const atLimit = usage.tokensUsed >= usage.dailyLimit
-  const warn = !atLimit && usage.percentUsed >= 80
-  const pct = Math.min(100, usage.percentUsed)
+  const atLimit = !loading && display.tokensUsed >= display.dailyLimit
+  const warn = !loading && !atLimit && display.percentUsed >= 80
+  const pct = Math.min(100, display.percentUsed)
 
   const barColor = atLimit
     ? 'bg-red-500 dark:bg-red-400'
@@ -71,19 +82,22 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
       ? 'text-amber-700 dark:text-amber-300'
       : 'text-slate-500 dark:text-[#CBD5E1]'
 
-  const tooltip = [
-    `AI today: ${usage.tokensUsed.toLocaleString()} / ${usage.dailyLimit.toLocaleString()} tokens`,
-    `${usage.requestCount} request${usage.requestCount === 1 ? '' : 's'}`,
-    atLimit ? 'Limit reached — resets tomorrow.' : warn ? 'Approaching daily limit.' : null,
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const tooltip = loading
+    ? 'Loading AI usage…'
+    : [
+        `AI today: ${display.tokensUsed.toLocaleString()} / ${display.dailyLimit.toLocaleString()} tokens`,
+        `${display.requestCount} request${display.requestCount === 1 ? '' : 's'}`,
+        atLimit ? 'Limit reached — resets tomorrow.' : warn ? 'Approaching daily limit.' : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
 
   return (
     <div
-      className={`flex items-center gap-2 shrink-0 ${className}`}
+      className={`flex items-center gap-2 shrink-0 ${loading ? 'opacity-60' : ''} ${className}`}
       title={tooltip}
       aria-label={tooltip}
+      aria-busy={loading}
     >
       <span className={`text-[10px] font-medium leading-none whitespace-nowrap ${labelColor}`}>
         AI usage
@@ -91,12 +105,12 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
       <div className="flex flex-col justify-center gap-0.5 min-w-[3.5rem] max-w-[4.5rem]">
         <div className="h-0.5 w-full rounded-full bg-slate-100 dark:bg-[#14345C] overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${barColor}`}
-            style={{ width: `${Math.max(pct, pct > 0 ? 4 : 0)}%` }}
+            className={`h-full rounded-full transition-all duration-300 ${loading ? 'bg-slate-300 dark:bg-slate-600' : barColor}`}
+            style={{ width: loading ? '30%' : `${Math.max(pct, pct > 0 ? 4 : 0)}%` }}
           />
         </div>
         <span className={`text-[10px] leading-none tabular-nums text-right ${labelColor}`}>
-          {formatTokens(usage.tokensUsed)}/{formatTokens(usage.dailyLimit)}
+          {formatTokens(display.tokensUsed)}/{formatTokens(display.dailyLimit)}
         </span>
       </div>
     </div>

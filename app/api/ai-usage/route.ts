@@ -11,12 +11,17 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   const actor = await resolveAIActorFromRequest(request)
   const usage = await getDailyUsageSnapshot(actor.actorId, actor.isRegistered)
-  const date = utcCalendarDate()
-  const row = await prisma.userAITokenUsage.findUnique({
-    where: { userId_date: { userId: actor.actorId, date } },
-  })
-  const patientChatAiUsed = row?.patientChatAiCount ?? 0
+  let patientChatAiUsed = 0
   const patientChatAiLimit = getDailyPatientChatLimit(actor.isRegistered)
+  try {
+    const date = utcCalendarDate()
+    const row = await prisma.userAITokenUsage.findUnique({
+      where: { userId_date: { userId: actor.actorId, date } },
+    })
+    patientChatAiUsed = row?.patientChatAiCount ?? 0
+  } catch {
+    /* column/table may be missing before migration — token usage still works */
+  }
 
   const res = NextResponse.json({
     ...usage,

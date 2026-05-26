@@ -33,8 +33,8 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <ThemeToggle className="hidden sm:inline-flex mx-1" />
-            <AIUsageHeaderIndicator className="hidden sm:flex mx-2" />
+            <AIUsageHeaderIndicator className="flex mx-2" />
+            <ThemeToggle className="inline-flex mx-1" />
 
             {status === 'loading' ? (
               <span className="text-sm text-slate-400 px-2" aria-live="polite">
@@ -65,6 +65,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
+            <AIUsageHeaderIndicator className="flex max-w-[5.5rem]" />
             <ThemeToggle compact />
             <button
               type="button"
