@@ -9,6 +9,8 @@ type Props = {
   source: SourceType
   scenarioId?: string
   text?: string
+  /** vocab = medical term lookup; simplify = plain-language result/debrief explanation */
+  mode?: 'vocab' | 'simplify'
   /** Merged onto the wrapper (e.g. flex layout for scroll regions) */
   className?: string
 }
@@ -17,13 +19,14 @@ type Props = {
  * Wraps text content to provide context for vocabulary highlighting
  * Stores context metadata in data attributes for the highlight system
  */
-export default function VocabContextBlock({ children, source, scenarioId, text, className }: Props) {
+export default function VocabContextBlock({ children, source, scenarioId, text, mode = 'vocab', className }: Props) {
   // If text is provided, use it; otherwise extract from children
   const blockText = text || (typeof children === 'string' ? children : '')
 
   return (
     <div
       data-vocab-source={source}
+      data-vocab-mode={mode}
       data-vocab-scenario-id={scenarioId || ''}
       data-vocab-text={blockText}
       className={['vocab-context-block', className].filter(Boolean).join(' ')}

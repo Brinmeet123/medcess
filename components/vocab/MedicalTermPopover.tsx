@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import type { MedicalTerm } from '@/src/types/medicalTerm'
 
+type PopoverMode = 'definition' | 'simplify'
+
 type Props = {
+  mode?: PopoverMode
   medicalTerm: MedicalTerm | null
+  simplifyExplanation?: string | null
   selectedText: string
   position: { x: number; y: number } | null
   onClose: () => void
@@ -21,7 +25,9 @@ type Props = {
 }
 
 export default function MedicalTermPopover({
+  mode = 'definition',
   medicalTerm,
+  simplifyExplanation = null,
   selectedText,
   position,
   onClose,
@@ -37,10 +43,11 @@ export default function MedicalTermPopover({
 }: Props) {
   const popoverRef = useRef<HTMLDivElement>(null)
   const [moreDetails, setMoreDetails] = useState(false)
+  const isSimplify = mode === 'simplify'
 
   useEffect(() => {
     setMoreDetails(false)
-  }, [medicalTerm?.id, selectedText])
+  }, [medicalTerm?.id, selectedText, mode])
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -66,7 +73,11 @@ export default function MedicalTermPopover({
   if (!position) return null
 
   const heading = medicalTerm?.term ?? selectedText
-  const shortDef = medicalTerm ? medicalTerm.shortDefinition : null
+  const shortDef = isSimplify
+    ? simplifyExplanation
+    : medicalTerm
+      ? medicalTerm.shortDefinition
+      : null
   const longDef = medicalTerm?.definition
 
   const getPosition = () => {
@@ -94,6 +105,7 @@ export default function MedicalTermPopover({
   return (
     <div
       ref={popoverRef}
+      data-vocab-popover
       className="fixed z-50 bg-white rounded-lg shadow-xl border-2 border-primary-200 p-3 max-w-sm w-[min(100vw-24px,340px)]"
       style={{
         left: `${pos.x}px`,
@@ -102,16 +114,20 @@ export default function MedicalTermPopover({
       }}
       onClick={(e) => e.stopPropagation()}
     >
+      <p className="text-[11px] uppercase tracking-wide text-primary-600 mb-1">
+        {isSimplify ? 'Simpler Explanation' : 'Definition'}
+      </p>
+
       <div className="flex justify-between items-start gap-2 mb-2">
         <div className="min-w-0">
           <h4 className="font-bold text-base text-primary-900 leading-snug break-words">{heading}</h4>
-          {medicalTerm && (
+          {medicalTerm && !isSimplify && (
             <p className="text-[11px] uppercase tracking-wide text-primary-600 mt-0.5">{medicalTerm.category}</p>
           )}
-          {fromCache && !isLoading && (
+          {!isSimplify && fromCache && !isLoading && (
             <p className="text-[11px] text-emerald-800/90 mt-1">Saved definition (shared cache)</p>
           )}
-          {isAIGenerated && !isLoading && !fromCache && (
+          {!isSimplify && isAIGenerated && !isLoading && !fromCache && (
             <p className="text-[11px] italic text-amber-800/90 mt-1">AI-generated definition</p>
           )}
         </div>
@@ -137,18 +153,20 @@ export default function MedicalTermPopover({
             className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
             aria-hidden
           />
-          Looking up definition…
+          {isSimplify ? 'Simplifying…' : 'Looking up definition…'}
         </div>
       )}
 
-      {!isLoading && !medicalTerm && !errorMessage && (
-        <p className="text-sm text-gray-600 mb-3">No definition available for this selection.</p>
+      {!isLoading && !shortDef && !errorMessage && (
+        <p className="text-sm text-gray-600 mb-3">
+          {isSimplify ? 'No explanation available for this selection.' : 'No definition available for this selection.'}
+        </p>
       )}
 
-      {medicalTerm && shortDef && !isLoading && (
+      {shortDef && !isLoading && (
         <div className="mb-2 space-y-2">
           <p className="text-sm text-gray-900">{shortDef}</p>
-          {longDef && longDef !== shortDef && (
+          {!isSimplify && longDef && longDef !== shortDef && (
             <div>
               <button
                 type="button"
@@ -162,13 +180,13 @@ export default function MedicalTermPopover({
               )}
             </div>
           )}
-          {medicalTerm.relatedTerms.length > 0 && (
+          {!isSimplify && medicalTerm && medicalTerm.relatedTerms.length > 0 && (
             <p className="text-xs text-gray-600">
               <span className="font-medium text-gray-700">Related: </span>
               {medicalTerm.relatedTerms.join(', ')}
             </p>
           )}
-          {medicalTerm.synonyms.length > 0 && (
+          {!isSimplify && medicalTerm && medicalTerm.synonyms.length > 0 && (
             <p className="text-xs text-gray-500">
               <span className="font-medium text-gray-600">Also called: </span>
               {medicalTerm.synonyms.join(', ')}
@@ -177,31 +195,33 @@ export default function MedicalTermPopover({
         </div>
       )}
 
-      {authHint && !isSaved && (
+      {!isSimplify && authHint && !isSaved && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mb-2">
           {authHint}
         </p>
       )}
 
       <div className="flex gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={!canSave || isSaving || isSaved || isLoading}
-          className={`flex-1 px-3 py-2 rounded transition text-sm font-medium flex items-center justify-center gap-1 ${
-            isSaved
-              ? 'bg-green-600 text-white cursor-default'
-              : !canSave || isSaving || isLoading
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-primary-600 text-white hover:bg-primary-700'
-          }`}
-        >
-          {isSaving ? 'Saving…' : isSaved ? 'Saved' : 'Save term'}
-        </button>
+        {!isSimplify && (
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={!canSave || isSaving || isSaved || isLoading}
+            className={`flex-1 px-3 py-2 rounded transition text-sm font-medium flex items-center justify-center gap-1 ${
+              isSaved
+                ? 'bg-green-600 text-white cursor-default'
+                : !canSave || isSaving || isLoading
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-primary-600 text-white hover:bg-primary-700'
+            }`}
+          >
+            {isSaving ? 'Saving…' : isSaved ? 'Saved' : 'Save term'}
+          </button>
+        )}
         <button
           type="button"
           onClick={onClose}
-          className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition text-sm"
+          className={`px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition text-sm ${isSimplify ? 'flex-1' : ''}`}
         >
           Close
         </button>

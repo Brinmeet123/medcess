@@ -4,9 +4,14 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import type { MedicalTerm } from '@/src/types/medicalTerm'
 import { lookupMedicalTerm, normalizeLookupKey } from '@/src/lib/medicalTerms'
 import { fetchVocabDefinition } from '@/src/lib/fetchVocabDefinition'
+import { fetchResultExplanation } from '@/src/lib/fetchResultExplanation'
 import { medicalTermLikeToMedicalTerm } from '@/src/lib/aiTermToMedicalTerm'
 import { getScrollableAncestors } from '@/src/lib/scrollAnchor'
-import { getVocabContextFromRange } from '@/src/lib/vocabSelectionContext'
+import {
+  getSelectionContextFromRange,
+  isSelectionValidForMode,
+  type SelectionMode,
+} from '@/src/lib/vocabSelectionContext'
 import MedicalTermPopover from '@/components/vocab/MedicalTermPopover'
 import { useVocabStore } from '@/lib/useVocabStore'
 import { isPlaceholderVocabDefinition } from '@/src/lib/vocabDefinitionQuality'
@@ -35,14 +40,10 @@ function isInsideInput(node: Node | null): boolean {
   return false
 }
 
-function isSelectionTrivial(raw: string): boolean {
-  const t = raw.trim()
-  if (t.length < 2) return true
-  if (t.length > 72) return true
-  if (!/[\p{L}\p{N}]/u.test(t)) return true
-  const letters = t.replace(/[\s\p{P}]/gu, '')
-  if (letters.length < 2) return true
-  return false
+function isInsidePopover(node: Node | null): boolean {
+  if (!node) return false
+  const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element)
+  return Boolean(el?.closest('[data-vocab-popover]'))
 }
 
 function isAIGeneratedTerm(term: MedicalTerm | null): boolean {
@@ -53,7 +54,9 @@ function isAIGeneratedTerm(term: MedicalTerm | null): boolean {
 export default function SelectionVocabHandler() {
   const [selectedText, setSelectedText] = useState<string | null>(null)
   const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null)
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>('vocab')
   const [medicalTerm, setMedicalTerm] = useState<MedicalTerm | null>(null)
+  const [simplifyExplanation, setSimplifyExplanation] = useState<string | null>(null)
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
   const [fromCache, setFromCache] = useState(false)
@@ -71,7 +74,9 @@ export default function SelectionVocabHandler() {
     abortRef.current = null
     setSelectedText(null)
     setSelectionPosition(null)
+    setSelectionMode('vocab')
     setMedicalTerm(null)
+    setSimplifyExplanation(null)
     setIsLoadingAI(false)
     setAiError(null)
     setFromCache(false)
@@ -113,24 +118,26 @@ export default function SelectionVocabHandler() {
       }
 
       const selection = window.getSelection()
-      if (!selection || selection.rangeCount === 0) {
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
         handleClose()
         return
       }
 
       const range = selection.getRangeAt(0)
-      if (isInsideInput(range.commonAncestorContainer)) {
+      if (isInsideInput(range.commonAncestorContainer) || isInsidePopover(range.commonAncestorContainer)) {
         handleClose()
         return
       }
 
       const raw = selection.toString()
-      if (isSelectionTrivial(raw)) {
+      const ctx = getSelectionContextFromRange(range)
+      if (!isSelectionValidForMode(raw, ctx.mode)) {
         handleClose()
         return
       }
 
-      const trimmed = normalizeLookupKey(raw)
+      const trimmed = raw.trim()
+      const lookupKey = normalizeLookupKey(raw)
       abortRef.current?.abort()
       abortRef.current = null
 
@@ -147,28 +154,56 @@ export default function SelectionVocabHandler() {
         y: rect.top,
       })
       setSelectedText(trimmed)
+      setSelectionMode(ctx.mode)
       setAiError(null)
+      setSimplifyExplanation(null)
+      setMedicalTerm(null)
+      setFromCache(false)
 
-      const local = lookupMedicalTerm(trimmed)
-      if (local) {
-        setMedicalTerm(local)
-        setIsLoadingAI(false)
-        setFromCache(false)
+      if (ctx.mode === 'simplify') {
+        setIsLoadingAI(true)
+        const ac = new AbortController()
+        abortRef.current = ac
+
+        fetchResultExplanation(trimmed, {
+          signal: ac.signal,
+          contextSentence: ctx.contextSentence,
+          caseId: ctx.caseId,
+          source: ctx.source,
+        })
+          .then((result) => {
+            if (ac.signal.aborted) return
+            setSimplifyExplanation(result.explanation)
+            setIsLoadingAI(false)
+            setAiError(null)
+          })
+          .catch((e: unknown) => {
+            if (e instanceof DOMException && e.name === 'AbortError') return
+            setIsLoadingAI(false)
+            setAiError(e instanceof Error ? e.message : 'Could not simplify this text.')
+          })
         return
       }
 
-      setMedicalTerm(null)
+      const local = lookupMedicalTerm(lookupKey)
+      if (local) {
+        setMedicalTerm(local)
+        setIsLoadingAI(false)
+        return
+      }
+
       setIsLoadingAI(true)
-      setFromCache(false)
       const ac = new AbortController()
       abortRef.current = ac
 
-      const { contextSentence, caseId } = getVocabContextFromRange(range)
-
-      fetchVocabDefinition(trimmed, { signal: ac.signal, contextSentence, caseId })
+      fetchVocabDefinition(lookupKey, {
+        signal: ac.signal,
+        contextSentence: ctx.contextSentence,
+        caseId: ctx.caseId,
+      })
         .then((result) => {
           if (ac.signal.aborted) return
-          const nk = trimmed.trim().toLowerCase().replace(/\s+/g, ' ')
+          const nk = lookupKey.trim().toLowerCase().replace(/\s+/g, ' ')
           setMedicalTerm(medicalTermLikeToMedicalTerm(result, nk))
           setFromCache(result.cached)
           setIsLoadingAI(false)
@@ -221,8 +256,31 @@ export default function SelectionVocabHandler() {
     }
   }, [selectedText, updatePositionFromRange])
 
+  /** Prevent accidental button/link activation after the user selected text. */
+  useEffect(() => {
+    const onClickCapture = (e: MouseEvent) => {
+      const sel = window.getSelection()
+      if (!sel || sel.isCollapsed) return
+      const text = sel.toString().trim()
+      if (text.length < 2) return
+
+      const target = e.target
+      if (!(target instanceof HTMLElement)) return
+      if (target.closest('[data-vocab-popover]')) return
+
+      const interactive = target.closest('button, a, [role="button"], [role="tab"]')
+      if (interactive) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+
+    document.addEventListener('click', onClickCapture, true)
+    return () => document.removeEventListener('click', onClickCapture, true)
+  }, [])
+
   const handleSave = async () => {
-    if (!medicalTerm || !isLoaded || isLoadingAI) return
+    if (selectionMode !== 'vocab' || !medicalTerm || !isLoaded || isLoadingAI) return
     setSaveError(null)
     setIsSaving(true)
     try {
@@ -242,6 +300,7 @@ export default function SelectionVocabHandler() {
     : ''
   const definitionIsPlaceholder = isPlaceholderVocabDefinition(definitionText)
   const canSave =
+    selectionMode === 'vocab' &&
     Boolean(medicalTerm) &&
     !isLoadingAI &&
     !aiError &&
@@ -251,13 +310,15 @@ export default function SelectionVocabHandler() {
   const combinedError =
     saveError ??
     aiError ??
-    (definitionIsPlaceholder && medicalTerm
+    (selectionMode === 'vocab' && definitionIsPlaceholder && medicalTerm
       ? 'A real definition is required to save. Set OPENAI_API_KEY in .env.local (and redeploy on Vercel), or turn off DEMO_MODE.'
       : null)
 
   return (
     <MedicalTermPopover
+      mode={selectionMode === 'simplify' ? 'simplify' : 'definition'}
       medicalTerm={medicalTerm}
+      simplifyExplanation={simplifyExplanation}
       selectedText={selectedText}
       position={selectionPosition}
       onClose={handleClose}
@@ -269,7 +330,11 @@ export default function SelectionVocabHandler() {
       isAIGenerated={isAIGeneratedTerm(medicalTerm) && !fromCache}
       fromCache={fromCache}
       errorMessage={combinedError}
-      authHint={!sessionCanSave && medicalTerm ? 'Sign in to save terms to your account.' : null}
+      authHint={
+        selectionMode === 'vocab' && !sessionCanSave && medicalTerm
+          ? 'Sign in to save terms to your account.'
+          : null
+      }
     />
   )
 }

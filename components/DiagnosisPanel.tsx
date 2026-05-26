@@ -298,12 +298,11 @@ export default function DiagnosisPanel({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-[#CBD5E1] mb-2">
-                        <VocabText
-                          text={resolved.explanation}
-                          onTermClick={onTermClick}
-                          onTermSave={onTermSave}
-                        />
+                      <p
+                        className="text-xs text-gray-600 dark:text-[#CBD5E1] mb-2 vocab-simplify-block"
+                        data-vocab-mode="simplify"
+                      >
+                        {resolved.explanation}
                       </p>
                     </div>
                     <div className="flex gap-2">

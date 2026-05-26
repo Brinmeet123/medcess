@@ -70,6 +70,33 @@ body {
   .btn-press {
     @apply transition-all duration-200 ease-out active:scale-[0.98];
   }
+
+  /* Allow text selection for global vocab highlight on buttons, headings, tabs, etc. */
+  nav,
+  nav button,
+  nav a,
+  main,
+  main button,
+  main [role='button'],
+  main [role='tab'],
+  main h1,
+  main h2,
+  main h3,
+  main h4,
+  main label,
+  footer,
+  footer a {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  input,
+  textarea,
+  select,
+  [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
 }
 
 @layer components {

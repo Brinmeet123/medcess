@@ -136,14 +136,13 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
           )}
         </div>
         {isOrdered && (
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-[#14345C]">
+          <div
+            className="mt-3 pt-3 border-t border-gray-200 dark:border-[#14345C] vocab-simplify-block"
+            data-vocab-mode="simplify"
+          >
             <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC] mb-1">Result:</p>
             <p className="text-sm text-gray-700 dark:text-[#CBD5E1] bg-white dark:bg-[#020817] p-2 rounded border border-gray-200 dark:border-[#14345C]">
-              <VocabText
-                text={orderedTests.get(test.id)?.result || ''}
-                onTermClick={onTermClick}
-                onTermSave={onTermSave}
-              />
+              {orderedTests.get(test.id)?.result || ''}
             </p>
           </div>
         )}
