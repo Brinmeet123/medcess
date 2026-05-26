@@ -3,8 +3,8 @@
 export const DAILY_LIMIT_MESSAGE =
   'Daily AI limit reached. Your usage resets tomorrow.'
 
-export const GUEST_DAILY_TOKEN_LIMIT = 15_000
-export const REGISTERED_DAILY_TOKEN_LIMIT = 50_000
+export const GUEST_DAILY_TOKEN_LIMIT = 20_000
+export const REGISTERED_DAILY_TOKEN_LIMIT = 60_000
 
 /** Default model id (OpenAI-compatible). Override via AI_MODEL or OPENAI_MODEL. */
 export const DEFAULT_AI_MODEL = 'gpt-4o-mini'
