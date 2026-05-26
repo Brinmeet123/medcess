@@ -28,14 +28,14 @@ async function ensureTokenSchemaMode(): Promise<void> {
   legacyTokenSchema = !rows[0]?.exists
 }
 
-function useLegacyTokenWrites(): boolean {
+function isLegacyTokenSchema(): boolean {
   return legacyTokenSchema === true
 }
 
 /** False when DB has not been migrated with patientChatAiCount yet. */
 export async function isPatientChatLimitColumnAvailable(): Promise<boolean> {
   await ensureTokenSchemaMode()
-  return !useLegacyTokenWrites()
+  return !isLegacyTokenSchema()
 }
 
 export async function readPatientChatAiCount(
@@ -43,7 +43,7 @@ export async function readPatientChatAiCount(
   date: Date = utcCalendarDate()
 ): Promise<number> {
   await ensureTokenSchemaMode()
-  if (useLegacyTokenWrites()) return 0
+  if (isLegacyTokenSchema()) return 0
   const rows = await prisma.$queryRaw<{ count: number }[]>`
     SELECT COALESCE("patientChatAiCount", 0)::int AS count
     FROM "UserAITokenUsage"
@@ -58,7 +58,7 @@ export async function incrementPatientChatAiCount(
   date: Date = utcCalendarDate()
 ): Promise<void> {
   await ensureTokenSchemaMode()
-  if (useLegacyTokenWrites()) return
+  if (isLegacyTokenSchema()) return
   await prisma.$executeRaw`
     INSERT INTO "UserAITokenUsage" (
       "id", "userId", "date", "tokensUsed", "requestCount", "patientChatAiCount", "createdAt", "updatedAt"
@@ -76,7 +76,7 @@ export async function readDailyTokenUsageRow(
   date: Date = utcCalendarDate()
 ): Promise<UsageRow | null> {
   await ensureTokenSchemaMode()
-  if (useLegacyTokenWrites()) {
+  if (isLegacyTokenSchema()) {
     const rows = await prisma.$queryRaw<UsageRow[]>`
       SELECT "tokensUsed", "requestCount", "updatedAt"
       FROM "UserAITokenUsage"
@@ -112,7 +112,7 @@ export async function incrementDailyTokenUsage(
 ): Promise<void> {
   await ensureTokenSchemaMode()
   const total = Math.max(0, totalTokens)
-  if (useLegacyTokenWrites()) {
+  if (isLegacyTokenSchema()) {
     await legacyIncrementDailyTokenUsage(actorId, total, date)
     return
   }
