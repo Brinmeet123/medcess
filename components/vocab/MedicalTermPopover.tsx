@@ -106,7 +106,7 @@ export default function MedicalTermPopover({
     <div
       ref={popoverRef}
       data-vocab-popover
-      className="fixed z-50 bg-white rounded-lg shadow-xl border-2 border-primary-200 p-3 max-w-sm w-[min(100vw-24px,340px)]"
+      className="fixed z-50 bg-white dark:bg-[#071A33] rounded-lg shadow-xl border-2 border-primary-200 dark:border-[#14345C] p-3 max-w-sm w-[min(100vw-24px,340px)]"
       style={{
         left: `${pos.x}px`,
         top: `${pos.y}px`,
@@ -114,15 +114,15 @@ export default function MedicalTermPopover({
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <p className="text-[11px] uppercase tracking-wide text-primary-600 mb-1">
+      <p className="text-[11px] uppercase tracking-wide text-primary-600 dark:text-primary-300 mb-1">
         {isSimplify ? 'SIMPLER EXPLANATION' : 'DEFINITION'}
       </p>
 
       <div className="flex justify-between items-start gap-2 mb-2">
         <div className="min-w-0">
-          <h4 className="font-bold text-base text-primary-900 leading-snug break-words">{heading}</h4>
+          <h4 className="font-bold text-base text-primary-900 dark:text-[#F8FAFC] leading-snug break-words">{heading}</h4>
           {medicalTerm && !isSimplify && (
-            <p className="text-[11px] uppercase tracking-wide text-primary-600 mt-0.5">{medicalTerm.category}</p>
+            <p className="text-[11px] uppercase tracking-wide text-primary-600 dark:text-primary-300 mt-0.5">{medicalTerm.category}</p>
           )}
           {!isSimplify && fromCache && !isLoading && (
             <p className="text-[11px] text-emerald-800/90 mt-1">Saved definition (shared cache)</p>
@@ -134,7 +134,7 @@ export default function MedicalTermPopover({
         <button
           type="button"
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 text-xl leading-none shrink-0"
+          className="text-gray-400 dark:text-[#94a3b8] hover:text-gray-600 dark:hover:text-[#CBD5E1] text-xl leading-none shrink-0"
           aria-label="Close"
         >
           ×
@@ -142,13 +142,13 @@ export default function MedicalTermPopover({
       </div>
 
       {errorMessage && (
-        <p className="text-sm text-red-700 mb-3" role="alert">
+        <p className="text-sm text-red-700 dark:text-red-300 mb-3" role="alert">
           {errorMessage}
         </p>
       )}
 
       {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-[#CBD5E1] mb-3 py-2">
           <span
             className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
             aria-hidden
@@ -158,37 +158,37 @@ export default function MedicalTermPopover({
       )}
 
       {!isLoading && !shortDef && !errorMessage && (
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-gray-600 dark:text-[#CBD5E1] mb-3">
           {isSimplify ? 'No explanation available for this selection.' : 'No definition available for this selection.'}
         </p>
       )}
 
       {shortDef && !isLoading && (
         <div className="mb-2 space-y-2">
-          <p className="text-sm text-gray-900">{shortDef}</p>
+          <p className="text-sm text-gray-900 dark:text-[#F8FAFC]">{shortDef}</p>
           {!isSimplify && longDef && longDef !== shortDef && (
             <div>
               <button
                 type="button"
                 onClick={() => setMoreDetails(!moreDetails)}
-                className="text-xs font-medium text-primary-700 hover:text-primary-900"
+                className="text-xs font-medium text-primary-700 dark:text-primary-300 hover:text-primary-900 dark:hover:text-primary-200"
               >
                 {moreDetails ? '▼ Hide details' : '▶ More details'}
               </button>
               {moreDetails && (
-                <p className="text-xs text-gray-700 mt-1 leading-relaxed border-t border-gray-100 pt-2">{longDef}</p>
+                <p className="text-xs text-gray-700 dark:text-[#CBD5E1] mt-1 leading-relaxed border-t border-gray-100 dark:border-[#14345C] pt-2">{longDef}</p>
               )}
             </div>
           )}
           {!isSimplify && medicalTerm && medicalTerm.relatedTerms.length > 0 && (
-            <p className="text-xs text-gray-600">
-              <span className="font-medium text-gray-700">Related: </span>
+            <p className="text-xs text-gray-600 dark:text-[#CBD5E1]">
+              <span className="font-medium text-gray-700 dark:text-[#F8FAFC]">Related: </span>
               {medicalTerm.relatedTerms.join(', ')}
             </p>
           )}
           {!isSimplify && medicalTerm && medicalTerm.synonyms.length > 0 && (
-            <p className="text-xs text-gray-500">
-              <span className="font-medium text-gray-600">Also called: </span>
+            <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              <span className="font-medium text-gray-600 dark:text-[#CBD5E1]">Also called: </span>
               {medicalTerm.synonyms.join(', ')}
             </p>
           )}
@@ -196,7 +196,7 @@ export default function MedicalTermPopover({
       )}
 
       {!isSimplify && authHint && !isSaved && (
-        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mb-2">
+        <p className="text-xs text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded px-2 py-1.5 mb-2">
           {authHint}
         </p>
       )}
@@ -221,7 +221,7 @@ export default function MedicalTermPopover({
         <button
           type="button"
           onClick={onClose}
-          className={`px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition text-sm ${isSimplify ? 'flex-1' : ''}`}
+          className={`px-3 py-2 bg-gray-100 dark:bg-[#14345C] text-gray-700 dark:text-[#CBD5E1] rounded hover:bg-gray-200 dark:hover:bg-[#1e4a7a] transition text-sm ${isSimplify ? 'flex-1' : ''}`}
         >
           Close
         </button>

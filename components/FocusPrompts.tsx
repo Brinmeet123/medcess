@@ -70,7 +70,7 @@ export default function FocusPrompts({ onInsertQuestion }: Props) {
 
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-medium text-gray-700 mb-3">Suggested angles</h3>
+      <h3 className="text-sm font-medium text-gray-700 dark:text-[#CBD5E1] mb-3">Suggested angles</h3>
       <div className="space-y-2">
         {focusPrompts.map(prompt => {
           const isExpanded = expanded.has(prompt.id)
@@ -78,21 +78,21 @@ export default function FocusPrompts({ onInsertQuestion }: Props) {
           return (
             <div
               key={prompt.id}
-              className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow transition-shadow"
+              className="bg-white dark:bg-[#071A33] border border-gray-200 dark:border-[#14345C] rounded-lg overflow-hidden shadow-sm hover:shadow transition-shadow"
             >
               <button
                 type="button"
                 onClick={() => handleToggle(prompt.id)}
-                className="btn-press w-full px-3 py-2.5 text-left flex items-center justify-between hover:bg-gray-50 transition"
+                className="btn-press w-full px-3 py-2.5 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#14345C]/40 transition"
               >
-                <span className="text-sm text-gray-900">{prompt.label}</span>
-                <span className="text-gray-400 text-xs">
+                <span className="text-sm text-gray-900 dark:text-[#F8FAFC]">{prompt.label}</span>
+                <span className="text-gray-400 dark:text-[#94a3b8] text-xs">
                   {isExpanded ? '−' : '+'}
                 </span>
               </button>
               
               {isExpanded && (
-                <div className="px-3 pb-3 pt-1 border-t border-gray-100 bg-gray-50">
+                <div className="px-3 pb-3 pt-1 border-t border-gray-100 dark:border-[#14345C] bg-gray-50 dark:bg-[#020817]">
                   <div className="space-y-1.5">
                     {prompt.questions.map((question, idx) => (
                       <button
@@ -102,7 +102,7 @@ export default function FocusPrompts({ onInsertQuestion }: Props) {
                           e.stopPropagation()
                           onInsertQuestion(question)
                         }}
-                        className="btn-press w-full text-left px-2.5 py-1.5 text-xs text-gray-700 bg-white border border-gray-200 rounded hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition"
+                        className="btn-press w-full text-left px-2.5 py-1.5 text-xs text-gray-700 dark:text-[#CBD5E1] bg-white dark:bg-[#0a1f3d] border border-gray-200 dark:border-[#14345C] rounded hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:border-primary-300 dark:hover:border-primary-600 hover:text-primary-700 dark:hover:text-primary-300 transition"
                       >
                         {question}
                       </button>

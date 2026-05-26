@@ -51,11 +51,11 @@ export default function HintMeter({ messages }: Props) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'explored':
-        return 'text-green-600'
+        return 'text-green-600 dark:text-green-400'
       case 'partial':
-        return 'text-yellow-600'
+        return 'text-yellow-600 dark:text-yellow-400'
       default:
-        return 'text-gray-400'
+        return 'text-gray-400 dark:text-slate-400'
     }
   }
 
@@ -71,12 +71,12 @@ export default function HintMeter({ messages }: Props) {
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6">
-      <h3 className="text-xs font-medium text-blue-900 mb-2">Coverage</h3>
+    <div className="bg-blue-50 dark:bg-[#0a1f3d] border border-blue-100 dark:border-[#14345C] rounded-lg p-3 mb-6">
+      <h3 className="text-xs font-medium text-blue-900 dark:text-blue-300 mb-2">Coverage</h3>
       <div className="space-y-1.5">
         {hints.map((hint, idx) => (
           <div key={idx} className="flex items-center justify-between text-xs">
-            <span className="text-gray-700">{hint.category}:</span>
+            <span className="text-gray-700 dark:text-[#CBD5E1]">{hint.category}:</span>
             <span className={getStatusColor(hint.status)}>
               {getStatusText(hint.status)}
             </span>

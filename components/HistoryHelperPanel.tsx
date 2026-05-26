@@ -21,8 +21,8 @@ export default function HistoryHelperPanel({ onInsertQuestion, messages = [] }: 
       {messages.length > 0 && <HintMeter messages={messages} />}
 
       <div className="mt-auto pt-4 md:hidden">
-        <div className="rounded-xl border border-sky-200 bg-sky-50/90 px-3 py-2.5 text-xs text-slate-700 leading-snug shadow-sm">
-          💡 <span className="font-medium text-slate-900">Tip:</span> Start with symptoms, duration, and medical
+        <div className="rounded-xl border border-sky-200 dark:border-[#14345C] bg-sky-50/90 dark:bg-[#0a1f3d] px-3 py-2.5 text-xs text-slate-700 dark:text-[#CBD5E1] leading-snug shadow-sm">
+          💡 <span className="font-medium text-slate-900 dark:text-[#F8FAFC]">Tip:</span> Start with symptoms, duration, and medical
           history.
         </div>
       </div>
