@@ -6,6 +6,7 @@ import { getMockPatientResponse } from '@/lib/mockResponses'
 import { isOffTopicDoctorQuestion } from '@/lib/offTopicQuestions'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
+import AIUsedBar from './AIUsedBar'
 
 type Message = {
   role: 'doctor' | 'patient'
@@ -274,8 +275,9 @@ export default function ChatPanel({
 
   return (
     <div className="bg-white dark:bg-[#071A33] rounded-lg shadow-md dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-transparent dark:border-[#14345C] p-6 flex flex-col h-full min-h-0 max-h-[min(85vh,720px)]">
+      <AIUsedBar className="mb-3 shrink-0" />
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <h2 className="text-sm font-semibold text-slate-800">Patient interview</h2>
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-[#F8FAFC]">Patient interview</h2>
         {lastReplyMeta ? (
           <span
             className="text-[11px] font-medium px-2 py-0.5 rounded-full border text-primary-800 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/40 border-primary-200 dark:border-primary-700"

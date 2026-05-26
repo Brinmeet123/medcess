@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import AuthForm from '@/components/AuthForm'
-import NextStepGuidance from '@/components/ux/NextStepGuidance'
 import MedcessLogo from '@/components/MedcessLogo'
 import { TAGLINE_SHORT } from '@/lib/branding'
 
@@ -17,12 +16,6 @@ export default function LoginPage() {
           <p className="text-slate-600 mt-2 max-w-md mx-auto">{TAGLINE_SHORT}</p>
           <p className="text-sm text-slate-500 mt-2">Sign in to save progress, scores, and vocabulary across devices.</p>
           <p className="text-sm text-slate-500 mt-2">After you sign in, you&apos;ll land where you can pick up cases or open your dashboard.</p>
-        </div>
-
-        <div className="mb-8">
-          <NextStepGuidance compact>
-            Ask a few more questions — then head to the exam when you feel ready.
-          </NextStepGuidance>
         </div>
 
         <div className="medcess-card shadow-xl p-8 md:p-10">
