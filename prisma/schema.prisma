@@ -34,12 +34,32 @@ model UserAITokenUsage {
   date         DateTime @db.Date
   tokensUsed   Int      @default(0)
   requestCount Int      @default(0)
+  /// Patient-chat AI fallback replies only (presets/cache do not increment).
+  patientChatAiCount Int @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@unique([userId, date])
   @@index([date])
   @@index([userId])
+}
+
+/// Per-scenario learned patient replies (AI-generated once, reused for similar questions).
+model PatientLearnedResponse {
+  id                 String   @id @default(cuid())
+  scenarioId         String
+  question           String
+  normalizedQuestion String
+  keywords           String[]
+  response           String
+  source             String   @default("ai_generated")
+  usageCount         Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([scenarioId, normalizedQuestion])
+  @@index([scenarioId])
+  @@index([usageCount(sort: Desc)])
 }
 
 model Vocab {

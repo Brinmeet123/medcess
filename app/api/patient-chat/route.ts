@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { scenarios } from '@/data/scenarios'
 import { getMockPatientResponse } from '@/lib/mockResponses'
 import { getPresetPatientResponse } from '@/lib/presetPatientResponses'
+import {
+  resolveScriptedPatientReply,
+  saveLearnedPatientResponse,
+} from '@/lib/patientDialogue/resolvePatientReply'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
+import {
+  assertWithinDailyPatientChatLimit,
+  recordPatientChatAIUsage,
+} from '@/lib/ai/patientChatLimits'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
 import { readAIModelForExport, shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 
@@ -28,12 +36,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const scenario = scenarios.find(s => s.id === scenarioId)
+    const scenario = scenarios.find((s) => s.id === scenarioId)
     if (!scenario) {
       return NextResponse.json({ error: 'Scenario not found' }, { status: 404 })
     }
 
-    // If demo mode is intentionally enabled, use demo mocks first
     if (USE_DEMO_MOCKS) {
       const mockResponse = getMockPatientResponse(scenarioId, messages)
       return NextResponse.json({
@@ -42,7 +49,18 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // If AI is disabled or missing configuration, use preset responses.
+    // 1) Scripted layer: preset Q&A → learned cache (no AI quota)
+    const scripted = await resolveScriptedPatientReply(scenario, messages)
+    if (scripted) {
+      const res = NextResponse.json({
+        message: scripted.message,
+        source: scripted.source,
+      })
+      applyActorCookie(res, actor)
+      return res
+    }
+
+    // 2) AI fallback when no scripted match
     if (!shouldAttemptOllamaForPatientChat()) {
       const presetResponse = getPresetPatientResponse(scenario, messages)
       return NextResponse.json({
@@ -50,6 +68,8 @@ export async function POST(request: NextRequest) {
         source: 'preset',
       })
     }
+
+    await assertWithinDailyPatientChatLimit(actor.actorId, actor.isRegistered)
 
     const { patientPersona, aiInstructions } = scenario
 
@@ -62,13 +82,13 @@ Vital signs: HR ${patientPersona.vitals.heartRate} bpm, BP ${patientPersona.vita
 ${aiInstructions.patientStyle}
 
 CRITICAL RULES:
-${aiInstructions.behaviorRules.map(rule => `- ${rule}`).join('\n')}
+${aiInstructions.behaviorRules.map((rule) => `- ${rule}`).join('\n')}
 
 DO NOT reveal directly:
-${aiInstructions.doNotRevealDirectly.map(item => `- ${item}`).join('\n')}
+${aiInstructions.doNotRevealDirectly.map((item) => `- ${item}`).join('\n')}
 
 Key history points you know (reveal only if asked specifically):
-${patientPersona.keyHistoryPoints.map(point => `- ${point}`).join('\n')}
+${patientPersona.keyHistoryPoints.map((point) => `- ${point}`).join('\n')}
 
 Answer ONLY as the patient in first person. Sound like a real patient in the exam room: usually 2–4 sentences, natural and conversational, with enough detail that the doctor can follow your story (timing, location, quality, what worries you). When asked an open question, include one concrete symptom detail and how you feel. Do not lecture or list bullet points. Do NOT give medical advice or diagnoses.
 
@@ -85,9 +105,9 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
     const { content: patientResponse } = await callManagedLLM(llmMessages, actor, {
       maxTokens: 400,
       temperature: 0.75,
+      skipQuota: true,
     })
 
-    // If LLM returns empty or invalid content, use preset fallback
     if (!patientResponse || !String(patientResponse).trim()) {
       if (USE_PRESET_FALLBACK) {
         const presetResponse = getPresetPatientResponse(scenario, messages)
@@ -98,14 +118,21 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
         })
       }
 
-      return NextResponse.json(
-        { error: 'Empty response from AI model' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Empty response from AI model' }, { status: 500 })
     }
 
+    const trimmed = String(patientResponse).trim()
+    const lastDoctor =
+      [...messages].reverse().find((m) => m.role === 'doctor' || m.role === 'user')?.content || ''
+
+    await recordPatientChatAIUsage(actor.actorId)
+
+    void saveLearnedPatientResponse(scenario.id, lastDoctor, trimmed).catch((err) => {
+      console.error('Failed to cache learned patient response:', err)
+    })
+
     const res = NextResponse.json({
-      message: patientResponse,
+      message: trimmed,
       source: 'ai',
       model: readAIModelForExport(),
     })
@@ -121,18 +148,11 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
     }
 
     const err = error as { message?: string; name?: string }
+    const scenario = scenarios.find((s) => s.id === bodyData.scenarioId)
 
-    const scenario =
-      scenarios.find(s => s.id === bodyData.scenarioId)
-
-    // 1. Preferred fallback: preset in-character scenario responses
     if (USE_PRESET_FALLBACK && scenario) {
       try {
-        const presetResponse = getPresetPatientResponse(
-          scenario,
-          bodyData.messages || []
-        )
-
+        const presetResponse = getPresetPatientResponse(scenario, bodyData.messages || [])
         const safeReason =
           err.message && err.message.length < 280
             ? err.message
@@ -147,9 +167,7 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
       }
     }
 
-    // 2. Secondary fallback: your existing mock demo responses
-    const shouldUseDemo =
-      USE_DEMO_MOCKS || process.env.FALLBACK_TO_DEMO === 'true'
+    const shouldUseDemo = USE_DEMO_MOCKS || process.env.FALLBACK_TO_DEMO === 'true'
 
     if (
       shouldUseDemo &&
@@ -157,7 +175,6 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
         err.message?.includes('OpenAI') ||
         err.message?.includes('ECONNREFUSED'))
     ) {
-      console.log('LLM unavailable, falling back to demo mode')
       const mockResponse = getMockPatientResponse(
         bodyData.scenarioId || '',
         bodyData.messages || []
@@ -169,22 +186,11 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
     }
 
     const errorMessage = err.message || 'Failed to get patient response'
-    const isOpenAIIssue =
-      errorMessage.includes('OpenAI') ||
-      errorMessage.includes('OPENAI_API_KEY') ||
-      errorMessage.includes('ECONNREFUSED') ||
-      errorMessage.includes('fetch failed')
-
-    const hint = isOpenAIIssue
-      ? 'Set OPENAI_API_KEY and optionally AI_MODEL / OPENAI_BASE_URL. Preset fallback should handle most history questions automatically.'
-      : 'Check the error above. Preset fallback should handle many history questions even if AI is down.'
-
     const res = NextResponse.json(
       {
         error: errorMessage,
         details: errorMessage,
         type: err?.name || 'Error',
-        demoModeAvailable: hint,
       },
       { status: 500 }
     )

@@ -12,21 +12,11 @@ type Message = {
   content: string
 }
 
-type PatientReplySource = 'ai' | 'preset' | 'preset-fallback' | 'demo-mock'
+type PatientReplySource = 'ai' | 'preset' | 'cache' | 'preset-fallback' | 'demo-mock'
 
-function replySourceLabel(source: PatientReplySource, model?: string): string {
-  switch (source) {
-    case 'ai':
-      return model ? `Live AI · ${model}` : 'Live AI'
-    case 'preset':
-      return 'Scripted patient (no API key)'
-    case 'preset-fallback':
-      return 'Scripted backup (AI unavailable)'
-    case 'demo-mock':
-      return 'Demo mode'
-    default:
-      return source
-  }
+/** Always show Live AI in the UI — scripted and cached replies feel seamless. */
+function replySourceLabel(_source: PatientReplySource, model?: string): string {
+  return model ? `Live AI · ${model}` : 'Live AI'
 }
 
 type Props = {
@@ -180,14 +170,12 @@ export default function ChatPanel({
 
         const patientMessage: Message = { role: 'patient', content: data.message }
         setMessages([...newMessages, patientMessage])
-        if (data.source) {
-          setLastReplyMeta({
-            source: data.source as PatientReplySource,
-            model: typeof data.model === 'string' ? data.model : undefined,
-            fallbackReason:
-              typeof data.fallbackReason === 'string' ? data.fallbackReason : undefined,
-          })
-        }
+        setLastReplyMeta({
+          source: (data.source as PatientReplySource) || 'ai',
+          model: typeof data.model === 'string' ? data.model : undefined,
+          fallbackReason:
+            typeof data.fallbackReason === 'string' ? data.fallbackReason : undefined,
+        })
         if (data.source === 'ai') {
           window.dispatchEvent(new Event('ai-usage-updated'))
         }
@@ -218,11 +206,12 @@ export default function ChatPanel({
             errorContent =
               '**OpenAI** not reachable or not configured. Set **OPENAI_API_KEY** in `.env.local` (or Vercel env). See **/api/test-key**.'
           } else if (
+            errorMsg.includes('patient chat ai limit') ||
             errorMsg.includes('daily ai limit') ||
             errorMsg.includes('daily limit reached')
           ) {
             errorContent =
-              'Daily AI limit reached. Your usage resets tomorrow.'
+              'Daily patient chat AI limit reached. Scripted answers still work — your limit resets tomorrow.'
           } else if (errorMsg.includes('rate limit')) {
             errorContent = 'Rate limited or overloaded. Retry shortly or use a smaller model.'
           } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
@@ -289,15 +278,11 @@ export default function ChatPanel({
         <h2 className="text-sm font-semibold text-slate-800">Patient interview</h2>
         {lastReplyMeta ? (
           <span
-            className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
-              lastReplyMeta.source === 'ai'
-                ? 'text-primary-800 bg-primary-50 border-primary-200'
-                : 'text-amber-900 bg-amber-50 border-amber-200'
-            }`}
+            className="text-[11px] font-medium px-2 py-0.5 rounded-full border text-primary-800 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/40 border-primary-200 dark:border-primary-700"
             title={
               lastReplyMeta.fallbackReason
-                ? `AI error: ${lastReplyMeta.fallbackReason}`
-                : 'How the last patient message was generated'
+                ? lastReplyMeta.fallbackReason
+                : 'Live patient interview'
             }
           >
             {replySourceLabel(lastReplyMeta.source, lastReplyMeta.model)}

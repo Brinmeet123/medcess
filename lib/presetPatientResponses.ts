@@ -1,5 +1,7 @@
 import type { Scenario } from '@/data/scenarios'
 import { getOffTopicPatientReply, isOffTopicDoctorQuestion } from '@/lib/offTopicQuestions'
+import { pickBestPresetAnswer } from '@/lib/patientDialogue/matching'
+import { includesNormalizedPhrase } from '@/lib/patientDialogue/normalize'
 import { allergyImmunologyFallbackScenarios } from '@/lib/presetResponses/allergyImmunologyFallback'
 import { cardiologyFallbackScenarios } from '@/lib/presetResponses/cardiologyFallback'
 import { dermatologyFallbackScenarios } from '@/lib/presetResponses/dermatologyFallback'
@@ -134,61 +136,15 @@ const SCENARIO_ID_TO_FALLBACK_KEY: Record<string, string> = {
   'urology-bph-luts-robert-kim': 'urology-bph-luts-robert-kim',
 }
 
-function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-}
-
-function uniqueWords(text: string): string[] {
-  return Array.from(new Set(normalize(text).split(' ').filter(Boolean)))
-}
-
-function includesPhrase(text: string, phrase: string): boolean {
-  return normalize(text).includes(normalize(phrase))
-}
-
-/**
- * Scores how well a doctor question matches a preset Q&A row.
- * Priority: exact pattern match (full question) > substring phrase match (longer patterns score higher) > keyword hits.
- */
-function scoreQuestion(question: string, qa: FallbackQA): number {
-  const normalized = normalize(question)
-  let score = 0
-
-  for (const pattern of qa.patterns || []) {
-    const np = normalize(pattern)
-    if (!np) continue
-    if (normalized === np) {
-      score += 100
-      continue
-    }
-    if (includesPhrase(normalized, pattern)) {
-      score += 12 + Math.min(Math.floor(np.length / 4), 18)
-    }
-  }
-
-  const questionWords = new Set(uniqueWords(normalized))
-  for (const keyword of qa.keywords || []) {
-    if (questionWords.has(normalize(keyword))) {
-      score += 3
-    }
-  }
-
-  return score
-}
-
-function detectScenarioBucket(scenario: Scenario): FallbackScenario | null {
+export function detectScenarioBucket(scenario: Scenario): FallbackScenario | null {
   const mappedKey = SCENARIO_ID_TO_FALLBACK_KEY[scenario.id]
   if (mappedKey) {
     const mapped = FALLBACK_SCENARIOS.find((b) => b.key === mappedKey)
     if (mapped) return mapped
   }
 
-  const title = normalize(scenario?.title || '')
-  const chiefComplaint = normalize(scenario?.patientPersona?.chiefComplaint || '')
+  const title = (scenario?.title || '').toLowerCase()
+  const chiefComplaint = (scenario?.patientPersona?.chiefComplaint || '').toLowerCase()
   const combined = `${title} ${chiefComplaint}`
 
   let best: FallbackScenario | null = null
@@ -198,11 +154,11 @@ function detectScenarioBucket(scenario: Scenario): FallbackScenario | null {
     let score = 0
 
     for (const matcher of bucket.titleMatchers) {
-      if (includesPhrase(combined, matcher)) score += 10
+      if (includesNormalizedPhrase(combined, matcher)) score += 10
     }
 
     for (const matcher of bucket.complaintMatchers) {
-      if (includesPhrase(combined, matcher)) score += 8
+      if (includesNormalizedPhrase(combined, matcher)) score += 8
     }
 
     if (score > bestScore) {
@@ -214,44 +170,63 @@ function detectScenarioBucket(scenario: Scenario): FallbackScenario | null {
   return best
 }
 
+export type PresetTryResult = {
+  answer: string
+  matched: boolean
+  score: number
+  qaId: string | null
+}
+
+export function tryPresetPatientResponse(
+  scenario: Scenario,
+  messages: ChatMessage[]
+): PresetTryResult {
+  const lastDoctorMessage =
+    [...messages].reverse().find((m) => m.role === 'doctor' || m.role === 'user')?.content || ''
+
+  if (!lastDoctorMessage) {
+    return {
+      answer: "I'm not sure what you're asking.",
+      matched: false,
+      score: 0,
+      qaId: null,
+    }
+  }
+
+  if (isOffTopicDoctorQuestion(lastDoctorMessage, scenario)) {
+    return {
+      answer: getOffTopicPatientReply(scenario.patientPersona.name, lastDoctorMessage),
+      matched: true,
+      score: 100,
+      qaId: 'off-topic',
+    }
+  }
+
+  const bucket = detectScenarioBucket(scenario)
+  if (!bucket) {
+    return {
+      answer:
+        "I'm not really sure how to answer that, but I can tell you more about how I'm feeling if you ask in a different way.",
+      matched: false,
+      score: 0,
+      qaId: null,
+    }
+  }
+
+  const picked = pickBestPresetAnswer(lastDoctorMessage, bucket.qa, bucket.defaultAnswer)
+  return {
+    answer: picked.answer,
+    matched: picked.matched,
+    score: picked.score,
+    qaId: picked.qaId,
+  }
+}
+
 export function getPresetPatientResponse(
   scenario: Scenario,
   messages: ChatMessage[]
 ): string {
-  const lastDoctorMessage =
-    [...messages].reverse().find((m) => m.role === 'doctor' || m.role === 'user')
-      ?.content || ''
-
-  if (!lastDoctorMessage) {
-    return "I'm not sure what you're asking."
-  }
-
-  if (isOffTopicDoctorQuestion(lastDoctorMessage, scenario)) {
-    return getOffTopicPatientReply(scenario.patientPersona.name, lastDoctorMessage)
-  }
-
-  const bucket = detectScenarioBucket(scenario)
-
-  if (!bucket) {
-    return "I'm not really sure how to answer that, but I can tell you more about how I'm feeling if you ask in a different way."
-  }
-
-  let bestQA: FallbackQA | null = null
-  let bestScore = 0
-
-  for (const qa of bucket.qa) {
-    const score = scoreQuestion(lastDoctorMessage, qa)
-    if (score > bestScore) {
-      bestScore = score
-      bestQA = qa
-    }
-  }
-
-  if (!bestQA || bestScore < 5) {
-    return bucket.defaultAnswer
-  }
-
-  return bestQA.answer
+  return tryPresetPatientResponse(scenario, messages).answer
 }
 
 const FALLBACK_SCENARIOS: FallbackScenario[] = [
