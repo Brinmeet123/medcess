@@ -74,8 +74,9 @@ export async function GET() {
     features: {
       patientChat: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model})` : 'preset-only',
       assessment: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model})` : 'deterministic-debrief',
-      vocabAi: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model})` : 'local-dictionary',
-      explainTerm: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model})` : 'fallback',
+      vocabDefine: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model}) via /api/vocab/define` : 'disabled',
+      explainResult: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model}) via /api/explain-result` : 'disabled',
+      explainTerm: demoMode ? 'demo-mock' : apiKeyConfigured ? `openai (${model}) via /api/explain-term` : 'disabled',
     },
     hint: !apiKeyConfigured
       ? 'Set OPENAI_API_KEY on Vercel and redeploy.'

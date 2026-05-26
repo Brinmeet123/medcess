@@ -5,14 +5,17 @@ export type FetchResultExplanationOptions = {
   source?: string
 }
 
+import { notifyAiUsageUpdated } from '@/src/lib/notifyAiUsageUpdated'
+
 export type ResultExplanationResponse = {
   explanation: string
   source: 'ai' | 'demo' | 'offline'
 }
 
-function offlineFallback(selectedText: string): ResultExplanationResponse {
+function offlineFallback(selectedText: string, detail?: string): ResultExplanationResponse {
+  const extra = detail ? ` ${detail}` : ' Try again when the server is available.'
   return {
-    explanation: `This feedback mentions “${selectedText.slice(0, 80)}”. In plain terms, it describes something about your case performance or a test finding. Try again when the server is available for a simpler explanation.`,
+    explanation: `This feedback mentions “${selectedText.slice(0, 80)}”. In plain terms, it describes something about your case performance or a test finding.${extra}`,
     source: 'offline',
   }
 }
@@ -43,13 +46,26 @@ export async function fetchResultExplanation(
       throw new Error(err.error ?? 'Daily AI limit reached. Your usage resets tomorrow.')
     }
 
-    if (!res.ok) {
-      return offlineFallback(selectedText)
+    const data = (await res.json().catch(() => ({}))) as ResultExplanationResponse & {
+      error?: string
+      details?: string
     }
 
-    const data = (await res.json()) as ResultExplanationResponse & { error?: string }
+    if (!res.ok) {
+      if (res.status === 503) {
+        throw new Error(
+          data.details ?? data.error ?? 'Explanation AI is not configured. Set OPENAI_API_KEY on the server.'
+        )
+      }
+      return offlineFallback(selectedText, data.details ?? data.error)
+    }
+
     if (data.error || !data.explanation?.trim()) {
-      return offlineFallback(selectedText)
+      return offlineFallback(selectedText, data.details ?? data.error)
+    }
+
+    if (data.source === 'ai') {
+      notifyAiUsageUpdated()
     }
 
     return {

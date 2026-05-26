@@ -1,5 +1,6 @@
 import type { MedicalTermLike } from '@/src/types/medicalTerm'
 import { getCachedAIDefinition, setCachedAIDefinition } from '@/src/lib/aiDefinitionCache'
+import { notifyAiUsageUpdated } from '@/src/lib/notifyAiUsageUpdated'
 
 export type FetchVocabDefinitionOptions = {
   signal?: AbortSignal
@@ -13,13 +14,15 @@ export type VocabDefinitionResult = MedicalTermLike & {
   usageCount?: number
 }
 
-function offlineFallback(term: string): VocabDefinitionResult {
+function offlineFallback(term: string, detail?: string): VocabDefinitionResult {
   const t = term.trim()
+  const reason = detail
+    ? ` ${detail}`
+    : ' Try again when the server is available.'
   return {
     term: t,
-    shortDefinition: `Educational placeholder for “${t}” (offline / API unavailable).`,
-    definition:
-      'A full definition could not be loaded. Try again when the server is available.',
+    shortDefinition: `Could not load a definition for “${t}”.`,
+    definition: `A full definition could not be loaded.${reason}`,
     category: 'general',
     isAIGenerated: true,
     cached: false,
@@ -61,13 +64,22 @@ export async function fetchVocabDefinition(
       throw new Error(err.error ?? 'Daily AI limit reached. Your usage resets tomorrow.')
     }
 
-    if (!res.ok) {
-      return offlineFallback(term)
+    const data = (await res.json().catch(() => ({}))) as VocabDefinitionResult & {
+      error?: string
+      details?: string
     }
 
-    const data = (await res.json()) as VocabDefinitionResult & { error?: string }
+    if (!res.ok) {
+      if (res.status === 503) {
+        throw new Error(
+          data.details ?? data.error ?? 'Vocabulary AI is not configured. Set OPENAI_API_KEY on the server.'
+        )
+      }
+      return offlineFallback(term, data.details ?? data.error)
+    }
+
     if (data.error || !data.shortDefinition) {
-      return offlineFallback(term)
+      return offlineFallback(term, data.details ?? data.error)
     }
 
     const normalized: VocabDefinitionResult = {
@@ -79,6 +91,10 @@ export async function fetchVocabDefinition(
       cached: Boolean(data.cached),
       source: data.source ?? (data.cached ? 'cache' : 'ai_generated'),
       usageCount: data.usageCount,
+    }
+
+    if (normalized.source === 'ai_generated') {
+      notifyAiUsageUpdated()
     }
 
     setCachedAIDefinition(term, normalized)

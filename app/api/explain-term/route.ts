@@ -3,6 +3,7 @@ import { getMockTermExplanation } from '@/lib/mockResponses'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
+import { shouldUseOllamaLLM } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,18 @@ export async function POST(request: NextRequest) {
     if (USE_DEMO_MOCKS) {
       const mockExplanation = getMockTermExplanation(selectedText, contextText)
       return NextResponse.json(mockExplanation)
+    }
+
+    if (!shouldUseOllamaLLM()) {
+      const res = NextResponse.json(
+        {
+          error: 'Term explanation AI is not configured',
+          details: 'Set OPENAI_API_KEY in your environment to enable contextual term explanations.',
+        },
+        { status: 503 }
+      )
+      applyActorCookie(res, actor)
+      return res
     }
 
     // Safety check: if the term looks like a request for medical advice

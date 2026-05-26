@@ -9,6 +9,7 @@ import {
   saveSharedVocabEntry,
 } from '@/lib/sharedVocab'
 import { normalizeVocabTermForLookup } from '@/lib/vocabNormalize'
+import { shouldUseOllamaLLM } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
 
@@ -149,22 +150,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Term is empty after normalization' }, { status: 400 })
     }
 
-    const cached = await findSharedVocabByTerm(trimmedTerm)
-    if (cached) {
-      const updated = await incrementSharedVocabUsage(cached.id)
-      const res = NextResponse.json(
-        toResponse({
-          term: updated.term,
-          simpleDefinition: updated.simpleDefinition,
-          definition: updated.definition,
-          category: updated.category,
-          usageCount: updated.usageCount,
-          cached: true,
-          source: 'cache',
-        })
-      )
-      applyActorCookie(res, actor)
-      return res
+    try {
+      const cached = await findSharedVocabByTerm(trimmedTerm)
+      if (cached) {
+        const updated = await incrementSharedVocabUsage(cached.id)
+        const res = NextResponse.json(
+          toResponse({
+            term: updated.term,
+            simpleDefinition: updated.simpleDefinition,
+            definition: updated.definition,
+            category: updated.category,
+            usageCount: updated.usageCount,
+            cached: true,
+            source: 'cache',
+          })
+        )
+        applyActorCookie(res, actor)
+        return res
+      }
+    } catch (cacheErr) {
+      console.error('vocab/define cache lookup failed (continuing to AI):', cacheErr)
     }
 
     if (DEMO) {
@@ -173,48 +178,77 @@ export async function POST(request: NextRequest) {
       return res
     }
 
-    const ai = await generateAIDefinition(trimmedTerm, contextSentence, actor)
-
-    const raced = await findSharedVocabByTerm(trimmedTerm)
-    if (raced) {
-      const updated = await incrementSharedVocabUsage(raced.id)
+    if (!shouldUseOllamaLLM()) {
       const res = NextResponse.json(
-        toResponse({
-          term: updated.term,
-          simpleDefinition: updated.simpleDefinition,
-          definition: updated.definition,
-          category: updated.category,
-          usageCount: updated.usageCount,
-          cached: true,
-          source: 'cache',
-        })
+        {
+          error: 'Vocabulary AI is not configured',
+          details: 'Set OPENAI_API_KEY in your environment to enable AI definitions.',
+        },
+        { status: 503 }
       )
       applyActorCookie(res, actor)
       return res
     }
 
-    const saved = await saveSharedVocabEntry({
-      term: ai.term,
-      normalizedTerm,
-      definition: ai.definition,
-      simpleDefinition: ai.shortDefinition,
-      category: ai.category,
-      source: 'ai_generated',
-    })
+    const ai = await generateAIDefinition(trimmedTerm, contextSentence, actor)
 
-    const res = NextResponse.json(
-      toResponse({
-        term: saved.term,
-        simpleDefinition: saved.simpleDefinition,
-        definition: saved.definition,
-        category: saved.category,
-        usageCount: saved.usageCount,
-        cached: false,
+    try {
+      const raced = await findSharedVocabByTerm(trimmedTerm)
+      if (raced) {
+        const updated = await incrementSharedVocabUsage(raced.id)
+        const res = NextResponse.json(
+          toResponse({
+            term: updated.term,
+            simpleDefinition: updated.simpleDefinition,
+            definition: updated.definition,
+            category: updated.category,
+            usageCount: updated.usageCount,
+            cached: true,
+            source: 'cache',
+          })
+        )
+        applyActorCookie(res, actor)
+        return res
+      }
+
+      const saved = await saveSharedVocabEntry({
+        term: ai.term,
+        normalizedTerm,
+        definition: ai.definition,
+        simpleDefinition: ai.shortDefinition,
+        category: ai.category,
         source: 'ai_generated',
       })
-    )
-    applyActorCookie(res, actor)
-    return res
+
+      const res = NextResponse.json(
+        toResponse({
+          term: saved.term,
+          simpleDefinition: saved.simpleDefinition,
+          definition: saved.definition,
+          category: saved.category,
+          usageCount: saved.usageCount,
+          cached: false,
+          source: 'ai_generated',
+        })
+      )
+      applyActorCookie(res, actor)
+      return res
+    } catch (saveErr) {
+      console.error('vocab/define cache save failed (returning AI text):', saveErr)
+      const res = NextResponse.json(
+        toResponse({
+          term: ai.term,
+          simpleDefinition: ai.shortDefinition,
+          definition: ai.definition,
+          category: ai.category,
+          usageCount: 0,
+          cached: false,
+          source: 'ai_generated',
+        })
+      )
+      applyActorCookie(res, actor)
+      return res
+    }
   } catch (e: unknown) {
     if (isDailyLimitResponse(e)) {
       const res = dailyLimitJsonResponse()
@@ -224,7 +258,8 @@ export async function POST(request: NextRequest) {
 
     const msg = e instanceof Error ? e.message : 'Unknown error'
     console.error('vocab/define:', msg)
-    const res = NextResponse.json({ error: 'Failed to define term', details: msg }, { status: 500 })
+    const status = msg.includes('OPENAI_API_KEY') ? 503 : 500
+    const res = NextResponse.json({ error: 'Failed to define term', details: msg }, { status })
     applyActorCookie(res, actor)
     return res
   }

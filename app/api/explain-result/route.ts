@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
+import { shouldUseOllamaLLM } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +40,18 @@ export async function POST(request: NextRequest) {
         explanation: demoExplanation(trimmed, contextSentence),
         source: 'demo' as const,
       })
+      applyActorCookie(res, actor)
+      return res
+    }
+
+    if (!shouldUseOllamaLLM()) {
+      const res = NextResponse.json(
+        {
+          error: 'Explanation AI is not configured',
+          details: 'Set OPENAI_API_KEY in your environment to enable simpler explanations.',
+        },
+        { status: 503 }
+      )
       applyActorCookie(res, actor)
       return res
     }
@@ -94,7 +107,8 @@ Explain this in simpler language so a student understands what their results are
 
     const msg = e instanceof Error ? e.message : 'Unknown error'
     console.error('explain-result:', msg)
-    const res = NextResponse.json({ error: 'Failed to explain result', details: msg }, { status: 500 })
+    const status = msg.includes('OPENAI_API_KEY') ? 503 : 500
+    const res = NextResponse.json({ error: 'Failed to explain result', details: msg }, { status })
     applyActorCookie(res, actor)
     return res
   }

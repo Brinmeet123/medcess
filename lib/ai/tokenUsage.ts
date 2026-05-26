@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { getDailyTokenLimit } from '@/lib/ai/config'
 import { DailyAILimitError } from '@/lib/ai/errors'
+import { incrementDailyTokenUsage, readDailyTokenUsageRow } from '@/lib/ai/tokenUsageDb'
 
 export type TokenUsageBreakdown = {
   inputTokens: number
@@ -34,9 +35,7 @@ export async function getDailyUsageSnapshot(
   date: Date = utcCalendarDate()
 ): Promise<DailyUsageSnapshot> {
   const dailyLimit = getDailyTokenLimit(isRegistered)
-  const row = await prisma.userAITokenUsage.findUnique({
-    where: { userId_date: { userId: actorId, date } },
-  })
+  const row = await readDailyTokenUsageRow(actorId, date)
   const tokensUsed = row?.tokensUsed ?? 0
   const requestCount = row?.requestCount ?? 0
   const percentUsed = dailyLimit > 0 ? Math.min(100, Math.round((tokensUsed / dailyLimit) * 100)) : 0
@@ -64,18 +63,11 @@ export async function assertWithinDailyLimit(
   const dailyLimit = getDailyTokenLimit(isRegistered)
   const date = utcCalendarDate()
 
-  await prisma.$transaction(
-    async (tx) => {
-      const row = await tx.userAITokenUsage.findUnique({
-        where: { userId_date: { userId: actorId, date } },
-      })
-      const used = row?.tokensUsed ?? 0
-      if (used >= dailyLimit) {
-        throw new DailyAILimitError()
-      }
-    },
-    { isolationLevel: 'Serializable' }
-  )
+  const row = await readDailyTokenUsageRow(actorId, date)
+  const used = row?.tokensUsed ?? 0
+  if (used >= dailyLimit) {
+    throw new DailyAILimitError()
+  }
 }
 
 /** Record token usage only after a successful LLM completion. */
@@ -84,23 +76,7 @@ export async function recordTokenUsage(
   usage: TokenUsageBreakdown
 ): Promise<DailyUsageSnapshot> {
   const date = utcCalendarDate()
-  const total = Math.max(0, usage.totalTokens)
-
-  await prisma.$transaction(async (tx) => {
-    await tx.userAITokenUsage.upsert({
-      where: { userId_date: { userId: actorId, date } },
-      create: {
-        userId: actorId,
-        date,
-        tokensUsed: total,
-        requestCount: 1,
-      },
-      update: {
-        tokensUsed: { increment: total },
-        requestCount: { increment: 1 },
-      },
-    })
-  })
+  await incrementDailyTokenUsage(actorId, usage.totalTokens, date)
 
   const isRegistered = !actorId.startsWith('guest:')
   return getDailyUsageSnapshot(actorId, isRegistered, date)
