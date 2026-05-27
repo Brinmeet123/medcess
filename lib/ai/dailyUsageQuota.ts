@@ -13,13 +13,16 @@ export type DailyQuotaRecord = {
 type QuotaColumns = {
   lastResetDate: boolean
   userIdUnique: boolean
+  patientChatAiCount: boolean
 }
 
 let quotaColumns: QuotaColumns | null = null
 
 async function detectQuotaColumns(): Promise<QuotaColumns> {
   if (quotaColumns) return quotaColumns
-  const rows = await prisma.$queryRaw<{ lastResetDate: boolean; userIdUnique: boolean }[]>`
+  const rows = await prisma.$queryRaw<
+    { lastResetDate: boolean; userIdUnique: boolean; patientChatAiCount: boolean }[]
+  >`
     SELECT
       EXISTS (
         SELECT 1 FROM information_schema.columns
@@ -32,13 +35,24 @@ async function detectQuotaColumns(): Promise<QuotaColumns> {
         WHERE schemaname = 'public'
           AND tablename = 'UserAITokenUsage'
           AND indexname = 'UserAITokenUsage_userId_key'
-      ) AS "userIdUnique"
+      ) AS "userIdUnique",
+      EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'UserAITokenUsage'
+          AND column_name = 'patientChatAiCount'
+      ) AS "patientChatAiCount"
   `
   quotaColumns = {
     lastResetDate: Boolean(rows[0]?.lastResetDate),
     userIdUnique: Boolean(rows[0]?.userIdUnique),
+    patientChatAiCount: Boolean(rows[0]?.patientChatAiCount),
   }
   return quotaColumns
+}
+
+function canUseModernQuotaSchema(cols: QuotaColumns): boolean {
+  return cols.lastResetDate && cols.userIdUnique && cols.patientChatAiCount
 }
 
 /**
@@ -52,7 +66,7 @@ export async function syncDailyQuota(
   const today = localUsageDayKey(new Date(), timeZone)
   const cols = await detectQuotaColumns()
 
-  if (cols.lastResetDate && cols.userIdUnique) {
+  if (canUseModernQuotaSchema(cols)) {
     try {
       return await syncDailyQuotaModern(actorId, today)
     } catch (error) {
@@ -60,7 +74,7 @@ export async function syncDailyQuota(
     }
   }
 
-  return syncDailyQuotaLegacy(actorId, today)
+  return syncDailyQuotaLegacy(actorId, today, cols)
 }
 
 async function syncDailyQuotaModern(actorId: string, today: string): Promise<DailyQuotaRecord> {
@@ -119,69 +133,104 @@ async function syncDailyQuotaModern(actorId: string, today: string): Promise<Dai
   return mapRecord(existing)
 }
 
-/** Pre-migration: one row per UTC/local date key. */
-async function syncDailyQuotaLegacy(actorId: string, today: string): Promise<DailyQuotaRecord> {
+type LegacyUsageRow = {
+  tokensUsed: number
+  requestCount: number
+  updatedAt: Date | null
+  patientChatAiCount: number
+}
+
+async function readLegacyUsageRow(
+  actorId: string,
+  date: Date,
+  cols: QuotaColumns
+): Promise<LegacyUsageRow | null> {
+  if (cols.patientChatAiCount) {
+    const rows = await prisma.$queryRaw<
+      { tokensUsed: number; requestCount: number; updatedAt: Date; patientChatAiCount: number }[]
+    >`
+      SELECT "tokensUsed", "requestCount", "updatedAt",
+        COALESCE("patientChatAiCount", 0)::int AS "patientChatAiCount"
+      FROM "UserAITokenUsage"
+      WHERE "userId" = ${actorId} AND "date" = ${date}::date
+      LIMIT 1
+    `
+    const row = rows[0]
+    if (!row) return null
+    return {
+      tokensUsed: row.tokensUsed,
+      requestCount: row.requestCount,
+      updatedAt: row.updatedAt,
+      patientChatAiCount: row.patientChatAiCount,
+    }
+  }
+
+  const rows = await prisma.$queryRaw<
+    { tokensUsed: number; requestCount: number; updatedAt: Date }[]
+  >`
+    SELECT "tokensUsed", "requestCount", "updatedAt"
+    FROM "UserAITokenUsage"
+    WHERE "userId" = ${actorId} AND "date" = ${date}::date
+    LIMIT 1
+  `
+  const row = rows[0]
+  if (!row) return null
+  return {
+    tokensUsed: row.tokensUsed,
+    requestCount: row.requestCount,
+    updatedAt: row.updatedAt,
+    patientChatAiCount: 0,
+  }
+}
+
+/** Pre-migration / partial migration: one row per calendar date key. */
+async function syncDailyQuotaLegacy(
+  actorId: string,
+  today: string,
+  cols: QuotaColumns
+): Promise<DailyQuotaRecord> {
   const date = new Date(`${today}T12:00:00.000Z`)
-  const row = await prisma.userAITokenUsage.findFirst({
-    where: { userId: actorId, date },
-    select: {
-      tokensUsed: true,
-      requestCount: true,
-      patientChatAiCount: true,
-      updatedAt: true,
-    },
-  })
+  const row = await readLegacyUsageRow(actorId, date, cols)
 
   if (row) {
     return {
       tokensUsed: row.tokensUsed,
       requestCount: row.requestCount,
-      patientChatAiCount: row.patientChatAiCount ?? 0,
+      patientChatAiCount: row.patientChatAiCount,
       lastResetDate: today,
       updatedAt: row.updatedAt,
     }
   }
 
   try {
-    const created = await prisma.userAITokenUsage.create({
-      data: {
-        userId: actorId,
-        date,
-        tokensUsed: 0,
-        requestCount: 0,
-        patientChatAiCount: 0,
-      },
-      select: {
-        tokensUsed: true,
-        requestCount: true,
-        patientChatAiCount: true,
-        updatedAt: true,
-      },
-    })
-    return {
-      tokensUsed: 0,
-      requestCount: 0,
-      patientChatAiCount: 0,
-      lastResetDate: today,
-      updatedAt: created.updatedAt,
+    if (cols.patientChatAiCount) {
+      await prisma.$executeRaw`
+        INSERT INTO "UserAITokenUsage" (
+          "id", "userId", "date", "tokensUsed", "requestCount", "patientChatAiCount", "createdAt", "updatedAt"
+        )
+        VALUES (gen_random_uuid()::text, ${actorId}, ${date}::date, 0, 0, 0, NOW(), NOW())
+        ON CONFLICT ("userId", "date") DO NOTHING
+      `
+    } else {
+      await prisma.$executeRaw`
+        INSERT INTO "UserAITokenUsage" (
+          "id", "userId", "date", "tokensUsed", "requestCount", "createdAt", "updatedAt"
+        )
+        VALUES (gen_random_uuid()::text, ${actorId}, ${date}::date, 0, 0, NOW(), NOW())
+        ON CONFLICT ("userId", "date") DO NOTHING
+      `
     }
   } catch {
-    const again = await prisma.userAITokenUsage.findFirst({
-      where: { userId: actorId, date },
-      select: {
-        tokensUsed: true,
-        requestCount: true,
-        patientChatAiCount: true,
-        updatedAt: true,
-      },
-    })
-    return {
-      tokensUsed: again?.tokensUsed ?? 0,
-      requestCount: again?.requestCount ?? 0,
-      patientChatAiCount: again?.patientChatAiCount ?? 0,
-      lastResetDate: today,
-      updatedAt: again?.updatedAt ?? null,
-    }
+    /* race: row created concurrently */
+  }
+
+  const again = await readLegacyUsageRow(actorId, date, cols)
+  return {
+    tokensUsed: again?.tokensUsed ?? 0,
+    requestCount: again?.requestCount ?? 0,
+    patientChatAiCount: again?.patientChatAiCount ?? 0,
+    lastResetDate: today,
+    updatedAt: again?.updatedAt ?? null,
   }
 }
 
@@ -210,22 +259,26 @@ export async function incrementTokenUsage(
   const cols = await detectQuotaColumns()
   const total = Math.max(0, totalTokens)
 
-  if (cols.lastResetDate && cols.userIdUnique) {
-    const updated = await prisma.userAITokenUsage.update({
-      where: { userId: actorId },
-      data: {
-        tokensUsed: { increment: total },
-        requestCount: { increment: 1 },
-      },
-      select: {
-        tokensUsed: true,
-        requestCount: true,
-        patientChatAiCount: true,
-        lastResetDate: true,
-        updatedAt: true,
-      },
-    })
-    return mapRecord(updated)
+  if (canUseModernQuotaSchema(cols)) {
+    try {
+      const updated = await prisma.userAITokenUsage.update({
+        where: { userId: actorId },
+        data: {
+          tokensUsed: { increment: total },
+          requestCount: { increment: 1 },
+        },
+        select: {
+          tokensUsed: true,
+          requestCount: true,
+          patientChatAiCount: true,
+          lastResetDate: true,
+          updatedAt: true,
+        },
+      })
+      return mapRecord(updated)
+    } catch (error) {
+      console.warn('[dailyUsageQuota] modern token increment failed, using legacy:', error)
+    }
   }
 
   const date = new Date(`${quota.lastResetDate}T12:00:00.000Z`)
@@ -247,21 +300,27 @@ export async function incrementPatientChatUsage(
   await syncDailyQuota(actorId, timeZone)
   const cols = await detectQuotaColumns()
 
-  if (!cols.lastResetDate) return syncDailyQuota(actorId, timeZone)
+  if (!cols.patientChatAiCount) {
+    return syncDailyQuota(actorId, timeZone)
+  }
 
-  if (cols.userIdUnique) {
-    const updated = await prisma.userAITokenUsage.update({
-      where: { userId: actorId },
-      data: { patientChatAiCount: { increment: 1 } },
-      select: {
-        tokensUsed: true,
-        requestCount: true,
-        patientChatAiCount: true,
-        lastResetDate: true,
-        updatedAt: true,
-      },
-    })
-    return mapRecord(updated)
+  if (canUseModernQuotaSchema(cols)) {
+    try {
+      const updated = await prisma.userAITokenUsage.update({
+        where: { userId: actorId },
+        data: { patientChatAiCount: { increment: 1 } },
+        select: {
+          tokensUsed: true,
+          requestCount: true,
+          patientChatAiCount: true,
+          lastResetDate: true,
+          updatedAt: true,
+        },
+      })
+      return mapRecord(updated)
+    } catch (error) {
+      console.warn('[dailyUsageQuota] modern patient-chat increment failed, using legacy:', error)
+    }
   }
 
   const today = localUsageDayKey(new Date(), timeZone)

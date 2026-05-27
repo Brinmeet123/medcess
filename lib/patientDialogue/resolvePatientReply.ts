@@ -6,7 +6,6 @@ import {
   tryPresetPatientResponse,
   type ChatMessage,
 } from '@/lib/presetPatientResponses'
-import { findExactLearnedPatientResponse } from '@/lib/patientDialogue/learnedResponses'
 import { PRESET_MATCH_THRESHOLD } from '@/lib/patientDialogue/matching'
 
 export type PatientReplySource =
@@ -30,8 +29,8 @@ export function getLastDoctorMessage(messages: ChatMessage[]): string {
 }
 
 /**
- * Fast path before AI: off-topic redirect and exact learned Q→A only.
- * Does not use preset buckets or fuzzy cache (those caused repeated generic replies).
+ * Fast path before AI: off-topic redirect only (no preset buckets or learned cache).
+ * Clinical questions always go to live AI when configured.
  */
 export async function resolvePreAiPatientReply(
   scenario: Scenario,
@@ -50,15 +49,6 @@ export async function resolvePreAiPatientReply(
     return {
       message: getOffTopicPatientReply(scenario.patientPersona.name, lastDoctorMessage),
       source: 'preset',
-      scripted: true,
-    }
-  }
-
-  const exact = await findExactLearnedPatientResponse(scenario.id, lastDoctorMessage)
-  if (exact) {
-    return {
-      message: exact.response,
-      source: 'cache',
       scripted: true,
     }
   }

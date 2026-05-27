@@ -3,7 +3,6 @@ import { scenarios } from '@/data/scenarios'
 import { getMockPatientResponse } from '@/lib/mockResponses'
 import {
   resolvePreAiPatientReply,
-  saveLearnedPatientResponse,
   tryHighConfidencePresetReply,
 } from '@/lib/patientDialogue/resolvePatientReply'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
@@ -49,8 +48,7 @@ If the doctor asks something unrelated to your health, symptoms, or medical visi
 async function callPatientAI(
   scenario: (typeof scenarios)[0],
   messages: Array<{ role: string; content: string }>,
-  actor: Awaited<ReturnType<typeof resolveAIActorFromRequest>>,
-  usePatientMessageQuota: boolean
+  actor: Awaited<ReturnType<typeof resolveAIActorFromRequest>>
 ): Promise<string> {
   const systemPrompt = buildPatientSystemPrompt(scenario)
   const llmMessages = [
@@ -64,8 +62,8 @@ async function callPatientAI(
   const { content: patientResponse } = await callManagedLLM(llmMessages, actor, {
     maxTokens: 400,
     temperature: 0.75,
-    /** When patientChatAiCount column is missing, count tokens toward the daily AI limit instead. */
-    skipQuota: usePatientMessageQuota,
+    skipCache: true,
+    skipQuota: false,
   })
 
   const trimmed = String(patientResponse ?? '').trim()
@@ -104,7 +102,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Off-topic redirect + exact learned Q→A only (no preset bucket / fuzzy cache)
     const preAi = await resolvePreAiPatientReply(scenario, messages)
     if (preAi) {
       const res = NextResponse.json({
@@ -115,51 +112,44 @@ export async function POST(request: NextRequest) {
       return res
     }
 
-    // Primary path: live AI for all clinical / unknown questions
-    if (shouldAttemptOllamaForPatientChat()) {
-      const usePatientMessageQuota = await isPatientChatLimitColumnAvailable()
-      await assertWithinDailyPatientChatLimit(actor.actorId, actor.timezone)
-
-      const trimmed = await callPatientAI(scenario, messages, actor, usePatientMessageQuota)
-      const lastDoctor =
-        [...messages].reverse().find((m) => m.role === 'doctor' || m.role === 'user')?.content || ''
-
-      if (usePatientMessageQuota) {
-        await recordPatientChatAIUsage(actor.actorId, actor.timezone)
+    if (!shouldAttemptOllamaForPatientChat()) {
+      const preset = tryHighConfidencePresetReply(scenario, messages)
+      if (preset) {
+        const res = NextResponse.json({
+          message: preset.message,
+          source: preset.source,
+        })
+        applyActorCookie(res, actor)
+        return res
       }
 
-      void saveLearnedPatientResponse(scenario.id, lastDoctor, trimmed).catch((err) => {
-        console.error('Failed to cache learned patient response:', err)
-      })
-
-      const res = NextResponse.json({
-        message: trimmed,
-        source: 'ai',
-        model: readAIModelForExport(),
-      })
-      applyActorCookie(res, actor)
-      return res
+      return NextResponse.json(
+        {
+          error: 'Patient chat AI is not configured',
+          details:
+            'Set OPENAI_API_KEY in your environment to enable live patient replies.',
+        },
+        { status: 503 }
+      )
     }
 
-    // No API key: strong preset match only (never generic defaultAnswer)
-    const preset = tryHighConfidencePresetReply(scenario, messages)
-    if (preset) {
-      const res = NextResponse.json({
-        message: preset.message,
-        source: preset.source,
-      })
-      applyActorCookie(res, actor)
-      return res
+    if (await isPatientChatLimitColumnAvailable()) {
+      await assertWithinDailyPatientChatLimit(actor.actorId, actor.timezone)
     }
 
-    return NextResponse.json(
-      {
-        error: 'Patient chat AI is not configured',
-        details:
-          'Set OPENAI_API_KEY in your environment to enable live patient replies. Scripted answers only apply to exact preset questions when AI is off.',
-      },
-      { status: 503 }
-    )
+    const trimmed = await callPatientAI(scenario, messages, actor)
+
+    if (await isPatientChatLimitColumnAvailable()) {
+      await recordPatientChatAIUsage(actor.actorId, actor.timezone)
+    }
+
+    const res = NextResponse.json({
+      message: trimmed,
+      source: 'ai',
+      model: readAIModelForExport(),
+    })
+    applyActorCookie(res, actor)
+    return res
   } catch (error: unknown) {
     console.error('Error in patient-chat:', error)
 
@@ -170,22 +160,6 @@ export async function POST(request: NextRequest) {
     }
 
     const err = error as { message?: string; name?: string }
-    const scenario = scenarios.find((s) => s.id === bodyData.scenarioId)
-
-    if (scenario) {
-      const preset = tryHighConfidencePresetReply(scenario, bodyData.messages || [])
-      if (preset) {
-        const safeReason =
-          err.message && err.message.length < 280
-            ? err.message
-            : err.message?.slice(0, 280) ?? 'Unknown error'
-        return NextResponse.json({
-          message: preset.message,
-          source: 'preset-fallback',
-          fallbackReason: safeReason,
-        })
-      }
-    }
 
     const shouldUseDemo = USE_DEMO_MOCKS || process.env.FALLBACK_TO_DEMO === 'true'
 

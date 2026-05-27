@@ -7,7 +7,7 @@ import {
 import { isPatientChatLimitColumnAvailable } from '@/lib/ai/tokenUsageDb'
 
 export const DAILY_PATIENT_CHAT_LIMIT_MESSAGE =
-  'Daily patient chat AI limit reached. Scripted answers still work — Daily AI limit resets at midnight.'
+  'Daily patient chat AI limit reached. Daily AI limit resets at midnight.'
 
 /** Only AI fallback patient replies count toward this limit (not presets/cache). */
 export const GUEST_DAILY_PATIENT_AI_MESSAGES = 15
