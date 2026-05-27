@@ -67,10 +67,12 @@ type Props = {
 }
 
 const ratingColors: Record<string, string> = {
-  Excellent: 'bg-green-100 text-green-800 border-green-300',
-  Good: 'bg-blue-100 text-blue-800 border-blue-300',
-  'Needs Improvement': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  Poor: 'bg-red-100 text-red-800 border-red-300',
+  Excellent:
+    'bg-green-100 text-green-800 border-green-300 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800/50',
+  Good: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/50',
+  'Needs Improvement':
+    'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50',
+  Poor: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/50',
 }
 
 const RUBRIC_ROWS: { key: keyof DebriefRubric100; label: string }[] = [
@@ -90,15 +92,15 @@ function Rubric100Block({
   levelLabel: string
 }) {
   return (
-    <div className="mb-6 rounded-xl border border-teal-200 bg-gradient-to-br from-teal-50 to-slate-50 p-5 shadow-sm">
-      <h3 className="mb-2 text-lg font-semibold text-teal-900">Score</h3>
-      <p className="text-4xl font-bold tabular-nums text-slate-900">
+    <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+      <h3 className="mb-2 text-lg font-semibold text-teal-900 dark:text-teal-300">Score</h3>
+      <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
         {total}
-        <span className="text-2xl font-semibold text-slate-600">/100</span>
+        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/100</span>
       </p>
-      <p className="mt-1 text-sm font-medium text-teal-900">{levelLabel}</p>
-      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500">Rubric</p>
-      <ul className="space-y-1.5 text-sm text-slate-700">
+      <p className="mt-1 text-sm font-medium text-teal-900 dark:text-teal-300">{levelLabel}</p>
+      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">Rubric</p>
+      <ul className="space-y-1.5 text-sm text-slate-700 dark:text-[#CBD5E1]">
         {RUBRIC_ROWS.map(({ key, label }) => (
           <li key={key} className="flex justify-between gap-4 tabular-nums">
             <span>{label}</span>
@@ -130,16 +132,18 @@ function LegacyScenarioRubricBlock({
     { label: 'Efficiency / Question Selection', value: rubric.efficiencyAndQuestionSelection, max: 25 },
   ]
   return (
-    <div className="mb-6 rounded-xl border border-teal-200 bg-gradient-to-br from-teal-50 to-slate-50 p-5 shadow-sm">
-      <h3 className="mb-2 text-lg font-semibold text-teal-900">Score</h3>
-      <p className="text-4xl font-bold tabular-nums text-slate-900">
+    <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+      <h3 className="mb-2 text-lg font-semibold text-teal-900 dark:text-teal-300">Score</h3>
+      <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
         {score}
-        <span className="text-2xl font-semibold text-slate-600">/100</span>
+        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/100</span>
       </p>
-      <p className="mt-1 text-sm font-medium text-teal-900">{level}</p>
-      {feedback ? <p className="mt-2 text-sm leading-relaxed text-slate-700">{feedback}</p> : null}
-      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500">Rubric</p>
-      <ul className="space-y-1.5 text-sm text-slate-700">
+      <p className="mt-1 text-sm font-medium text-teal-900 dark:text-teal-300">{level}</p>
+      {feedback ? (
+        <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1]">{feedback}</p>
+      ) : null}
+      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">Rubric</p>
+      <ul className="space-y-1.5 text-sm text-slate-700 dark:text-[#CBD5E1]">
         {rows.map((r) => (
           <li key={r.label} className="flex justify-between gap-4 tabular-nums">
             <span>{r.label}</span>
@@ -258,8 +262,8 @@ export default function SummaryPanel({
   return (
     <div className="case-panel">
       <VocabContextBlock source="debrief" mode="simplify" scenarioId={scenario.id} text={debriefContext}>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Diagnosis report</h2>
-        <p className="mb-6 text-sm leading-relaxed text-slate-600">
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Diagnosis report</h2>
+        <p className="mb-6 text-sm leading-relaxed text-slate-600 dark:text-[#CBD5E1]">
           {APP_NAME} structured feedback for this run. Each section is limited to a few high-yield points.
         </p>
 
@@ -277,50 +281,52 @@ export default function SummaryPanel({
             feedback={scenarioScore.feedback}
           />
         ) : assessment.totalScore != null ? (
-          <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-1 text-lg font-semibold text-slate-900">Score</h3>
-            <p className="text-3xl font-bold tabular-nums text-slate-900">
+          <div className="mb-6 rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">
+            <h3 className="mb-1 text-lg font-semibold text-slate-900 dark:text-[#F8FAFC]">Score</h3>
+            <p className="text-3xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
               {assessment.totalScore}
-              <span className="text-xl font-semibold text-slate-600">/{assessment.maxScore ?? 100}</span>
+              <span className="text-xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/{assessment.maxScore ?? 100}</span>
             </p>
             {assessment.totalScorePercentage != null ? (
-              <p className="mt-1 text-sm text-slate-600">{assessment.totalScorePercentage}% overall</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-[#CBD5E1]">{assessment.totalScorePercentage}% overall</p>
             ) : null}
           </div>
         ) : null}
 
-        <div className="mb-6 rounded-lg border-2 border-primary-200 bg-gradient-to-r from-primary-50 to-blue-50 p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-900">Badges</h3>
+        <div className="mb-6 rounded-lg border-2 border-primary-200 dark:border-[#14345C] bg-gradient-to-r from-primary-50 to-blue-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-4">
+          <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">Badges</h3>
           {badges.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {badges.map((badge, idx) => (
                 <span
                   key={idx}
-                  className="rounded-full bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm"
+                  className="rounded-full bg-primary-600 dark:bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm"
                 >
                   {badge}
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-600">None this run.</p>
+            <p className="text-sm text-gray-600 dark:text-[#CBD5E1]">None this run.</p>
           )}
         </div>
 
-        <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-900">Vocabulary</h3>
+        <div className="mb-6 rounded-lg border border-purple-200 dark:border-purple-800/50 bg-purple-50 dark:bg-[#071A33] p-4">
+          <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">Vocabulary</h3>
           <div className="space-y-2">
-            <p className="text-sm text-gray-700">
-              <strong>Clicked:</strong> {newTermsCount} {newTermsCount === 1 ? 'term' : 'terms'}
+            <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">
+              <strong className="text-gray-900 dark:text-[#F8FAFC]">Clicked:</strong> {newTermsCount}{' '}
+              {newTermsCount === 1 ? 'term' : 'terms'}
             </p>
             {savedTerms.length > 0 ? (
-              <p className="text-sm text-gray-700">
-                <strong>Saved:</strong> {savedTerms.length} {savedTerms.length === 1 ? 'term' : 'terms'}
+              <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">
+                <strong className="text-gray-900 dark:text-[#F8FAFC]">Saved:</strong> {savedTerms.length}{' '}
+                {savedTerms.length === 1 ? 'term' : 'terms'}
               </p>
             ) : null}
             {recommendedTerms.length > 0 ? (
               <div className="mt-3">
-                <p className="mb-2 text-sm font-medium text-gray-900">Worth another look:</p>
+                <p className="mb-2 text-sm font-medium text-gray-900 dark:text-[#F8FAFC]">Worth another look:</p>
                 <div className="flex flex-wrap gap-2">
                   {recommendedTerms.map((term) => {
                     const termData = getVocabTerm(term)
@@ -347,20 +353,20 @@ export default function SummaryPanel({
           <p className="text-sm font-semibold">Overall: {assessment.overallRating}</p>
         </div>
 
-        <div className="mb-4 rounded-lg border border-slate-100 bg-slate-50/80 p-3">
-          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Summary</h3>
-          <p className="text-sm text-slate-800">
+        <div className="mb-4 rounded-lg border border-slate-100 dark:border-[#14345C] bg-slate-50/80 dark:bg-[#071A33] p-3">
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">Summary</h3>
+          <p className="text-sm text-slate-800 dark:text-[#CBD5E1]">
             <VocabText text={assessment.summary} onTermClick={onTermClick} onTermSave={onTermSave} />
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-            <h3 className="mb-2 text-base font-semibold text-emerald-900">What You Did Well</h3>
+          <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/30 p-4">
+            <h3 className="mb-2 text-base font-semibold text-emerald-900 dark:text-emerald-300">What You Did Well</h3>
             {assessment.strengths.length === 0 ? (
-              <p className="text-sm text-slate-600">No items listed.</p>
+              <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No items listed.</p>
             ) : (
-              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
+              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-[#CBD5E1]">
                 {assessment.strengths.slice(0, 4).map((strength, idx) => (
                   <li key={idx}>
                     <VocabText
@@ -373,12 +379,12 @@ export default function SummaryPanel({
               </ul>
             )}
           </div>
-          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
-            <h3 className="mb-2 text-base font-semibold text-amber-900">What You Missed</h3>
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/30 p-4">
+            <h3 className="mb-2 text-base font-semibold text-amber-900 dark:text-amber-300">What You Missed</h3>
             {missedCombined.length === 0 ? (
-              <p className="text-sm text-slate-600">No major gaps flagged.</p>
+              <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No major gaps flagged.</p>
             ) : (
-              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
+              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-[#CBD5E1]">
                 {missedCombined.map((area, idx) => (
                   <li key={idx}>
                     <VocabText text={area} onTermClick={onTermClick} onTermSave={onTermSave} />
@@ -387,12 +393,12 @@ export default function SummaryPanel({
               </ul>
             )}
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-            <h3 className="mb-2 text-base font-semibold text-slate-900">Correct Approach</h3>
+          <div className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50/80 dark:bg-[#071A33] p-4">
+            <h3 className="mb-2 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">Correct Approach</h3>
             {correctApproachLines.length === 0 ? (
-              <p className="text-sm text-slate-600">No extra teaching lines for this case.</p>
+              <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No extra teaching lines for this case.</p>
             ) : (
-              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
+              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-[#CBD5E1]">
                 {correctApproachLines.map((line, idx) => (
                   <li key={idx}>
                     <VocabText text={line} onTermClick={onTermClick} onTermSave={onTermSave} />
@@ -405,7 +411,7 @@ export default function SummaryPanel({
 
         {ds?.improvementTip ? (
           <div className="mt-4 rounded-lg border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-4 text-sm text-slate-800 dark:text-[#CBD5E1]">
-            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
               Next step
             </h3>
             <p>
@@ -415,15 +421,15 @@ export default function SummaryPanel({
         ) : null}
 
         {ds?.vocabToReview && ds.vocabToReview.length > 0 ? (
-          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-1 text-sm font-semibold text-gray-900">Vocabulary to review</h3>
-            <p className="text-sm text-gray-700">{ds.vocabToReview.join(', ')}</p>
+          <div className="mt-4 rounded-lg border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">
+            <h3 className="mb-1 text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Vocabulary to review</h3>
+            <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">{ds.vocabToReview.join(', ')}</p>
           </div>
         ) : null}
 
         <div className="mt-8 space-y-4">
-          <div className="rounded-xl border border-primary-200 bg-primary-50/60 p-5">
-            <p className="font-semibold text-slate-900">What do you want to do next?</p>
+          <div className="rounded-xl border border-primary-200 dark:border-[#14345C] bg-primary-50/60 dark:bg-[#071A33] p-5">
+            <p className="font-semibold text-slate-900 dark:text-[#F8FAFC]">What do you want to do next?</p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
