@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { GUEST_DAILY_TOKEN_LIMIT } from '@/lib/ai/config'
 import { withClientTimezone } from '@/src/lib/aiRequestHeaders'
 import { localUsageDayKeyForClient, msUntilNextLocalReset } from '@/src/lib/localUsageDay'
 
@@ -75,20 +74,9 @@ function formatTokens(n: number): string {
 export default function AIUsageHeaderIndicator({ className = '' }: { className?: string }) {
   const { usage, loading } = useAIUsage()
 
-  const display = usage ?? {
-    tokensUsed: 0,
-    dailyLimit: GUEST_DAILY_TOKEN_LIMIT,
-    percentUsed: 0,
-    requestCount: 0,
-    isRegistered: false,
-    patientChatAiUsed: 0,
-    patientChatAiLimit: 15,
-    patientChatAiPercentUsed: 0,
-  }
-
-  const atLimit = !loading && display.tokensUsed >= display.dailyLimit
-  const warn = !loading && !atLimit && display.percentUsed >= 80
-  const pct = Math.min(100, display.percentUsed)
+  const atLimit = Boolean(usage && usage.tokensUsed >= usage.dailyLimit)
+  const warn = Boolean(usage && !atLimit && usage.percentUsed >= 80)
+  const pct = usage ? Math.min(100, usage.percentUsed) : 0
 
   const barColor = atLimit
     ? 'bg-red-500 dark:bg-red-400'
@@ -101,11 +89,12 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
       ? 'text-amber-700 dark:text-amber-300'
       : 'text-slate-500 dark:text-[#CBD5E1]'
 
-  const tooltip = loading
+  const tooltip = loading || !usage
     ? 'Loading AI usage…'
     : [
-        `AI today: ${display.tokensUsed.toLocaleString()} / ${display.dailyLimit.toLocaleString()} tokens`,
-        `${display.requestCount} request${display.requestCount === 1 ? '' : 's'}`,
+        `AI today: ${usage.tokensUsed.toLocaleString()} / ${usage.dailyLimit.toLocaleString()} tokens`,
+        `${usage.requestCount} request${usage.requestCount === 1 ? '' : 's'}`,
+        usage.isRegistered ? 'Registered account (60k/day)' : 'Guest (20k/day)',
         atLimit
           ? 'Daily AI limit resets at midnight.'
           : warn
@@ -133,7 +122,9 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
           />
         </div>
         <span className={`text-[10px] leading-none tabular-nums text-right ${labelColor}`}>
-          {formatTokens(display.tokensUsed)}/{formatTokens(display.dailyLimit)}
+          {usage
+            ? `${formatTokens(usage.tokensUsed)}/${formatTokens(usage.dailyLimit)}`
+            : '—'}
         </span>
       </div>
     </div>

@@ -118,11 +118,7 @@ export async function POST(request: NextRequest) {
     // Primary path: live AI for all clinical / unknown questions
     if (shouldAttemptOllamaForPatientChat()) {
       const usePatientMessageQuota = await isPatientChatLimitColumnAvailable()
-      await assertWithinDailyPatientChatLimit(
-        actor.actorId,
-        actor.isRegistered,
-        actor.timezone
-      )
+      await assertWithinDailyPatientChatLimit(actor.actorId, actor.timezone)
 
       const trimmed = await callPatientAI(scenario, messages, actor, usePatientMessageQuota)
       const lastDoctor =

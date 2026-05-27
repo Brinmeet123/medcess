@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma'
-import { getDailyTokenLimit } from '@/lib/ai/config'
+import {
+  getDailyTokenLimitForActor,
+  isRegisteredActorId,
+} from '@/lib/ai/config'
 import { DailyAILimitError } from '@/lib/ai/errors'
 import {
   incrementTokenUsage,
@@ -32,10 +35,10 @@ export type DailyUsageSnapshot = {
 
 export async function getDailyUsageSnapshot(
   actorId: string,
-  isRegistered: boolean,
   timeZone: string
 ): Promise<DailyUsageSnapshot> {
-  const dailyLimit = getDailyTokenLimit(isRegistered)
+  const isRegistered = isRegisteredActorId(actorId)
+  const dailyLimit = getDailyTokenLimitForActor(actorId)
   const quota = await syncDailyQuota(actorId, timeZone)
   const tokensUsed = quota.tokensUsed
   const requestCount = quota.requestCount
@@ -64,10 +67,9 @@ export async function getDailyUsageSnapshot(
  */
 export async function assertWithinDailyLimit(
   actorId: string,
-  isRegistered: boolean,
   timeZone: string
 ): Promise<void> {
-  const dailyLimit = getDailyTokenLimit(isRegistered)
+  const dailyLimit = getDailyTokenLimitForActor(actorId)
   const quota = await syncDailyQuota(actorId, timeZone)
   if (quota.tokensUsed >= dailyLimit) {
     throw new DailyAILimitError()
@@ -77,12 +79,11 @@ export async function assertWithinDailyLimit(
 /** Record token usage only after a successful LLM completion. */
 export async function recordTokenUsage(
   actorId: string,
-  isRegistered: boolean,
   timeZone: string,
   usage: TokenUsageBreakdown
 ): Promise<DailyUsageSnapshot> {
   await incrementTokenUsage(actorId, timeZone, usage.totalTokens)
-  return getDailyUsageSnapshot(actorId, isRegistered, timeZone)
+  return getDailyUsageSnapshot(actorId, timeZone)
 }
 
 export type AdminUsageRow = {
@@ -119,7 +120,7 @@ export async function listAdminUsageForDate(
       date: row.lastResetDate || dateKey,
       tokensUsed: row.tokensUsed,
       requestCount: row.requestCount,
-      dailyLimit: getDailyTokenLimit(!isGuest),
+      dailyLimit: getDailyTokenLimitForActor(row.userId),
       lastRequestAt: row.updatedAt.toISOString(),
     }
   })

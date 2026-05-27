@@ -17,6 +17,19 @@ export function readAIModel(): string {
   )
 }
 
+export function isGuestActorId(actorId: string): boolean {
+  return actorId.startsWith('guest:')
+}
+
+export function isRegisteredActorId(actorId: string): boolean {
+  return !isGuestActorId(actorId)
+}
+
 export function getDailyTokenLimit(isRegistered: boolean): number {
   return isRegistered ? REGISTERED_DAILY_TOKEN_LIMIT : GUEST_DAILY_TOKEN_LIMIT
+}
+
+/** Token limit from actor id (registered user ids → 60k; guest sessions → 20k). */
+export function getDailyTokenLimitForActor(actorId: string): number {
+  return getDailyTokenLimit(isRegisteredActorId(actorId))
 }

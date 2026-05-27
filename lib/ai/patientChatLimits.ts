@@ -1,3 +1,4 @@
+import { isRegisteredActorId } from '@/lib/ai/config'
 import { DailyAILimitError } from '@/lib/ai/errors'
 import {
   incrementPatientChatUsage,
@@ -16,16 +17,19 @@ export function getDailyPatientChatLimit(isRegistered: boolean): number {
   return isRegistered ? REGISTERED_DAILY_PATIENT_AI_MESSAGES : GUEST_DAILY_PATIENT_AI_MESSAGES
 }
 
+export function getDailyPatientChatLimitForActor(actorId: string): number {
+  return getDailyPatientChatLimit(isRegisteredActorId(actorId))
+}
+
 export { isPatientChatLimitColumnAvailable }
 
 export async function assertWithinDailyPatientChatLimit(
   actorId: string,
-  isRegistered: boolean,
   timeZone: string
 ): Promise<void> {
   if (!(await isPatientChatLimitColumnAvailable())) return
 
-  const dailyLimit = getDailyPatientChatLimit(isRegistered)
+  const dailyLimit = getDailyPatientChatLimitForActor(actorId)
   const quota = await syncDailyQuota(actorId, timeZone)
   if (quota.patientChatAiCount >= dailyLimit) {
     throw new DailyAILimitError(DAILY_PATIENT_CHAT_LIMIT_MESSAGE)

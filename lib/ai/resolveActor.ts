@@ -7,6 +7,7 @@ import {
   guestActorId,
   readGuestSessionIdFromRequest,
 } from '@/lib/ai/guestSession'
+import { isRegisteredActorId } from '@/lib/ai/config'
 import { CLIENT_TIMEZONE_HEADER, normalizeUsageTimezone } from '@/lib/ai/usageTimezone'
 
 export type AIActor = {
@@ -26,7 +27,7 @@ export async function resolveAIActorFromRequest(request: NextRequest): Promise<A
   const timezone = resolveTimezoneFromRequest(request)
   const session = await auth()
   if (session?.user?.id) {
-    return { actorId: session.user.id, isRegistered: true, timezone }
+    return normalizeAIActor({ actorId: session.user.id, isRegistered: true, timezone })
   }
 
   const fromRequest = readGuestSessionIdFromRequest(request)
@@ -52,4 +53,11 @@ export function applyActorCookie(response: NextResponse, actor: AIActor): void {
   if (actor.newGuestCookie) {
     attachGuestSessionCookie(response, actor.newGuestCookie)
   }
+}
+
+/** Keep `isRegistered` aligned with quota rules (non-guest actor id → registered limits). */
+export function normalizeAIActor(actor: AIActor): AIActor {
+  const isRegistered = isRegisteredActorId(actor.actorId)
+  if (actor.isRegistered === isRegistered) return actor
+  return { ...actor, isRegistered }
 }

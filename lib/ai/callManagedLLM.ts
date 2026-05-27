@@ -50,13 +50,13 @@ export async function callManagedLLM(
   }
 
   if (!options?.skipQuota) {
-    await assertWithinDailyLimit(actor.actorId, actor.isRegistered, actor.timezone)
+    await assertWithinDailyLimit(actor.actorId, actor.timezone)
   }
 
   const result = await callLLMRaw(messages, options)
 
   if (!options?.skipQuota) {
-    await recordTokenUsage(actor.actorId, actor.isRegistered, actor.timezone, result.usage)
+    await recordTokenUsage(actor.actorId, actor.timezone, result.usage)
   }
 
   if (cacheKey) {
