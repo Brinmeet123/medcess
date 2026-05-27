@@ -6,6 +6,8 @@ import { getMockPatientResponse } from '@/lib/mockResponses'
 import { isOffTopicDoctorQuestion } from '@/lib/offTopicQuestions'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
+import { DAILY_PATIENT_CHAT_LIMIT_MESSAGE } from '@/lib/ai/patientChatLimits'
+import { withClientTimezone } from '@/src/lib/aiRequestHeaders'
 
 type Message = {
   role: 'doctor' | 'patient'
@@ -113,7 +115,7 @@ export default function ChatPanel({
         const response = await fetch('/api/patient-chat', {
           method: 'POST',
           credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
+          headers: withClientTimezone({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             scenarioId: scenario.id,
             messages: newMessages,
@@ -210,8 +212,7 @@ export default function ChatPanel({
             errorMsg.includes('daily ai limit') ||
             errorMsg.includes('daily limit reached')
           ) {
-            errorContent =
-              'Daily patient chat AI limit reached. Scripted answers still work — your limit resets tomorrow.'
+            errorContent = DAILY_PATIENT_CHAT_LIMIT_MESSAGE
           } else if (errorMsg.includes('rate limit')) {
             errorContent = 'Rate limited or overloaded. Retry shortly or use a smaller model.'
           } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {

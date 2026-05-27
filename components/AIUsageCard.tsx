@@ -1,6 +1,7 @@
 'use client'
 
 import { useAIUsage } from '@/components/AIUsageHeaderIndicator'
+import { DAILY_LIMIT_MESSAGE } from '@/lib/ai/config'
 
 function formatTokens(n: number): string {
   return n.toLocaleString()
@@ -60,7 +61,7 @@ export default function AIUsageCard({ className = '' }: { className?: string }) 
       </p>
       {atLimit ? (
         <p className="text-xs text-red-700 dark:text-red-300 mt-2 font-medium">
-          Daily AI limit reached. Your usage resets tomorrow.
+          {DAILY_LIMIT_MESSAGE}
         </p>
       ) : warn ? (
         <p className="text-xs text-amber-800 dark:text-amber-300 mt-2">You are approaching today&apos;s AI limit.</p>

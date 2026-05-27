@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { getDailyTokenLimit } from '@/lib/ai/config'
 import { DailyAILimitError } from '@/lib/ai/errors'
-import { utcCalendarDate, utcUsageDayKey, nextUtcResetIso } from '@/lib/ai/dailyQuota'
-import { incrementDailyTokenUsage, readDailyTokenUsageRow } from '@/lib/ai/tokenUsageDb'
-
-export { utcCalendarDate, utcUsageDayKey, nextUtcResetIso }
+import {
+  incrementTokenUsage,
+  syncDailyQuota,
+} from '@/lib/ai/dailyUsageQuota'
+import { localUsageDayKey, nextLocalMidnightIso } from '@/lib/ai/usageTimezone'
 
 export type TokenUsageBreakdown = {
   inputTokens: number
@@ -15,53 +16,60 @@ export type TokenUsageBreakdown = {
 export type DailyUsageSnapshot = {
   actorId: string
   isRegistered: boolean
+  /** Local calendar day for the current usage bucket (`YYYY-MM-DD`). */
   date: string
+  lastResetDate: string
+  /** Tokens used today (same as `tokensUsed`; named for daily-quota clarity). */
+  dailyUsageCount: number
   tokensUsed: number
   requestCount: number
   dailyLimit: number
   percentUsed: number
   lastUpdatedAt: string | null
   resetsAt: string
+  timezone: string
 }
 
 export async function getDailyUsageSnapshot(
   actorId: string,
   isRegistered: boolean,
-  date: Date = utcCalendarDate()
+  timeZone: string
 ): Promise<DailyUsageSnapshot> {
   const dailyLimit = getDailyTokenLimit(isRegistered)
-  const row = await readDailyTokenUsageRow(actorId, date)
-  const tokensUsed = row?.tokensUsed ?? 0
-  const requestCount = row?.requestCount ?? 0
-  const percentUsed = dailyLimit > 0 ? Math.min(100, Math.round((tokensUsed / dailyLimit) * 100)) : 0
+  const quota = await syncDailyQuota(actorId, timeZone)
+  const tokensUsed = quota.tokensUsed
+  const requestCount = quota.requestCount
+  const percentUsed =
+    dailyLimit > 0 ? Math.min(100, Math.round((tokensUsed / dailyLimit) * 100)) : 0
 
   return {
     actorId,
     isRegistered,
-    date: utcUsageDayKey(date),
+    date: quota.lastResetDate,
+    lastResetDate: quota.lastResetDate,
+    dailyUsageCount: tokensUsed,
     tokensUsed,
     requestCount,
     dailyLimit,
     percentUsed,
-    lastUpdatedAt: row?.updatedAt?.toISOString() ?? null,
-    resetsAt: nextUtcResetIso(),
+    lastUpdatedAt: quota.updatedAt?.toISOString() ?? null,
+    resetsAt: nextLocalMidnightIso(new Date(), timeZone),
+    timezone: timeZone,
   }
 }
 
 /**
  * Server-side quota check before calling OpenAI.
- * Uses a serializable transaction to reduce race windows across tabs.
+ * Syncs local calendar day and resets counters at local midnight.
  */
 export async function assertWithinDailyLimit(
   actorId: string,
-  isRegistered: boolean
+  isRegistered: boolean,
+  timeZone: string
 ): Promise<void> {
   const dailyLimit = getDailyTokenLimit(isRegistered)
-  const date = utcCalendarDate()
-
-  const row = await readDailyTokenUsageRow(actorId, date)
-  const used = row?.tokensUsed ?? 0
-  if (used >= dailyLimit) {
+  const quota = await syncDailyQuota(actorId, timeZone)
+  if (quota.tokensUsed >= dailyLimit) {
     throw new DailyAILimitError()
   }
 }
@@ -69,13 +77,12 @@ export async function assertWithinDailyLimit(
 /** Record token usage only after a successful LLM completion. */
 export async function recordTokenUsage(
   actorId: string,
+  isRegistered: boolean,
+  timeZone: string,
   usage: TokenUsageBreakdown
 ): Promise<DailyUsageSnapshot> {
-  const date = utcCalendarDate()
-  await incrementDailyTokenUsage(actorId, usage.totalTokens, date)
-
-  const isRegistered = !actorId.startsWith('guest:')
-  return getDailyUsageSnapshot(actorId, isRegistered, date)
+  await incrementTokenUsage(actorId, timeZone, usage.totalTokens)
+  return getDailyUsageSnapshot(actorId, isRegistered, timeZone)
 }
 
 export type AdminUsageRow = {
@@ -89,9 +96,14 @@ export type AdminUsageRow = {
   lastRequestAt: string
 }
 
-export async function listAdminUsageForDate(date: Date = utcCalendarDate()): Promise<AdminUsageRow[]> {
+/** Admin view: actors with usage on the given local calendar day (UTC for ops). */
+export async function listAdminUsageForDate(
+  dateKey: string = localUsageDayKey(new Date(), 'UTC')
+): Promise<AdminUsageRow[]> {
   const rows = await prisma.userAITokenUsage.findMany({
-    where: { date },
+    where: {
+      OR: [{ lastResetDate: dateKey }, { date: new Date(`${dateKey}T12:00:00.000Z`) }],
+    },
     orderBy: [{ tokensUsed: 'desc' }, { updatedAt: 'desc' }],
   })
 
@@ -104,7 +116,7 @@ export async function listAdminUsageForDate(date: Date = utcCalendarDate()): Pro
       actorId: row.userId,
       displayUser,
       isGuest,
-      date: utcUsageDayKey(date),
+      date: row.lastResetDate || dateKey,
       tokensUsed: row.tokensUsed,
       requestCount: row.requestCount,
       dailyLimit: getDailyTokenLimit(!isGuest),

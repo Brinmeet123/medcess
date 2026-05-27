@@ -8,7 +8,6 @@ import {
 } from '@/lib/patientDialogue/resolvePatientReply'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
-import { utcCalendarDate } from '@/lib/ai/dailyQuota'
 import {
   assertWithinDailyPatientChatLimit,
   isPatientChatLimitColumnAvailable,
@@ -119,15 +118,18 @@ export async function POST(request: NextRequest) {
     // Primary path: live AI for all clinical / unknown questions
     if (shouldAttemptOllamaForPatientChat()) {
       const usePatientMessageQuota = await isPatientChatLimitColumnAvailable()
-      const usageDate = utcCalendarDate()
-      await assertWithinDailyPatientChatLimit(actor.actorId, actor.isRegistered, usageDate)
+      await assertWithinDailyPatientChatLimit(
+        actor.actorId,
+        actor.isRegistered,
+        actor.timezone
+      )
 
       const trimmed = await callPatientAI(scenario, messages, actor, usePatientMessageQuota)
       const lastDoctor =
         [...messages].reverse().find((m) => m.role === 'doctor' || m.role === 'user')?.content || ''
 
       if (usePatientMessageQuota) {
-        await recordPatientChatAIUsage(actor.actorId, usageDate)
+        await recordPatientChatAIUsage(actor.actorId, actor.timezone)
       }
 
       void saveLearnedPatientResponse(scenario.id, lastDoctor, trimmed).catch((err) => {

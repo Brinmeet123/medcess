@@ -34,9 +34,9 @@ export default async function AdminAIUsagePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <p className="text-xs text-slate-500 mb-2">Admin · hidden</p>
-      <h1 className="text-2xl font-bold text-slate-900 mb-1">AI usage (today, UTC)</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-1">AI usage (today)</h1>
       <p className="text-sm text-slate-600 mb-6">
-        Daily token totals per user or guest session. Resets automatically at UTC midnight.
+        Daily token totals per user or guest session. Counters reset at each user&apos;s local midnight.
       </p>
       <AdminAIUsageTable rows={enriched} />
     </div>

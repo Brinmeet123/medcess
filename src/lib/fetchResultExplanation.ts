@@ -5,7 +5,9 @@ export type FetchResultExplanationOptions = {
   source?: string
 }
 
+import { withClientTimezone } from '@/src/lib/aiRequestHeaders'
 import { notifyAiUsageUpdated } from '@/src/lib/notifyAiUsageUpdated'
+import { DAILY_LIMIT_MESSAGE } from '@/lib/ai/config'
 
 export type ResultExplanationResponse = {
   explanation: string
@@ -31,7 +33,7 @@ export async function fetchResultExplanation(
     const res = await fetch('/api/explain-result', {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withClientTimezone({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         selectedText: selectedText.trim(),
         contextSentence: options?.contextSentence,
@@ -43,7 +45,7 @@ export async function fetchResultExplanation(
 
     if (res.status === 429) {
       const err = (await res.json().catch(() => ({}))) as { error?: string }
-      throw new Error(err.error ?? 'Daily AI limit reached. Your usage resets tomorrow.')
+      throw new Error(err.error ?? DAILY_LIMIT_MESSAGE)
     }
 
     const data = (await res.json().catch(() => ({}))) as ResultExplanationResponse & {

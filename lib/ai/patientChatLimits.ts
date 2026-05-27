@@ -1,13 +1,12 @@
 import { DailyAILimitError } from '@/lib/ai/errors'
-import { utcCalendarDate } from '@/lib/ai/dailyQuota'
 import {
-  incrementPatientChatAiCount,
-  isPatientChatLimitColumnAvailable,
-  readPatientChatAiCount,
-} from '@/lib/ai/tokenUsageDb'
+  incrementPatientChatUsage,
+  syncDailyQuota,
+} from '@/lib/ai/dailyUsageQuota'
+import { isPatientChatLimitColumnAvailable } from '@/lib/ai/tokenUsageDb'
 
 export const DAILY_PATIENT_CHAT_LIMIT_MESSAGE =
-  'Daily patient chat AI limit reached. Scripted answers still work — your limit resets at midnight UTC.'
+  'Daily patient chat AI limit reached. Scripted answers still work — Daily AI limit resets at midnight.'
 
 /** Only AI fallback patient replies count toward this limit (not presets/cache). */
 export const GUEST_DAILY_PATIENT_AI_MESSAGES = 15
@@ -22,21 +21,30 @@ export { isPatientChatLimitColumnAvailable }
 export async function assertWithinDailyPatientChatLimit(
   actorId: string,
   isRegistered: boolean,
-  date: Date = utcCalendarDate()
+  timeZone: string
 ): Promise<void> {
   if (!(await isPatientChatLimitColumnAvailable())) return
 
   const dailyLimit = getDailyPatientChatLimit(isRegistered)
-  const used = await readPatientChatAiCount(actorId, date)
-  if (used >= dailyLimit) {
+  const quota = await syncDailyQuota(actorId, timeZone)
+  if (quota.patientChatAiCount >= dailyLimit) {
     throw new DailyAILimitError(DAILY_PATIENT_CHAT_LIMIT_MESSAGE)
   }
 }
 
 export async function recordPatientChatAIUsage(
   actorId: string,
-  date: Date = utcCalendarDate()
+  timeZone: string
 ): Promise<void> {
   if (!(await isPatientChatLimitColumnAvailable())) return
-  await incrementPatientChatAiCount(actorId, date)
+  await incrementPatientChatUsage(actorId, timeZone)
+}
+
+export async function readPatientChatAiCount(
+  actorId: string,
+  timeZone: string
+): Promise<number> {
+  if (!(await isPatientChatLimitColumnAvailable())) return 0
+  const quota = await syncDailyQuota(actorId, timeZone)
+  return quota.patientChatAiCount
 }

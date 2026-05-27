@@ -6,7 +6,7 @@ import { shouldUseOllamaLLM } from '../lib/llm.ts'
 import { callManagedLLM } from '../lib/ai/callManagedLLM.ts'
 import type { AIActor } from '../lib/ai/resolveActor.ts'
 
-const actor: AIActor = { actorId: 'smoke-test', isRegistered: true, isGuest: false }
+const actor: AIActor = { actorId: 'smoke-test', isRegistered: true, timezone: 'UTC' }
 
 async function main() {
   if (!shouldUseOllamaLLM()) {

@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { GUEST_DAILY_TOKEN_LIMIT } from '@/lib/ai/config'
-import { msUntilNextUtcReset, utcUsageDayKey } from '@/src/lib/utcUsageDay'
+import { withClientTimezone } from '@/src/lib/aiRequestHeaders'
+import { localUsageDayKeyForClient, msUntilNextLocalReset } from '@/src/lib/localUsageDay'
 
 export type AIUsageData = {
-  /** UTC day bucket for this usage row (`YYYY-MM-DD`). */
+  /** Local calendar day for this usage row (`YYYY-MM-DD`). */
   date?: string
+  lastResetDate?: string
   resetsAt?: string
   tokensUsed: number
   dailyLimit: number
@@ -24,7 +26,10 @@ export function useAIUsage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/ai-usage', { credentials: 'same-origin' })
+      const res = await fetch('/api/ai-usage', {
+        credentials: 'same-origin',
+        headers: withClientTimezone(),
+      })
       if (!res.ok) return
       const data = (await res.json()) as AIUsageData
       setUsage(data)
@@ -42,7 +47,7 @@ export function useAIUsage() {
     window.addEventListener('focus', onFocus)
     window.addEventListener('ai-usage-updated', onUsageUpdated)
 
-    const resetTimer = window.setTimeout(() => void load(), msUntilNextUtcReset())
+    const resetTimer = window.setTimeout(() => void load(), msUntilNextLocalReset())
 
     return () => {
       window.removeEventListener('focus', onFocus)
@@ -51,10 +56,9 @@ export function useAIUsage() {
     }
   }, [load])
 
-  // If the tab stays open past UTC midnight, refetch when the usage day no longer matches today.
   useEffect(() => {
     if (!usage?.date) return
-    const today = utcUsageDayKey()
+    const today = localUsageDayKeyForClient()
     if (usage.date === today) return
     void load()
   }, [usage?.date, load])
@@ -103,12 +107,10 @@ export default function AIUsageHeaderIndicator({ className = '' }: { className?:
         `AI today: ${display.tokensUsed.toLocaleString()} / ${display.dailyLimit.toLocaleString()} tokens`,
         `${display.requestCount} request${display.requestCount === 1 ? '' : 's'}`,
         atLimit
-          ? 'Limit reached — resets at midnight UTC.'
+          ? 'Daily AI limit resets at midnight.'
           : warn
             ? 'Approaching daily limit.'
-            : display.resetsAt
-              ? `Resets ${new Date(display.resetsAt).toLocaleString()}`
-              : null,
+            : 'Daily AI limit resets at midnight.',
       ]
         .filter(Boolean)
         .join(' · ')

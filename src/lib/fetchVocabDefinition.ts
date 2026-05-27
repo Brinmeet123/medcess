@@ -1,6 +1,8 @@
 import type { MedicalTermLike } from '@/src/types/medicalTerm'
 import { getCachedAIDefinition, setCachedAIDefinition } from '@/src/lib/aiDefinitionCache'
+import { withClientTimezone } from '@/src/lib/aiRequestHeaders'
 import { notifyAiUsageUpdated } from '@/src/lib/notifyAiUsageUpdated'
+import { DAILY_LIMIT_MESSAGE } from '@/lib/ai/config'
 
 export type FetchVocabDefinitionOptions = {
   signal?: AbortSignal
@@ -50,7 +52,7 @@ export async function fetchVocabDefinition(
     const res = await fetch('/api/vocab/define', {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withClientTimezone({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         term: term.trim(),
         contextSentence: options?.contextSentence,
@@ -61,7 +63,7 @@ export async function fetchVocabDefinition(
 
     if (res.status === 429) {
       const err = (await res.json().catch(() => ({}))) as { error?: string }
-      throw new Error(err.error ?? 'Daily AI limit reached. Your usage resets tomorrow.')
+      throw new Error(err.error ?? DAILY_LIMIT_MESSAGE)
     }
 
     const data = (await res.json().catch(() => ({}))) as VocabDefinitionResult & {

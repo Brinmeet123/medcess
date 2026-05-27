@@ -27,21 +27,24 @@ model User {
   attempts ScenarioAttempt[]
 }
 
-/// Daily AI token usage per actor (registered user id or `guest:<sessionId>`).
+/// Daily AI usage per actor (registered user id or `guest:<sessionId>`).
+/// Counters reset when `lastResetDate` (local calendar day) changes on the next AI request.
 model UserAITokenUsage {
-  id           String   @id @default(cuid())
-  userId       String
-  date         DateTime @db.Date
-  tokensUsed   Int      @default(0)
-  requestCount Int      @default(0)
-  /// Patient-chat AI fallback replies only (presets/cache do not increment).
-  patientChatAiCount Int @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  /// Legacy UTC/date bucket; optional after local-daily migration.
+  date               DateTime? @db.Date
+  tokensUsed         Int       @default(0)
+  requestCount       Int       @default(0)
+  /// Patient-chat AI replies only (presets/cache do not increment).
+  patientChatAiCount Int       @default(0)
+  /// Local calendar day `YYYY-MM-DD` when usage was last reset.
+  lastResetDate      String    @default("")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  @@unique([userId, date])
   @@index([date])
-  @@index([userId])
+  @@index([lastResetDate])
 }
 
 /// Per-scenario learned patient replies (AI-generated once, reused for similar questions).
