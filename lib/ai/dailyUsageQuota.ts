@@ -53,7 +53,11 @@ export async function syncDailyQuota(
   const cols = await detectQuotaColumns()
 
   if (cols.lastResetDate && cols.userIdUnique) {
-    return syncDailyQuotaModern(actorId, today)
+    try {
+      return await syncDailyQuotaModern(actorId, today)
+    } catch (error) {
+      console.warn('[dailyUsageQuota] modern sync failed, falling back to legacy:', error)
+    }
   }
 
   return syncDailyQuotaLegacy(actorId, today)
@@ -76,6 +80,7 @@ async function syncDailyQuotaModern(actorId: string, today: string): Promise<Dai
       data: {
         userId: actorId,
         lastResetDate: today,
+        date: new Date(`${today}T12:00:00.000Z`),
         tokensUsed: 0,
         requestCount: 0,
         patientChatAiCount: 0,

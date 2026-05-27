@@ -33,7 +33,7 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <AIUsageHeaderIndicator className="flex mx-2" />
+            <AIUsageHeaderIndicator className="flex mx-2 shrink-0" />
             <ThemeToggle className="inline-flex mx-1" />
 
             {status === 'loading' ? (
@@ -65,7 +65,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <AIUsageHeaderIndicator className="flex max-w-[5.5rem]" />
+            <AIUsageHeaderIndicator className="flex shrink-0" />
             <ThemeToggle compact />
             <button
               type="button"
@@ -96,7 +96,7 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="px-3 py-2 sm:hidden">
-              <AIUsageHeaderIndicator className="max-w-[5.5rem]" />
+              <AIUsageHeaderIndicator className="shrink-0" />
             </div>
             {status === 'loading' ? (
               <p className="px-3 py-2 text-sm text-slate-400">Loading</p>
