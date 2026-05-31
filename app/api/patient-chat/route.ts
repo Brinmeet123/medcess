@@ -13,6 +13,10 @@ import {
   recordPatientChatAIUsage,
 } from '@/lib/ai/patientChatLimits'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
+import {
+  PATIENT_AI_LENGTH_RULES,
+  PATIENT_AI_TEMPERATURE,
+} from '@/lib/patientDialogue/patientResponseStyle'
 import { readAIModelForExport, shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
@@ -35,14 +39,16 @@ ${aiInstructions.behaviorRules.map((rule) => `- ${rule}`).join('\n')}
 DO NOT reveal directly:
 ${aiInstructions.doNotRevealDirectly.map((item) => `- ${item}`).join('\n')}
 
-Key history points you know (reveal only if asked specifically):
+Key history points you know (reveal only if asked specifically — one or two per answer, not all at once):
 ${patientPersona.keyHistoryPoints.map((point) => `- ${point}`).join('\n')}
 
-Answer ONLY as the patient in first person. Sound like a real patient in the exam room: usually 2–4 sentences, natural and conversational, with enough detail that the doctor can follow your story (timing, location, quality, what worries you). When asked an open question, include one concrete symptom detail and how you feel. Do not lecture or list bullet points. Do NOT give medical advice or diagnoses.
+${PATIENT_AI_LENGTH_RULES}
 
-If the doctor greets you casually (e.g. "what's up", "how are you"), respond naturally in character — acknowledge them briefly, then explain why you're here today using your chief complaint in your own words. Do not repeat the same paragraph verbatim on every message; vary your wording based on what they just asked.
+Answer ONLY as the patient in first person. Do NOT give medical advice or diagnoses.
 
-If the doctor asks something unrelated to your health, symptoms, or medical visit (for example homework, recipes, sports, or trivia), do NOT answer the off-topic question. Respond briefly in character — confused or politely puzzled — e.g. "Excuse me, doctor, why are you asking me that?" and redirect to why you came in today.`
+If the doctor greets you casually (e.g. "what's up", "how are you"), one or two sentences: brief hello, then why you came in (chief complaint only).
+
+If the doctor asks something unrelated to your health, symptoms, or medical visit (for example homework, recipes, sports, or trivia), do NOT answer the off-topic question. One short sentence in character, then redirect to why you came in.`
 }
 
 async function callPatientAI(
@@ -60,8 +66,7 @@ async function callPatientAI(
   ]
 
   const { content: patientResponse } = await callManagedLLM(llmMessages, actor, {
-    maxTokens: 400,
-    temperature: 0.75,
+    temperature: PATIENT_AI_TEMPERATURE,
     skipCache: true,
     skipQuota: false,
   })

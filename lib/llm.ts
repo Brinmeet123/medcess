@@ -98,9 +98,9 @@ export function shouldAttemptOllamaForPatientChat(): boolean {
 export type CallLLMOptions = {
   /** Ask OpenAI for JSON-only output (helps structured routes like vocab definitions). */
   responseFormatJson?: boolean
-  /** Cap completion length (patient chat uses ~350 for richer replies). */
+  /** Optional cap on completion length (patient chat relies on prompt rules instead). */
   maxTokens?: number
-  /** Sampling temperature (patient chat uses 0.75 for natural variation). */
+  /** Sampling temperature (patient chat uses ~0.7). */
   temperature?: number
 }
 
