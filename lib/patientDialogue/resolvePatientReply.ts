@@ -29,8 +29,8 @@ export function getLastDoctorMessage(messages: ChatMessage[]): string {
 }
 
 /**
- * Fast path before AI: off-topic redirect only (no preset buckets or learned cache).
- * Clinical questions always go to live AI when configured.
+ * Fast path before AI: off-topic redirect and high-confidence preset matches.
+ * Ensures the same scripted answers for every user when a scenario has a preset row.
  */
 export async function resolvePreAiPatientReply(
   scenario: Scenario,
@@ -51,6 +51,11 @@ export async function resolvePreAiPatientReply(
       source: 'preset',
       scripted: true,
     }
+  }
+
+  const preset = tryHighConfidencePresetReply(scenario, messages)
+  if (preset) {
+    return preset
   }
 
   return null

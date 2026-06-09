@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { scenarios } from '@/data/scenarios'
 import { getMockPatientResponse } from '@/lib/mockResponses'
-import {
-  resolvePreAiPatientReply,
-  tryHighConfidencePresetReply,
-} from '@/lib/patientDialogue/resolvePatientReply'
+import { resolvePreAiPatientReply } from '@/lib/patientDialogue/resolvePatientReply'
 import { callManagedLLM } from '@/lib/ai/callManagedLLM'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
 import {
@@ -17,6 +14,7 @@ import {
   PATIENT_AI_LENGTH_RULES,
   PATIENT_AI_TEMPERATURE,
 } from '@/lib/patientDialogue/patientResponseStyle'
+import { delayBeforeScriptedPatientReply } from '@/lib/patientDialogue/scriptedReplyDelay'
 import { readAIModelForExport, shouldAttemptOllamaForPatientChat } from '@/lib/llm'
 
 export const dynamic = 'force-dynamic'
@@ -101,6 +99,7 @@ export async function POST(request: NextRequest) {
 
     if (USE_DEMO_MOCKS) {
       const mockResponse = getMockPatientResponse(scenarioId, messages)
+      await delayBeforeScriptedPatientReply(mockResponse)
       return NextResponse.json({
         message: mockResponse,
         source: 'demo-mock',
@@ -109,25 +108,19 @@ export async function POST(request: NextRequest) {
 
     const preAi = await resolvePreAiPatientReply(scenario, messages)
     if (preAi) {
+      if (preAi.scripted) {
+        await delayBeforeScriptedPatientReply(preAi.message)
+      }
       const res = NextResponse.json({
         message: preAi.message,
         source: preAi.source,
+        ...(preAi.scripted ? { model: readAIModelForExport() } : {}),
       })
       applyActorCookie(res, actor)
       return res
     }
 
     if (!shouldAttemptOllamaForPatientChat()) {
-      const preset = tryHighConfidencePresetReply(scenario, messages)
-      if (preset) {
-        const res = NextResponse.json({
-          message: preset.message,
-          source: preset.source,
-        })
-        applyActorCookie(res, actor)
-        return res
-      }
-
       return NextResponse.json(
         {
           error: 'Patient chat AI is not configured',
@@ -178,6 +171,7 @@ export async function POST(request: NextRequest) {
         bodyData.scenarioId || '',
         bodyData.messages || []
       )
+      await delayBeforeScriptedPatientReply(mockResponse)
       return NextResponse.json({
         message: mockResponse,
         source: 'demo-mock',

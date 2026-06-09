@@ -328,6 +328,19 @@ const FALLBACK_SCENARIOS: FallbackScenario[] = [
         keywords: ['better', 'worse', 'changed', 'time'],
       },
       {
+        id: 'timing',
+        answer:
+          "It’s constant — it hasn’t gone away or faded since it started. It’s not coming and going; the pressure has been there the whole time.",
+        patterns: [
+          'is it constant or does it come and go',
+          'constant or does it come and go',
+          'constant or come and go',
+          'does it come and go',
+          'comes and goes',
+        ],
+        keywords: ['constant', 'come', 'go', 'intermittent'],
+      },
+      {
         id: 'location',
         answer:
           "It’s right in the center of my chest, kind of behind my breastbone. It feels deep inside, not like something on the surface. That’s where it’s strongest.",
@@ -597,6 +610,19 @@ const FALLBACK_SCENARIOS: FallbackScenario[] = [
         keywords: ['better', 'worse', 'changed', 'time'],
       },
       {
+        id: 'timing',
+        answer:
+          "It’s constant — the headache hasn’t let up since it hit. It’s not coming and going; it’s been there the whole time and keeps getting worse.",
+        patterns: [
+          'is it constant or does it come and go',
+          'constant or does it come and go',
+          'constant or come and go',
+          'does it come and go',
+          'comes and goes',
+        ],
+        keywords: ['constant', 'come', 'go', 'intermittent'],
+      },
+      {
         id: 'location',
         answer:
           "It feels like it’s all over my head, not just one side. It’s kind of a whole-head pain. My neck also hurts and feels really stiff.",
@@ -846,6 +872,19 @@ const FALLBACK_SCENARIOS: FallbackScenario[] = [
         keywords: ['better', 'worse', 'changed', 'time'],
       },
       {
+        id: 'timing',
+        answer:
+          "It’s constant — I haven’t had stretches where I can breathe normally. It’s not coming and going; the shortness of breath has been there since it started.",
+        patterns: [
+          'is it constant or does it come and go',
+          'constant or does it come and go',
+          'constant or come and go',
+          'does it come and go',
+          'comes and goes',
+        ],
+        keywords: ['constant', 'come', 'go', 'intermittent'],
+      },
+      {
         id: 'location',
         answer:
           "It’s not really in one spot like pain would be. It feels like my whole chest is tight. The main issue is just not being able to breathe well.",
@@ -1089,6 +1128,19 @@ const FALLBACK_SCENARIOS: FallbackScenario[] = [
         keywords: ['better', 'worse', 'changed', 'time'],
       },
       {
+        id: 'timing',
+        answer:
+          "It’s constant — the pain hasn’t gone away. It’s not coming and going; it’s been there steadily and keeps getting worse.",
+        patterns: [
+          'is it constant or does it come and go',
+          'constant or does it come and go',
+          'constant or come and go',
+          'does it come and go',
+          'comes and goes',
+        ],
+        keywords: ['constant', 'come', 'go', 'intermittent'],
+      },
+      {
         id: 'location',
         answer:
           "Right now it’s mostly in the lower right side of my abdomen. That’s where it hurts the most. It’s very specific to that area now.",
@@ -1324,6 +1376,19 @@ const FALLBACK_SCENARIOS: FallbackScenario[] = [
           'pain changed over time',
         ],
         keywords: ['better', 'worse', 'changed', 'time'],
+      },
+      {
+        id: 'timing',
+        answer:
+          "It’s been constant — I haven’t had clear moments where I felt normal again. The confusion and fever have been there steadily, not coming and going.",
+        patterns: [
+          'is it constant or does it come and go',
+          'constant or does it come and go',
+          'constant or come and go',
+          'does it come and go',
+          'comes and goes',
+        ],
+        keywords: ['constant', 'come', 'go', 'intermittent'],
       },
       {
         id: 'location',

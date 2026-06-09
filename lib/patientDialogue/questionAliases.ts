@@ -47,6 +47,18 @@ export const QUESTION_TOPIC_ALIASES: TopicAlias[] = [
     qaIds: ['onset'],
   },
   {
+    patterns: [
+      'constant or come and go',
+      'constant or does it come and go',
+      'comes and goes',
+      'come and go',
+      'intermittent',
+      'continuous',
+    ],
+    keywords: ['constant', 'come', 'goes', 'intermittent', 'continuous'],
+    qaIds: ['timing'],
+  },
+  {
     patterns: ['where', 'location', 'point to', 'where does it hurt'],
     keywords: ['where', 'location', 'located', 'point'],
     qaIds: ['location'],
