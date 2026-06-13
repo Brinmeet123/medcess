@@ -22,9 +22,24 @@ model User {
   totalScore Int      @default(0)
   streak     Int      @default(0)
 
-  vocab    Vocab[]
-  progress ScenarioProgress[]
-  attempts ScenarioAttempt[]
+  vocab               Vocab[]
+  progress            ScenarioProgress[]
+  attempts            ScenarioAttempt[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 /// Daily AI usage per actor (registered user id or `guest:<sessionId>`).

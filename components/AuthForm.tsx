@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -154,6 +155,14 @@ export default function AuthForm() {
               onChange={(e) => setLoginPassword(e.target.value)}
               className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
+            <p className="text-right mt-2">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                Forgot Password?
+              </Link>
+            </p>
           </div>
           <button
             type="submit"

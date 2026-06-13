@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { passwordSchema } from '@/lib/passwordValidation'
 import {
   PrismaClientInitializationError,
   PrismaClientKnownRequestError,
@@ -59,7 +60,7 @@ const registerSchema = z.object({
     .max(32)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username may only contain letters, numbers, and underscores'),
   email: z.string().trim().email('Invalid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+  password: passwordSchema,
 })
 
 export async function POST(req: Request) {
