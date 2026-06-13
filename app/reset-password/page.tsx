@@ -13,7 +13,23 @@ export const metadata: Metadata = {
   },
 }
 
-export default function ResetPasswordPage() {
+function resolveToken(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (!raw) return ''
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+}
+
+export default function ResetPasswordPage({
+  searchParams,
+}: {
+  searchParams?: { token?: string | string[] }
+}) {
+  const initialToken = resolveToken(searchParams?.token)
+
   return (
     <div className="min-h-[calc(100vh-12rem)] flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
@@ -27,7 +43,7 @@ export default function ResetPasswordPage() {
 
         <div className="medcess-card shadow-xl p-8 md:p-10">
           <Suspense fallback={<div className="text-center text-slate-500">Loading…</div>}>
-            <ResetPasswordForm />
+            <ResetPasswordForm initialToken={initialToken} />
           </Suspense>
         </div>
 

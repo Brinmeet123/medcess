@@ -1,15 +1,46 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const INVALID_TOKEN_MESSAGE = 'This password reset link is invalid or has expired.'
+const MISSING_TOKEN_MESSAGE =
+  'This password reset link is missing or invalid. Request a new link from the forgot password page.'
 
-export default function ResetPasswordForm() {
+type ResetPasswordFormProps = {
+  initialToken?: string
+}
+
+function readTokenFromSearch(search: string): string {
+  const value = new URLSearchParams(search).get('token')
+  if (!value) return ''
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams?.get('token') ?? ''
+
+  const token = useMemo(() => {
+    if (initialToken) return initialToken
+    const fromHook = searchParams?.get('token')
+    if (fromHook) {
+      try {
+        return decodeURIComponent(fromHook)
+      } catch {
+        return fromHook
+      }
+    }
+    if (typeof window !== 'undefined') {
+      return readTokenFromSearch(window.location.search)
+    }
+    return ''
+  }, [initialToken, searchParams])
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -17,18 +48,12 @@ export default function ResetPasswordForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    if (!token) {
-      setError('This password reset link is missing or invalid.')
-    }
-  }, [token])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     if (!token) {
-      setError('This password reset link is missing or invalid.')
+      setError(MISSING_TOKEN_MESSAGE)
       return
     }
 
@@ -81,12 +106,32 @@ export default function ResetPasswordForm() {
 
   return (
     <>
+      {!token && (
+        <div
+          className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          role="status"
+        >
+          {MISSING_TOKEN_MESSAGE}{' '}
+          <Link href="/forgot-password" className="font-medium text-primary-700 hover:text-primary-800">
+            Forgot password
+          </Link>
+        </div>
+      )}
+
       {error && (
         <div
           className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
           role="alert"
         >
           {error}
+          {!token && (
+            <>
+              {' '}
+              <Link href="/forgot-password" className="font-medium text-primary-700 hover:text-primary-800">
+                Request a new link
+              </Link>
+            </>
+          )}
         </div>
       )}
 
@@ -103,8 +148,7 @@ export default function ResetPasswordForm() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={!token}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none disabled:opacity-60"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
           />
           <p className="text-xs text-slate-500 mt-1">At least 8 characters.</p>
         </div>
@@ -123,15 +167,10 @@ export default function ResetPasswordForm() {
             minLength={8}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={!token}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none disabled:opacity-60"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none"
           />
         </div>
-        <button
-          type="submit"
-          disabled={loading || !token}
-          className="medcess-btn-primary w-full disabled:opacity-60"
-        >
+        <button type="submit" disabled={loading} className="medcess-btn-primary w-full disabled:opacity-60">
           {loading ? 'Resetting…' : 'Reset password'}
         </button>
       </form>
