@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { forgotPasswordEmailSchema } from '@/lib/passwordValidation'
 import {
+  buildPasswordResetUrl,
   generateResetToken,
-  getAppUrl,
   hashResetToken,
   sendPasswordResetEmail,
 } from '@/lib/passwordReset'
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       },
     })
 
-    const resetUrl = `${getAppUrl()}/reset-password?token=${encodeURIComponent(rawToken)}`
+    const resetUrl = buildPasswordResetUrl(rawToken, { headers: req.headers })
 
     try {
       await sendPasswordResetEmail(user.email, resetUrl)

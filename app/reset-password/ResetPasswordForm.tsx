@@ -2,14 +2,24 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 const INVALID_TOKEN_MESSAGE = 'This password reset link is invalid or has expired.'
 const MISSING_TOKEN_MESSAGE =
-  'This password reset link is missing or invalid. Request a new link from the forgot password page.'
+  'This reset link is missing its token. Use the button in your email, or request a new link below.'
 
 type ResetPasswordFormProps = {
   initialToken?: string
+}
+
+function readTokenFromPathname(pathname: string): string {
+  const match = pathname.match(/^\/reset-password\/([^/?#]+)/)
+  if (!match?.[1]) return ''
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return match[1]
+  }
 }
 
 function readTokenFromSearch(search: string): string {
@@ -24,23 +34,30 @@ function readTokenFromSearch(search: string): string {
 
 export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFormProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const token = useMemo(() => {
     if (initialToken) return initialToken
-    const fromHook = searchParams?.get('token')
-    if (fromHook) {
+
+    const fromPath = pathname ? readTokenFromPathname(pathname) : ''
+    if (fromPath) return fromPath
+
+    const fromQuery = searchParams?.get('token')
+    if (fromQuery) {
       try {
-        return decodeURIComponent(fromHook)
+        return decodeURIComponent(fromQuery)
       } catch {
-        return fromHook
+        return fromQuery
       }
     }
+
     if (typeof window !== 'undefined') {
       return readTokenFromSearch(window.location.search)
     }
+
     return ''
-  }, [initialToken, searchParams])
+  }, [initialToken, pathname, searchParams])
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -104,33 +121,24 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
     )
   }
 
+  const showMissingToken = !token && !error
+
   return (
     <>
-      {!token && (
+      {(showMissingToken || error) && (
         <div
-          className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-          role="status"
+          className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
+            error && token
+              ? 'border-red-200 bg-red-50 text-red-800'
+              : 'border-amber-200 bg-amber-50 text-amber-900'
+          }`}
+          role={error ? 'alert' : 'status'}
         >
-          {MISSING_TOKEN_MESSAGE}{' '}
-          <Link href="/forgot-password" className="font-medium text-primary-700 hover:text-primary-800">
-            Forgot password
-          </Link>
-        </div>
-      )}
-
-      {error && (
-        <div
-          className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-          role="alert"
-        >
-          {error}
+          {error ?? MISSING_TOKEN_MESSAGE}{' '}
           {!token && (
-            <>
-              {' '}
-              <Link href="/forgot-password" className="font-medium text-primary-700 hover:text-primary-800">
-                Request a new link
-              </Link>
-            </>
+            <Link href="/forgot-password" className="font-medium text-primary-700 hover:text-primary-800">
+              Request a new link
+            </Link>
           )}
         </div>
       )}

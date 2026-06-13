@@ -6,7 +6,7 @@ import { getResend, getResendFromAddress, warnIfDefaultFromInProduction } from '
 const RESET_TOKEN_BYTES = 32
 
 export function generateResetToken(): string {
-  return randomBytes(RESET_TOKEN_BYTES).toString('base64url')
+  return randomBytes(RESET_TOKEN_BYTES).toString('hex')
 }
 
 export function hashResetToken(token: string): string {
@@ -14,8 +14,16 @@ export function hashResetToken(token: string): string {
 }
 
 /** Canonical app URL for password reset links (server-only). */
-export function getAppUrl(): string {
-  return resolveAppOrigin()
+export function getAppUrl(options?: { headers?: Headers }): string {
+  return resolveAppOrigin(options)
+}
+
+/** Password reset link — token in the path so email clients don't strip query params. */
+export function buildPasswordResetUrl(
+  rawToken: string,
+  options?: { headers?: Headers }
+): string {
+  return `${getAppUrl(options)}/reset-password/${rawToken}`
 }
 
 export async function sendPasswordResetEmail(
