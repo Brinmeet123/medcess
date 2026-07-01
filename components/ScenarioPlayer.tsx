@@ -25,6 +25,7 @@ import { useInstructionModal } from '@/hooks/useInstructionModal'
 import { INSTRUCTION_COPY, type InstructionPageKey } from '@/lib/instructionCopy'
 import { isGuestAccessible } from '@/lib/caseAccess'
 import { recordGuestScenarioCompletion } from '@/lib/guestScenarioProgress'
+import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
 
 type Message = {
   role: 'doctor' | 'patient'
@@ -67,13 +68,8 @@ type AssessmentResult = {
     clinicalPearls: string[]
     vocabToReview: string[]
   }
-  rubric100?: {
-    historyTaking: number
-    clinicalReasoning: number
-    diagnosticAccuracy: number
-    efficiencyAndQuestionSelection: number
-    total: number
-  }
+  rubric200?: ClinicalRubric200
+  clinicalFeedback?: ClinicalFeedbackReport
   source?: string
 }
 

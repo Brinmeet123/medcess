@@ -1,17 +1,19 @@
 import type { DebriefInput, ScenarioDebriefConfig } from '@/types/debrief'
+import type { PerformanceLevel } from '@/types/debrief'
 
-export function ratingLabel(pct: number): 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor' {
-  if (pct >= 80) return 'Excellent'
-  if (pct >= 60) return 'Good'
-  if (pct >= 40) return 'Needs Improvement'
+export function ratingLabel(scoreOutOf200: number): PerformanceLevel {
+  if (scoreOutOf200 >= 180) return 'Excellent'
+  if (scoreOutOf200 >= 160) return 'Good'
+  if (scoreOutOf200 >= 130) return 'Fair'
+  if (scoreOutOf200 >= 100) return 'Needs Improvement'
   return 'Poor'
 }
 
-export function sectionRatingFromScore(score: number): 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor' {
+export function sectionRatingFromScore(score: number): PerformanceLevel {
   if (score >= 4) return 'Excellent'
   if (score >= 3) return 'Good'
-  if (score >= 2) return 'Needs Improvement'
-  return 'Poor'
+  if (score >= 2) return 'Fair'
+  return 'Needs Improvement'
 }
 
 export function buildSummary(params: {
@@ -19,15 +21,15 @@ export function buildSummary(params: {
   correctDx: string
   finalDxId: string | null | undefined
   correctDxId: string | undefined
-  totalOutOf100: number
+  totalOutOf200: number
   askedRatio: number
 }): string {
-  const { scenarioTitle, correctDx, finalDxId, correctDxId, totalOutOf100, askedRatio } = params
+  const { scenarioTitle, correctDx, finalDxId, correctDxId, totalOutOf200, askedRatio } = params
   const correct = finalDxId && correctDxId && finalDxId === correctDxId
   const dxLine = correct
     ? `Expected diagnosis: ${correctDx}.`
     : `Teaching diagnosis: ${correctDx}.`
-  return `${scenarioTitle}. Score ${totalOutOf100}/100 (${ratingLabel(totalOutOf100).toLowerCase()}). About ${Math.round(askedRatio * 100)}% of suggested history topics covered. ${dxLine}`
+  return `${scenarioTitle}. Overall clinical score ${totalOutOf200}/200 (${ratingLabel(totalOutOf200).toLowerCase()}). About ${Math.round(askedRatio * 100)}% of essential history topics covered. ${dxLine}`
 }
 
 export function buildStrengths(
@@ -121,11 +123,11 @@ export function buildMissedOpportunities(
       missed.push(m)
     }
   }
+  void missedHistoryPoints
   const uniq = [...new Set(missed)]
-  return uniq.slice(0, 4)
+  return uniq.slice(0, 6)
 }
 
-/** 2–4 concise bullets: how the case should be framed (no long paragraphs). */
 export function buildCorrectApproach(
   input: DebriefInput,
   config: ScenarioDebriefConfig,
@@ -151,7 +153,6 @@ export function buildCorrectApproach(
   return uniq.slice(0, 4)
 }
 
-/** Optional polish pipeline only — keep parallel to correctApproach when non-empty. */
 export function buildDiagnosticReasoning(
   input: DebriefInput,
   config: ScenarioDebriefConfig,
@@ -181,7 +182,6 @@ export function buildImprovementTip(input: DebriefInput, missedHistoryPoints: st
   return 'Next time, move in sequence: targeted history, focused exam, then tests that change management.'
 }
 
-/** Legacy array for polish compatibility — single tip as one element. */
 export function buildNextStepAdvice(input: DebriefInput, missedHistoryPoints: string[]): string[] {
   return [buildImprovementTip(input, missedHistoryPoints)]
 }

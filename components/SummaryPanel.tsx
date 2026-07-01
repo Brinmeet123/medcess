@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Scenario } from '@/data/scenarios'
 import type { RubricBreakdown } from '@/lib/scoring'
-import type { DebriefRubric100 } from '@/types/debrief'
+import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
 import { vocab, getVocabTerm } from '@/data/vocab'
@@ -29,24 +29,10 @@ type AssessmentResult = {
   diagnosisFeedback: string
   missedKeyHistoryPoints: string[]
   testSelectionFeedback: string
-  sectionRatings?: {
-    history?: string
-    exam?: string
-    tests?: string
-    diagnosis?: string
-    communication?: string
-  }
   totalScore?: number
-  totalScorePercentage?: number
   maxScore?: number
-  rubric100?: DebriefRubric100
-  scoreBreakdown?: {
-    history?: number
-    exam?: number
-    tests?: number
-    diagnosis?: number
-    communication?: number
-  }
+  rubric200?: ClinicalRubric200
+  clinicalFeedback?: ClinicalFeedbackReport
   debriefStructured?: DebriefStructured
   source?: string
 }
@@ -70,108 +56,95 @@ const ratingColors: Record<string, string> = {
   Excellent:
     'bg-green-100 text-green-800 border-green-300 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800/50',
   Good: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/50',
+  Fair: 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800/50',
   'Needs Improvement':
     'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50',
   Poor: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/50',
 }
 
-const RUBRIC_ROWS: { key: keyof DebriefRubric100; label: string }[] = [
-  { key: 'historyTaking', label: 'History Taking' },
-  { key: 'clinicalReasoning', label: 'Clinical Reasoning' },
-  { key: 'diagnosticAccuracy', label: 'Diagnostic Accuracy' },
-  { key: 'efficiencyAndQuestionSelection', label: 'Efficiency / Question Selection' },
-]
-
-function Rubric100Block({
-  rubric,
-  total,
-  levelLabel,
+function FeedbackList({
+  title,
+  items,
+  emptyText,
+  variant = 'default',
 }: {
-  rubric: DebriefRubric100
-  total: number
-  levelLabel: string
+  title: string
+  items: string[]
+  emptyText: string
+  variant?: 'correct' | 'missed' | 'unnecessary' | 'default'
 }) {
-  return (
-    <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-      <h3 className="mb-2 text-lg font-semibold text-teal-900 dark:text-teal-300">Score</h3>
-      <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
-        {total}
-        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/100</span>
-      </p>
-      <p className="mt-1 text-sm font-medium text-teal-900 dark:text-teal-300">{levelLabel}</p>
-      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">Rubric</p>
-      <ul className="space-y-1.5 text-sm text-slate-700 dark:text-[#CBD5E1]">
-        {RUBRIC_ROWS.map(({ key, label }) => (
-          <li key={key} className="flex justify-between gap-4 tabular-nums">
-            <span>{label}</span>
-            <span>
-              {rubric[key]}/25
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function LegacyScenarioRubricBlock({
-  rubric,
-  score,
-  level,
-  feedback,
-}: {
-  rubric: RubricBreakdown
-  score: number
-  level: string
-  feedback: string
-}) {
-  const rows: { label: string; value: number; max: number }[] = [
-    { label: 'History Taking', value: rubric.historyTaking, max: 25 },
-    { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 25 },
-    { label: 'Diagnostic Accuracy', value: rubric.diagnosticAccuracy, max: 25 },
-    { label: 'Efficiency / Question Selection', value: rubric.efficiencyAndQuestionSelection, max: 25 },
-  ]
-  return (
-    <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-      <h3 className="mb-2 text-lg font-semibold text-teal-900 dark:text-teal-300">Score</h3>
-      <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
-        {score}
-        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/100</span>
-      </p>
-      <p className="mt-1 text-sm font-medium text-teal-900 dark:text-teal-300">{level}</p>
-      {feedback ? (
-        <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1]">{feedback}</p>
-      ) : null}
-      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">Rubric</p>
-      <ul className="space-y-1.5 text-sm text-slate-700 dark:text-[#CBD5E1]">
-        {rows.map((r) => (
-          <li key={r.label} className="flex justify-between gap-4 tabular-nums">
-            <span>{r.label}</span>
-            <span>
-              {r.value}/{r.max}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function dedupeMissed(
-  areas: string[],
-  missedPoints: string[],
-  max: number
-): string[] {
-  const seen = new Set<string>()
-  const out: string[] = []
-  for (const s of [...areas, ...missedPoints]) {
-    const t = s.trim()
-    if (!t || seen.has(t)) continue
-    seen.add(t)
-    out.push(t)
-    if (out.length >= max) break
+  const titleColors = {
+    correct: 'text-emerald-800 dark:text-emerald-300',
+    missed: 'text-amber-800 dark:text-amber-300',
+    unnecessary: 'text-rose-800 dark:text-rose-300',
+    default: 'text-slate-800 dark:text-[#F8FAFC]',
   }
-  return out
+
+  return (
+    <div>
+      <h4 className={`mb-2 text-sm font-semibold ${titleColors[variant]}`}>{title}</h4>
+      {items.length === 0 ? (
+        <p className="text-sm text-slate-500 dark:text-[#94a3b8]">{emptyText}</p>
+      ) : (
+        <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
+          {items.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function ScoreCard({
+  rubric,
+  levelLabel,
+  capApplied,
+}: {
+  rubric: ClinicalRubric200
+  levelLabel: string
+  capApplied?: number
+}) {
+  const rows = [
+    { label: 'Patient Interview', value: rubric.patientInterview, max: 60 },
+    { label: 'Diagnostic Testing', value: rubric.diagnosticTesting, max: 60 },
+    { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 50 },
+    { label: 'Final Diagnosis', value: rubric.finalDiagnosis, max: 30 },
+  ]
+
+  return (
+    <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm">
+      <h3 className="mb-2 text-lg font-semibold text-teal-900 dark:text-teal-300">
+        Overall Clinical Score
+      </h3>
+      <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
+        {rubric.total}
+        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/200</span>
+      </p>
+      <p className="mt-1 text-sm font-medium text-teal-900 dark:text-teal-300">
+        Performance Level: {levelLabel}
+      </p>
+      {capApplied != null ? (
+        <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+          Score capped at {capApplied}/200 because the clinical process did not support the final
+          answer.
+        </p>
+      ) : null}
+      <p className="mb-3 mt-4 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
+        Score Breakdown
+      </p>
+      <ul className="space-y-1.5 text-sm text-slate-700 dark:text-[#CBD5E1]">
+        {rows.map((row) => (
+          <li key={row.label} className="flex justify-between gap-4 tabular-nums">
+            <span>{row.label}</span>
+            <span>
+              {row.value} / {row.max}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }
 
 export default function SummaryPanel({
@@ -183,48 +156,31 @@ export default function SummaryPanel({
   onTermSave,
   scenarioScore,
 }: Props) {
-  const badges: string[] = []
-  if (
-    assessment.strengths.some(
-      (s) => s.toLowerCase().includes('history') || s.toLowerCase().includes('interview')
-    )
-  ) {
-    badges.push('History Builder')
-  }
-  if (
-    assessment.strengths.some(
-      (s) => s.toLowerCase().includes('red flag') || s.toLowerCase().includes('urgent')
-    )
-  ) {
-    badges.push('Red Flag Spotter')
-  }
-  if (
-    assessment.strengths.some(
-      (s) => s.toLowerCase().includes('test') || s.toLowerCase().includes('diagnostic')
-    )
-  ) {
-    badges.push('Smart Test Picker')
-  }
-  if (
-    assessment.strengths.some(
-      (s) => s.toLowerCase().includes('differential') || s.toLowerCase().includes('diagnosis')
-    )
-  ) {
-    badges.push('Differential Thinker')
-  }
-  if (
-    assessment.strengths.some(
-      (s) => s.toLowerCase().includes('communication') || s.toLowerCase().includes('rapport')
-    )
-  ) {
-    badges.push('Clear Communicator')
-  }
+  const cf = assessment.clinicalFeedback
+  const rubric = assessment.rubric200 ?? (scenarioScore
+    ? {
+        patientInterview: scenarioScore.rubric.patientInterview,
+        diagnosticTesting: scenarioScore.rubric.diagnosticTesting,
+        clinicalReasoning: scenarioScore.rubric.clinicalReasoning,
+        finalDiagnosis: scenarioScore.rubric.finalDiagnosis,
+        total: scenarioScore.score,
+        performanceLevel: scenarioScore.level as ClinicalRubric200['performanceLevel'],
+      }
+    : undefined)
 
-  const newTermsCount = clickedTerms.length
+  const ds = assessment.debriefStructured
+  const debriefContext = [
+    assessment.summary,
+    cf?.correctReasoning,
+    cf?.areasForImprovement.join('\n'),
+    ds?.improvementTip,
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   const recommendedTerms = vocab
     .filter((term) => {
-      const relatedToMissed = assessment.missedKeyHistoryPoints.some(
+      const relatedToMissed = (cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints).some(
         (point) =>
           point.toLowerCase().includes(term.term.toLowerCase()) ||
           term.tags.some((tag) => point.toLowerCase().includes(tag))
@@ -235,179 +191,182 @@ export default function SummaryPanel({
     .slice(0, 5)
     .map((term) => term.term)
 
-  const ds = assessment.debriefStructured
-  const debriefContext = [
-    assessment.summary,
-    assessment.strengths.join('\n'),
-    assessment.areasForImprovement.join('\n'),
-    ds?.correctApproach?.join('\n'),
-    ds?.improvementTip,
-  ]
-    .filter(Boolean)
-    .join('\n')
-
-  const rubricFromAssessment = assessment.rubric100
-  const rubricFromScenario = scenarioScore?.rubric
-  const showDeterministicRubric = rubricFromAssessment && rubricFromAssessment.total >= 0
-  const missedCombined = dedupeMissed(
-    assessment.areasForImprovement,
-    assessment.missedKeyHistoryPoints,
-    4
-  )
-  const correctApproachLines =
-    ds?.correctApproach && ds.correctApproach.length > 0
-      ? ds.correctApproach.slice(0, 4)
-      : (ds?.diagnosticReasoning ?? []).slice(0, 4)
+  const improvementItems = cf?.areasForImprovement.length
+    ? cf.areasForImprovement
+    : assessment.areasForImprovement
 
   return (
     <div className="case-panel">
       <VocabContextBlock source="debrief" mode="simplify" scenarioId={scenario.id} text={debriefContext}>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Diagnosis report</h2>
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">
+          Clinical Performance Report
+        </h2>
         <p className="mb-6 text-sm leading-relaxed text-slate-600 dark:text-[#CBD5E1]">
-          {APP_NAME} structured feedback for this run. Each section is limited to a few high-yield points.
+          {APP_NAME} evaluates your full clinical process — interview, testing, reasoning, and final
+          diagnosis — not just whether you guessed correctly.
         </p>
 
-        {showDeterministicRubric && rubricFromAssessment ? (
-          <Rubric100Block
-            rubric={rubricFromAssessment}
-            total={rubricFromAssessment.total}
+        {rubric ? (
+          <ScoreCard
+            rubric={rubric}
             levelLabel={assessment.overallRating}
-          />
-        ) : scenarioScore && rubricFromScenario ? (
-          <LegacyScenarioRubricBlock
-            rubric={rubricFromScenario}
-            score={scenarioScore.score}
-            level={scenarioScore.level}
-            feedback={scenarioScore.feedback}
+            capApplied={rubric.scoreCapApplied}
           />
         ) : assessment.totalScore != null ? (
           <div className="mb-6 rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">
-            <h3 className="mb-1 text-lg font-semibold text-slate-900 dark:text-[#F8FAFC]">Score</h3>
-            <p className="text-3xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
+            <p className="text-3xl font-bold tabular-nums">
               {assessment.totalScore}
-              <span className="text-xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/{assessment.maxScore ?? 100}</span>
+              <span className="text-xl font-semibold text-slate-600">/{assessment.maxScore ?? 200}</span>
             </p>
-            {assessment.totalScorePercentage != null ? (
-              <p className="mt-1 text-sm text-slate-600 dark:text-[#CBD5E1]">{assessment.totalScorePercentage}% overall</p>
-            ) : null}
           </div>
         ) : null}
 
-        <div className="mb-6 rounded-lg border-2 border-primary-200 dark:border-[#14345C] bg-gradient-to-r from-primary-50 to-blue-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">Badges</h3>
-          {badges.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {badges.map((badge, idx) => (
-                <span
-                  key={idx}
-                  className="rounded-full bg-primary-600 dark:bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm"
-                >
-                  {badge}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600 dark:text-[#CBD5E1]">None this run.</p>
-          )}
-        </div>
+        {cf ? (
+          <div className="space-y-4">
+            <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
+              <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
+                Patient Interview
+              </h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                <FeedbackList
+                  title="Asked correctly"
+                  items={cf.interview.askedCorrectly}
+                  emptyText="No essential history topics clearly covered."
+                  variant="correct"
+                />
+                <FeedbackList
+                  title="Missed important questions"
+                  items={cf.interview.missedImportant}
+                  emptyText="No major history gaps flagged."
+                  variant="missed"
+                />
+                <FeedbackList
+                  title="Irrelevant or low-value questions"
+                  items={cf.interview.irrelevantOrLowValue}
+                  emptyText="No off-topic or low-value questions detected."
+                  variant="unnecessary"
+                />
+              </div>
+            </section>
 
-        <div className="mb-6 rounded-lg border border-purple-200 dark:border-purple-800/50 bg-purple-50 dark:bg-[#071A33] p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">Vocabulary</h3>
-          <div className="space-y-2">
-            <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">
-              <strong className="text-gray-900 dark:text-[#F8FAFC]">Clicked:</strong> {newTermsCount}{' '}
-              {newTermsCount === 1 ? 'term' : 'terms'}
-            </p>
-            {savedTerms.length > 0 ? (
-              <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">
-                <strong className="text-gray-900 dark:text-[#F8FAFC]">Saved:</strong> {savedTerms.length}{' '}
-                {savedTerms.length === 1 ? 'term' : 'terms'}
-              </p>
-            ) : null}
-            {recommendedTerms.length > 0 ? (
-              <div className="mt-3">
-                <p className="mb-2 text-sm font-medium text-gray-900 dark:text-[#F8FAFC]">Worth another look:</p>
-                <div className="flex flex-wrap gap-2">
-                  {recommendedTerms.map((term) => {
-                    const termData = getVocabTerm(term)
-                    return termData ? (
-                      <button
-                        key={term}
-                        type="button"
-                        onClick={() => onTermClick?.(term)}
-                        className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300 transition hover:bg-purple-100 dark:hover:bg-purple-950/50"
-                      >
-                        {termData.display}
-                      </button>
-                    ) : null
-                  })}
+            <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
+              <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
+                Diagnostic Testing
+              </h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                <FeedbackList
+                  title="Correctly ordered tests"
+                  items={cf.testing.correctlyOrdered}
+                  emptyText="No essential tests ordered."
+                  variant="correct"
+                />
+                <FeedbackList
+                  title="Missed essential tests"
+                  items={cf.testing.missedEssential}
+                  emptyText="All essential tests were ordered."
+                  variant="missed"
+                />
+                <div>
+                  <h4 className="mb-2 text-sm font-semibold text-rose-800 dark:text-rose-300">
+                    Unnecessary tests
+                  </h4>
+                  {cf.testing.unnecessary.length === 0 ? (
+                    <p className="text-sm text-slate-500 dark:text-[#94a3b8]">No unnecessary tests ordered.</p>
+                  ) : (
+                    <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                      {cf.testing.unnecessary.map((t, idx) => (
+                        <li key={idx}>
+                          <span className="font-medium">{t.name}</span>
+                          {t.reason ? (
+                            <span className="text-slate-500 dark:text-[#94a3b8]"> — {t.reason}</span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
-            ) : null}
-          </div>
-        </div>
+            </section>
 
-        <div
-          className={`mb-4 rounded-lg border-2 p-3 ${ratingColors[assessment.overallRating] || ratingColors.Good}`}
-        >
-          <p className="text-sm font-semibold">Overall: {assessment.overallRating}</p>
-        </div>
+            <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
+              <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
+                Correct Clinical Reasoning
+              </h3>
+              <p className="text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1]">
+                <VocabText text={cf.correctReasoning} onTermClick={onTermClick} onTermSave={onTermSave} />
+              </p>
+            </section>
 
-        <div className="mb-4 rounded-lg border border-slate-100 dark:border-[#14345C] bg-slate-50/80 dark:bg-[#071A33] p-3">
-          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">Summary</h3>
-          <p className="text-sm text-slate-800 dark:text-[#CBD5E1]">
-            <VocabText text={assessment.summary} onTermClick={onTermClick} onTermSave={onTermSave} />
-          </p>
-        </div>
+            <section className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-5">
+              <h3 className="mb-3 text-base font-semibold text-emerald-900 dark:text-emerald-300">
+                Correct Final Diagnosis
+              </h3>
+              <p className="text-sm font-semibold text-slate-900 dark:text-[#F8FAFC]">
+                Correct Diagnosis: {cf.correctDiagnosis}
+              </p>
+              {cf.diagnosisKeyEvidence.length > 0 ? (
+                <div className="mt-3">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
+                    Key Evidence
+                  </p>
+                  <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                    {cf.diagnosisKeyEvidence.map((item, idx) => (
+                      <li key={idx}>
+                        <VocabText text={item} onTermClick={onTermClick} onTermSave={onTermSave} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </section>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/30 p-4">
-            <h3 className="mb-2 text-base font-semibold text-emerald-900 dark:text-emerald-300">What You Did Well</h3>
-            {assessment.strengths.length === 0 ? (
-              <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No items listed.</p>
-            ) : (
-              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-[#CBD5E1]">
-                {assessment.strengths.slice(0, 4).map((strength, idx) => (
-                  <li key={idx}>
-                    <VocabText
-                      text={strength}
-                      onTermClick={onTermClick}
-                      onTermSave={onTermSave}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
+            <section className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/40 dark:bg-amber-950/20 p-5">
+              <h3 className="mb-3 text-base font-semibold text-amber-900 dark:text-amber-300">
+                Areas for Improvement
+              </h3>
+              {improvementItems.length === 0 ? (
+                <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No major gaps flagged.</p>
+              ) : (
+                <ul className="list-inside list-disc space-y-1.5 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                  {improvementItems.map((area, idx) => (
+                    <li key={idx}>
+                      <VocabText text={area} onTermClick={onTermClick} onTermSave={onTermSave} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
-          <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/30 p-4">
-            <h3 className="mb-2 text-base font-semibold text-amber-900 dark:text-amber-300">What You Missed</h3>
-            {missedCombined.length === 0 ? (
-              <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No major gaps flagged.</p>
-            ) : (
-              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-[#CBD5E1]">
-                {missedCombined.map((area, idx) => (
-                  <li key={idx}>
-                    <VocabText text={area} onTermClick={onTermClick} onTermSave={onTermSave} />
-                  </li>
-                ))}
-              </ul>
-            )}
+        ) : (
+          <div className="mb-4 rounded-lg border border-slate-100 dark:border-[#14345C] bg-slate-50/80 dark:bg-[#071A33] p-3">
+            <p className="text-sm text-slate-800 dark:text-[#CBD5E1]">
+              <VocabText text={assessment.summary} onTermClick={onTermClick} onTermSave={onTermSave} />
+            </p>
           </div>
-          <div className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50/80 dark:bg-[#071A33] p-4">
-            <h3 className="mb-2 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">Correct Approach</h3>
-            {correctApproachLines.length === 0 ? (
-              <p className="text-sm text-slate-600 dark:text-[#CBD5E1]">No extra teaching lines for this case.</p>
-            ) : (
-              <ul className="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-[#CBD5E1]">
-                {correctApproachLines.map((line, idx) => (
-                  <li key={idx}>
-                    <VocabText text={line} onTermClick={onTermClick} onTermSave={onTermSave} />
-                  </li>
-                ))}
-              </ul>
-            )}
+        )}
+
+        {recommendedTerms.length > 0 ? (
+          <div className="mt-6 rounded-lg border border-purple-200 dark:border-purple-800/50 bg-purple-50 dark:bg-[#071A33] p-4">
+            <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">
+              Vocabulary to review
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {recommendedTerms.map((term) => {
+                const termData = getVocabTerm(term)
+                return termData ? (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => onTermClick?.(term)}
+                    className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300"
+                  >
+                    {termData.display}
+                  </button>
+                ) : null
+              })}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         {ds?.improvementTip ? (
           <div className="mt-4 rounded-lg border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-4 text-sm text-slate-800 dark:text-[#CBD5E1]">
@@ -417,13 +376,6 @@ export default function SummaryPanel({
             <p>
               <VocabText text={ds.improvementTip} onTermClick={onTermClick} onTermSave={onTermSave} />
             </p>
-          </div>
-        ) : null}
-
-        {ds?.vocabToReview && ds.vocabToReview.length > 0 ? (
-          <div className="mt-4 rounded-lg border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">
-            <h3 className="mb-1 text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Vocabulary to review</h3>
-            <p className="text-sm text-gray-700 dark:text-[#CBD5E1]">{ds.vocabToReview.join(', ')}</p>
           </div>
         ) : null}
 

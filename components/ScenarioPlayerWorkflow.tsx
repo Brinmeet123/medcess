@@ -19,6 +19,7 @@ import PatientCommunication from './PatientCommunication'
 import PlanDisposition from './PlanDisposition'
 import SummaryPanel from './SummaryPanel'
 import VocabContextBlock from './VocabContextBlock'
+import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
 
 type Message = {
   role: 'doctor' | 'patient'
@@ -47,13 +48,8 @@ type AssessmentResult = {
     clinicalPearls: string[]
     vocabToReview: string[]
   }
-  rubric100?: {
-    historyTaking: number
-    clinicalReasoning: number
-    diagnosticAccuracy: number
-    efficiencyAndQuestionSelection: number
-    total: number
-  }
+  rubric200?: ClinicalRubric200
+  clinicalFeedback?: ClinicalFeedbackReport
   source?: string
   scores?: {
     historyTaking?: number

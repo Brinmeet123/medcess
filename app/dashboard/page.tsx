@@ -87,7 +87,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold text-primary-800 uppercase tracking-wide mb-4">Performance</h2>
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="text-slate-500">Total score</dt>
+              <dt className="text-slate-500">Total score (best per case, max 200 each)</dt>
               <dd className="text-3xl font-bold text-slate-900">{user.totalScore}</dd>
             </div>
             <div>

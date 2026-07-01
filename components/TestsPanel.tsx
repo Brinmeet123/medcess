@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Scenario } from '@/data/scenarios'
 import { testCatalog, TestCategory, TestKind } from '@/data/testCatalog'
 import { resolveTest } from '@/lib/testEngine'
+import { delayForTestResultMs } from '@/lib/patientDialogue/responseDelay'
 import { groupCatalogByCategory } from '@/lib/groupCatalogByCategory'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
@@ -35,6 +36,7 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
   const [searchQuery, setSearchQuery] = useState('')
   const [commonOnly, setCommonOnly] = useState(false)
   const [orderedTests, setOrderedTests] = useState<Map<string, OrderedTest>>(initialOrderedTests || new Map())
+  const [pendingTests, setPendingTests] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (initialOrderedTests) {
@@ -69,8 +71,11 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
     [filteredTests, selectedCategory]
   )
 
-  const handleOrderTest = (testId: string) => {
-    if (orderedTests.has(testId)) return
+  const handleOrderTest = async (testId: string) => {
+    if (orderedTests.has(testId) || pendingTests.has(testId)) return
+
+    setPendingTests((prev) => new Set(prev).add(testId))
+    await new Promise((resolve) => setTimeout(resolve, delayForTestResultMs()))
 
     const resolved = resolveTest(scenario, testId)
     const newOrdered = new Map(orderedTests)
@@ -80,10 +85,16 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
     })
     setOrderedTests(newOrdered)
     onTestsOrdered(newOrdered)
+    setPendingTests((prev) => {
+      const next = new Set(prev)
+      next.delete(testId)
+      return next
+    })
   }
 
   const renderTestCard = (test: (typeof testCatalog)[number]) => {
     const isOrdered = orderedTests.has(test.id)
+    const isPending = pendingTests.has(test.id)
 
     return (
       <div
@@ -128,10 +139,11 @@ export default function TestsPanel({ scenario, orderedTests: initialOrderedTests
           {!isOrdered && (
             <button
               type="button"
-              onClick={() => handleOrderTest(test.id)}
-              className="ml-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition text-sm whitespace-nowrap"
+              onClick={() => void handleOrderTest(test.id)}
+              disabled={isPending}
+              className="ml-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition text-sm whitespace-nowrap disabled:opacity-60"
             >
-              Order
+              {isPending ? 'Running…' : 'Order'}
             </button>
           )}
         </div>

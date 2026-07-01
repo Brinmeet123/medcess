@@ -14,9 +14,43 @@ export const DEBRIEF_CONFIGS: Record<string, ScenarioDebriefConfig> = {
       'cardiac risk factors and medications',
       'family history of heart disease',
     ],
+    essentialInterviewQuestions: [
+      'onset timing and what patient was doing',
+      'pain quality and location',
+      'radiation to arm jaw or back',
+      'associated shortness of breath sweating nausea',
+      'cardiac risk factors and medications',
+      'family history of heart disease',
+    ],
+    optionalInterviewQuestions: [
+      'exertional triggers and rest relief',
+      'prior similar episodes',
+    ],
+    irrelevantInterviewQuestions: [
+      'recent skin rash',
+      'childhood illnesses',
+    ],
     keyExamItems: ['general', 'cardiac', 'respiratory'],
     criticalTests: ['ecg', 'troponin'],
+    essentialTests: ['ecg', 'troponin'],
+    optionalTests: ['cxr', 'bmp'],
     unnecessaryTests: ['cbc'],
+    redFlags: [
+      'Exertional chest pressure with radiation',
+      'Diaphoresis or nausea with chest pain',
+      'ECG ST changes or troponin elevation',
+    ],
+    keyEvidence: [
+      'Crushing or pressure-like chest pain',
+      'Radiation to left arm or jaw',
+      'Elevated troponin',
+      'ECG ST-segment changes',
+    ],
+    idealReasoning:
+      "The patient's crushing chest pain, radiation to the left arm, shortness of breath, and elevated troponin strongly support acute myocardial infarction. GERD is less likely because it would not explain the elevated troponin or ECG changes. Anxiety could cause chest discomfort, but it would not explain objective cardiac findings.",
+    correctDiagnosis: 'Acute Myocardial Infarction',
+    acceptableDiagnoses: ['STEMI', 'NSTEMI', 'Acute coronary syndrome'],
+    expectedDifferential: ['Acute myocardial infarction', 'Unstable angina', 'Pulmonary embolism', 'Aortic dissection', 'GERD'],
     mustRecognizeFindings: [
       'Exertional chest pressure with radiation',
       'ECG shows ST changes',

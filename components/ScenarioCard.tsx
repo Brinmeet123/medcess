@@ -172,10 +172,10 @@ export default function ScenarioCard({
             (progress.bestScore != null || progress.lastAttemptScore != null) &&
             (progress.status === 'completed' || progress.status === 'in_progress') && (
               <p className="text-xs text-slate-600 dark:text-[#CBD5E1] tabular-nums mb-4">
-                {progress.bestScore != null && <span>Best {progress.bestScore}</span>}
+                {progress.bestScore != null && <span>Best {progress.bestScore}/200</span>}
                 {progress.lastAttemptScore != null && (
                   <span>
-                    {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}
+                    {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}/200
                   </span>
                 )}
               </p>

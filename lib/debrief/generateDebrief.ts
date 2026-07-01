@@ -1,24 +1,19 @@
 import { scenarios, type Scenario } from '@/data/scenarios'
 import { diagnosisCatalog } from '@/data/diagnosisCatalog'
 import { getDebriefConfigForScenario } from '@/data/debriefConfigs'
-import { resolveTest, calculateTestScore } from '@/lib/testEngine'
-import {
-  resolveDx,
-  calculateDxScore,
-  calculateFinalDxScore,
-  calculateEfficiencyPenalty,
-  checkMissingMustNotMiss,
-} from '@/lib/dxEngine'
 import type {
+  ClinicalFeedbackReport,
+  ClinicalRubric200,
   DebriefInput,
   DebriefOutput,
-  DebriefRubric100,
   DeterministicAssessment,
   ScenarioDebriefConfig,
 } from '@/types/debrief'
-import { computeRubric100 } from './debriefRubric'
+import { resolveScenarioAnswerKey } from './answerKey'
+import { computeClinicalScore200 } from './clinicalScoring200'
 import {
   buildDebriefInput,
+  doctorBlobFromChat,
   missedKeyHistoryTopics,
   missedPersonaHistoryPoints,
 } from './debriefRules'
@@ -65,6 +60,8 @@ function fallbackConfigFromScenario(scenario: Scenario): ScenarioDebriefConfig {
     differentialComparison: [],
     clinicalPearls: scenario.teachingPoints,
     vocabTerms: [],
+    redFlags: scenario.patientPersona.redFlags,
+    keyEvidence: scenario.patientPersona.keyHistoryPoints.slice(0, 4),
   }
 }
 
@@ -74,13 +71,17 @@ export function generateDebriefOutput(params: {
   input: DebriefInput
   missedPersonaHistory: string[]
   finalMatchesCorrect: boolean
-  rubric100: DebriefRubric100
+  rubric200: ClinicalRubric200
+  clinicalFeedback: ClinicalFeedbackReport
 }): DebriefOutput {
-  const { scenario, config, input, missedPersonaHistory, finalMatchesCorrect, rubric100 } = params
+  const { scenario, config, input, missedPersonaHistory, finalMatchesCorrect, rubric200 } =
+    params
 
+  const essentialTopics =
+    config.essentialInterviewQuestions ?? config.keyHistoryQuestions
   const askedRatio =
-    config.keyHistoryQuestions.length > 0
-      ? input.askedHistoryQuestions.length / config.keyHistoryQuestions.length
+    essentialTopics.length > 0
+      ? input.askedHistoryQuestions.length / essentialTopics.length
       : 0
 
   const summary = buildSummary({
@@ -88,12 +89,15 @@ export function generateDebriefOutput(params: {
     correctDx: input.correctDiagnosis,
     finalDxId: input.finalDxId,
     correctDxId: scenario.finalDxId,
-    totalOutOf100: rubric100.total,
+    totalOutOf200: rubric200.total,
     askedRatio,
   })
 
   const strengths = buildStrengths(input, config, finalMatchesCorrect)
-  const missedOpportunities = buildMissedOpportunities(input, config, missedPersonaHistory)
+  const missedOpportunities = [
+    ...params.clinicalFeedback.areasForImprovement,
+    ...buildMissedOpportunities(input, config, missedPersonaHistory),
+  ]
   const correctApproach = buildCorrectApproach(input, config, finalMatchesCorrect)
   const improvementTip = buildImprovementTip(input, missedPersonaHistory)
   const diagnosticReasoning = buildDiagnosticReasoning(input, config, finalMatchesCorrect)
@@ -103,7 +107,7 @@ export function generateDebriefOutput(params: {
   return {
     summary,
     strengths,
-    missedOpportunities,
+    missedOpportunities: [...new Set(missedOpportunities)].slice(0, 6),
     correctApproach,
     improvementTip,
     diagnosticReasoning,
@@ -111,66 +115,6 @@ export function generateDebriefOutput(params: {
     clinicalPearls: [],
     vocabToReview,
   }
-}
-
-function computeRouteTotals(
-  scenario: Scenario,
-  orderedTests: string[] | undefined,
-  differentialDetailed: Array<{ dxId: string }> | undefined,
-  finalDxId: string | null | undefined
-): { totalScore: number; maxScore: number; scorePercentage: number; rawBreakdown: Record<string, number> } {
-  let totalScore = 0
-  const rawBreakdown: Record<string, number> = {}
-
-  if (orderedTests && orderedTests.length > 0) {
-    const testScore = orderedTests.reduce((sum: number, testId: string) => {
-      try {
-        const resolved = resolveTest(scenario, testId)
-        return sum + calculateTestScore(resolved.yield)
-      } catch {
-        return sum
-      }
-    }, 0)
-    rawBreakdown.tests = testScore
-    totalScore += testScore
-  }
-
-  if (differentialDetailed && differentialDetailed.length > 0) {
-    const dxScore = differentialDetailed.reduce((sum: number, item) => {
-      try {
-        const resolved = resolveDx(scenario, item.dxId)
-        return sum + calculateDxScore(resolved.yield)
-      } catch {
-        return sum
-      }
-    }, 0)
-    const finalScore = calculateFinalDxScore(finalDxId ?? null, scenario.finalDxId)
-    const efficiencyPenalty = calculateEfficiencyPenalty(differentialDetailed.length)
-    const missing = checkMissingMustNotMiss(
-      differentialDetailed.map((d) => d.dxId),
-      scenario.requiredMustNotMiss
-    )
-    const missingPenalty = missing.length * -3
-    rawBreakdown.diagnosis = dxScore + finalScore + efficiencyPenalty + missingPenalty
-    totalScore += rawBreakdown.diagnosis
-  }
-
-  let maxScore = 0
-  if (scenario.testOverrides) {
-    const highYieldTests = scenario.testOverrides.filter((t) => t.yield === 'high')
-    maxScore += highYieldTests.length * 2
-  }
-  if (scenario.dxOverrides) {
-    const correctDiagnoses = scenario.dxOverrides.filter((d) => d.yield === 'correct')
-    const optimalDxCount = Math.min(correctDiagnoses.length, 6)
-    maxScore += optimalDxCount * 3
-    maxScore += 5
-  }
-  if (maxScore === 0) maxScore = 45
-
-  const scorePercentage = Math.max(0, Math.min(100, Math.round((totalScore / maxScore) * 100)))
-
-  return { totalScore, maxScore, scorePercentage, rawBreakdown }
 }
 
 /** Build full deterministic assessment for API + SummaryPanel. */
@@ -181,6 +125,7 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
   }
 
   const config = mergeConfig(scenario)
+  const answerKey = resolveScenarioAnswerKey(scenario, config)
 
   const input = buildDebriefInput({
     scenario,
@@ -192,6 +137,26 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     differentialDetailed: body.differentialDetailed,
     redFlagsFound: body.redFlagsFound,
   })
+
+  const doctorBlob = doctorBlobFromChat(body.chat)
+  const doctorMessageCount = (body.chat ?? []).filter(
+    (m) => m.role === 'doctor' || m.role === 'user'
+  ).length
+
+  const clinicalFeedback = computeClinicalScore200({
+    scenario,
+    answerKey,
+    doctorBlob,
+    doctorMessageCount,
+    orderedTests: body.orderedTests ?? [],
+    differentialDetailed: body.differentialDetailed,
+    finalDxId: body.finalDxId,
+    offTopicQuestions: input.offTopicQuestions,
+    missingMustNotMissDxIds: input.missingMustNotMissDxIds,
+    redFlagsMissed: input.redFlagsMissed,
+  })
+
+  const rubric200 = clinicalFeedback.rubric
 
   const missedTopicLabels = missedKeyHistoryTopics(
     input.doctorChatBlob,
@@ -206,22 +171,14 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     body.finalDxId && scenario.finalDxId && body.finalDxId === scenario.finalDxId
   )
 
-  const { rawBreakdown } = computeRouteTotals(
-    scenario,
-    body.orderedTests,
-    body.differentialDetailed,
-    body.finalDxId
-  )
-
-  const rubric100 = computeRubric100(input.scoreBreakdown)
-
   const debriefStructured = generateDebriefOutput({
     scenario,
     config,
     input,
     missedPersonaHistory,
     finalMatchesCorrect,
-    rubric100,
+    rubric200,
+    clinicalFeedback,
   })
 
   const diagnosisFeedback = finalMatchesCorrect
@@ -229,17 +186,19 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     : `Teaching diagnosis: ${input.correctDiagnosis}.`
 
   const testSelectionFeedback = [
-    input.unnecessaryTests.length
-      ? `Low-yield tests: ${input.unnecessaryTests.slice(0, 4).join(', ')}.`
+    clinicalFeedback.testing.unnecessary.length
+      ? `Unnecessary tests: ${clinicalFeedback.testing.unnecessary.map((t) => t.name).slice(0, 4).join(', ')}.`
       : '',
-    config.criticalTests.some((t) => body.orderedTests?.includes(t))
-      ? 'At least one critical test was ordered.'
-      : `Consider: ${config.criticalTests.slice(0, 3).join(', ')}.`,
+    clinicalFeedback.testing.correctlyOrdered.length
+      ? `Correctly ordered: ${clinicalFeedback.testing.correctlyOrdered.slice(0, 4).join(', ')}.`
+      : clinicalFeedback.testing.missedEssential.length
+        ? `Missed essential tests: ${clinicalFeedback.testing.missedEssential.slice(0, 3).join(', ')}.`
+        : '',
   ]
     .filter(Boolean)
     .join(' ')
 
-  const overallRating = ratingLabel(rubric100.total)
+  const overallRating = ratingLabel(rubric200.total)
   const sb = input.scoreBreakdown
 
   const assessment: DeterministicAssessment = {
@@ -248,7 +207,10 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     strengths: debriefStructured.strengths,
     areasForImprovement: debriefStructured.missedOpportunities,
     diagnosisFeedback,
-    missedKeyHistoryPoints: [...new Set([...missedPersonaHistory, ...missedTopicLabels])].slice(0, 12),
+    missedKeyHistoryPoints: [...new Set([...missedPersonaHistory, ...missedTopicLabels])].slice(
+      0,
+      12
+    ),
     testSelectionFeedback,
     sectionRatings: {
       history: sectionRatingFromScore(sb.history),
@@ -257,15 +219,16 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
       diagnosis: sectionRatingFromScore(sb.diagnosis),
       communication: sectionRatingFromScore(sb.reasoning),
     },
-    totalScore: rubric100.total,
-    totalScorePercentage: rubric100.total,
-    maxScore: 100,
-    rubric100,
+    totalScore: rubric200.total,
+    totalScorePercentage: Math.round((rubric200.total / 200) * 100),
+    maxScore: 200,
+    rubric200,
+    clinicalFeedback,
     scoreBreakdown: {
       history: sb.history,
       exam: sb.exam,
-      tests: rawBreakdown.tests ?? sb.testing,
-      diagnosis: rawBreakdown.diagnosis ?? sb.diagnosis,
+      tests: sb.testing,
+      diagnosis: sb.diagnosis,
       communication: sb.reasoning,
     },
     debriefStructured,

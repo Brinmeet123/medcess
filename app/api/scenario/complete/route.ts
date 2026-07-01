@@ -61,6 +61,12 @@ export async function POST(req: Request) {
       viewedExamSections,
       orderedTestIds: orderedTests,
       differentialIds: differential?.map((d) => d.dxId) ?? [],
+      differentialDetailed: differential?.map((d, i) => ({
+        dxId: d.dxId,
+        rank: d.rank ?? i + 1,
+        confidence: d.confidence ?? 'medium',
+        note: d.note,
+      })),
     })
 
     const outcome = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {

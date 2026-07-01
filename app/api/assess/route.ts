@@ -3,6 +3,7 @@ import { scenarios } from '@/data/scenarios'
 import { getMockAssessment } from '@/lib/mockResponses'
 import { buildDeterministicAssessment } from '@/lib/debrief/generateDebrief'
 import { maybePolishDeterministicAssessment } from '@/lib/debrief/polishDebrief'
+import { delayForAssessment } from '@/lib/patientDialogue/responseDelay'
 import { dailyLimitJsonResponse, isDailyLimitResponse } from '@/lib/ai/apiHelpers'
 import { applyActorCookie, resolveAIActorFromRequest } from '@/lib/ai/resolveActor'
 
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
         finalDxId,
         redFlagsFound,
       })
+      await delayForAssessment()
       const out = await maybePolishDeterministicAssessment(deterministic, actor)
       const res = NextResponse.json({ ...out, source: 'demo-mock' })
       applyActorCookie(res, actor)
@@ -81,6 +83,8 @@ export async function POST(request: NextRequest) {
       finalDxId,
       redFlagsFound,
     })
+
+    await delayForAssessment()
 
     const out = await maybePolishDeterministicAssessment(deterministic, actor)
 

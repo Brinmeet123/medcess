@@ -742,66 +742,84 @@ export function getMockPatientResponse(
 }
 
 export function getMockAssessment() {
-  return {
-    overallRating: 'Good',
-    summary:
-      'Sample case. Score 71/100 (good). About 60% of suggested history topics covered. Teaching diagnosis: see scenario.',
-    strengths: [
-      'Thorough history-taking approach',
-      'Appropriate physical exam sections reviewed',
-      'Considered multiple diagnostic possibilities',
-      'Good test prioritization in parts of the workup',
+  const rubric200 = {
+    patientInterview: 38,
+    diagnosticTesting: 34,
+    clinicalReasoning: 28,
+    finalDiagnosis: 18,
+    total: 118,
+    performanceLevel: 'Fair' as const,
+  }
+
+  const clinicalFeedback = {
+    rubric: rubric200,
+    interview: {
+      askedCorrectly: ['Onset of symptoms', 'Pain severity'],
+      missedImportant: ['Associated shortness of breath', 'Past cardiac history', 'Medication use'],
+      irrelevantOrLowValue: [],
+    },
+    testing: {
+      correctlyOrdered: ['ECG (Electrocardiogram)'],
+      missedEssential: ['Troponin I', 'Chest X-Ray'],
+      unnecessary: [],
+    },
+    idealInterviewQuestions: [
+      'Onset and timing',
+      'Severity and quality',
+      'Associated symptoms',
+      'Past medical history',
+      'Medications',
     ],
+    idealWorkup: {
+      essential: ['ECG (Electrocardiogram)', 'Troponin I'],
+      optional: ['Chest X-Ray'],
+    },
+    correctReasoning:
+      'Anchor the differential in the history and objective findings, then use targeted tests to confirm or exclude dangerous diagnoses before settling on a final diagnosis.',
+    correctDiagnosis: 'See scenario teaching diagnosis',
+    diagnosisKeyEvidence: ['Key symptom pattern', 'Objective test findings', 'Risk factors when present'],
     areasForImprovement: [
-      'Explore red flag symptoms in a more systematic way',
-      'Tighten test selection to improve efficiency',
-      'Add more specific reasoning notes on the differential',
+      'Ask more about symptom onset and progression.',
+      'Order the most urgent tests earlier.',
+      'Support your diagnosis with specific evidence from history and results.',
     ],
+  }
+
+  return {
+    overallRating: 'Fair',
+    summary:
+      'Sample case. Overall clinical score 118/200 (fair). About 60% of essential history topics covered. Teaching diagnosis: see scenario.',
+    strengths: [
+      'Completed the encounter and submitted a differential and final diagnosis for review.',
+    ],
+    areasForImprovement: clinicalFeedback.areasForImprovement,
     diagnosisFeedback: 'Teaching diagnosis noted in case overview.',
     missedKeyHistoryPoints: ['Family history of cardiac disease'],
     testSelectionFeedback: 'Include critical confirmatory tests; avoid low-yield shotgun panels.',
     sectionRatings: {
-      history: 'Good',
+      history: 'Fair',
       exam: 'Good',
-      tests: 'Good',
-      diagnosis: 'Good',
-      communication: 'Good',
+      tests: 'Fair',
+      diagnosis: 'Fair',
+      communication: 'Fair',
     },
-    totalScore: 71,
-    totalScorePercentage: 71,
-    maxScore: 100,
-    rubric100: {
-      historyTaking: 18,
-      clinicalReasoning: 17,
-      diagnosticAccuracy: 19,
-      efficiencyAndQuestionSelection: 17,
-      total: 71,
-    },
+    totalScore: 118,
+    totalScorePercentage: 59,
+    maxScore: 200,
+    rubric200,
+    clinicalFeedback,
     scoreBreakdown: {
-      history: 8,
-      exam: 7,
-      tests: 10,
-      diagnosis: 5,
+      history: 3,
+      exam: 3,
+      tests: 3,
+      diagnosis: 3,
       communication: 2,
     },
     debriefStructured: {
-      summary: 'Sample case. Score 71/100 (good).',
-      strengths: [
-        'Thorough history-taking approach',
-        'Appropriate physical exam sections reviewed',
-        'Considered multiple diagnostic possibilities',
-        'Good test prioritization in parts of the workup',
-      ],
-      missedOpportunities: [
-        'Explore red flag symptoms in a more systematic way',
-        'Tighten test selection to improve efficiency',
-        'Add more specific reasoning notes on the differential',
-      ],
-      correctApproach: [
-        'Use the history and exam to establish pretest probability before testing.',
-        'Anchor the differential in dangerous diagnoses you can rule in or out with targeted data.',
-        'Confirm the working diagnosis with findings that fit the clinical picture.',
-      ],
+      summary: 'Sample case. Overall clinical score 118/200 (fair).',
+      strengths: ['Completed the encounter and submitted a differential and final diagnosis for review.'],
+      missedOpportunities: clinicalFeedback.areasForImprovement,
+      correctApproach: [clinicalFeedback.correctReasoning],
       improvementTip:
         'Next time, focus on asking about family history of early cardiac disease earlier to narrow the diagnosis faster.',
       diagnosticReasoning: [],

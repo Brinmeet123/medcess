@@ -36,7 +36,49 @@ export type DebriefInput = {
   offTopicQuestions: string[]
 }
 
-/** Post-scenario score out of 100, split evenly across four domains. */
+/** Post-scenario clinical score out of 200. */
+export type ClinicalRubric200 = {
+  patientInterview: number
+  diagnosticTesting: number
+  clinicalReasoning: number
+  finalDiagnosis: number
+  total: number
+  performanceLevel: PerformanceLevel
+  /** Set when a guessing/process cap lowered the raw total. */
+  scoreCapApplied?: number
+}
+
+export type PerformanceLevel =
+  | 'Excellent'
+  | 'Good'
+  | 'Fair'
+  | 'Needs Improvement'
+  | 'Poor'
+
+export type ClinicalFeedbackReport = {
+  rubric: ClinicalRubric200
+  interview: {
+    askedCorrectly: string[]
+    missedImportant: string[]
+    irrelevantOrLowValue: string[]
+  }
+  testing: {
+    correctlyOrdered: string[]
+    missedEssential: string[]
+    unnecessary: Array<{ name: string; reason?: string }>
+  }
+  idealInterviewQuestions: string[]
+  idealWorkup: {
+    essential: string[]
+    optional: string[]
+  }
+  correctReasoning: string
+  correctDiagnosis: string
+  diagnosisKeyEvidence: string[]
+  areasForImprovement: string[]
+}
+
+/** @deprecated Legacy 100-point rubric — use ClinicalRubric200. */
 export type DebriefRubric100 = {
   historyTaking: number
   clinicalReasoning: number
@@ -72,11 +114,43 @@ export type ScenarioDebriefConfig = {
   differentialComparison: { diagnosis: string; whyLessLikely: string }[]
   clinicalPearls: string[]
   vocabTerms: string[]
+  /** Extended answer-key fields for 200-point clinical scoring */
+  expectedInterviewQuestions?: string[]
+  essentialInterviewQuestions?: string[]
+  optionalInterviewQuestions?: string[]
+  irrelevantInterviewQuestions?: string[]
+  essentialTests?: string[]
+  optionalTests?: string[]
+  correctDiagnosis?: string
+  acceptableDiagnoses?: string[]
+  expectedDifferential?: string[]
+  keyEvidence?: string[]
+  redFlags?: string[]
+  idealReasoning?: string
+  diagnosisExplanation?: string[]
+}
+
+/** Internal answer key used by the 200-point scoring engine. */
+export type ScenarioAnswerKey = {
+  essentialInterviewQuestions: string[]
+  optionalInterviewQuestions: string[]
+  irrelevantInterviewQuestions: string[]
+  essentialTests: string[]
+  optionalTests: string[]
+  unnecessaryTests: string[]
+  correctDiagnosis: string
+  correctDiagnosisId?: string
+  acceptableDiagnoses: string[]
+  expectedDifferential: string[]
+  keyEvidence: string[]
+  redFlags: string[]
+  idealReasoning: string
+  diagnosisExplanation: string[]
 }
 
 /** API + UI shape: deterministic debrief plus legacy assessment fields. */
 export type DeterministicAssessment = {
-  overallRating: 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
+  overallRating: PerformanceLevel
   summary: string
   strengths: string[]
   areasForImprovement: string[]
@@ -84,17 +158,21 @@ export type DeterministicAssessment = {
   missedKeyHistoryPoints: string[]
   testSelectionFeedback: string
   sectionRatings: {
-    history: 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
-    exam: 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
-    tests: 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
-    diagnosis: 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
-    communication: 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
+    history: PerformanceLevel | 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
+    exam: PerformanceLevel | 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
+    tests: PerformanceLevel | 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
+    diagnosis: PerformanceLevel | 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
+    communication: PerformanceLevel | 'Excellent' | 'Good' | 'Needs Improvement' | 'Poor'
   }
   totalScore: number
   totalScorePercentage: number
   maxScore: number
-  /** Canonical score out of 100 (four categories × 25). */
-  rubric100: DebriefRubric100
+  /** Canonical score out of 200. */
+  rubric200: ClinicalRubric200
+  /** @deprecated Use rubric200 */
+  rubric100?: DebriefRubric100
+  /** Full educational feedback report */
+  clinicalFeedback: ClinicalFeedbackReport
   scoreBreakdown: {
     history: number
     exam: number
