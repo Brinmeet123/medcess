@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { Scenario } from '@/data/scenarios'
 import type { RubricBreakdown } from '@/lib/scoring'
@@ -15,6 +15,7 @@ import SectionNav, {
   ClinicalSection,
   clinicalSectionToStep,
   SECTION_STEP_COUNT,
+  type SectionCompletion,
 } from './SectionNav'
 import HistoryHelperPanel from './HistoryHelperPanel'
 import { getScenarioSectionGuidanceLine } from './ux/ScenarioSectionHeader'
@@ -446,6 +447,17 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
   const doctorTurns = chatMessages.filter((m) => m.role === 'doctor').length
 
+  const sectionCompletion = useMemo<SectionCompletion>(
+    () => ({
+      history: doctorTurns >= 1,
+      exam: viewedExamSections.length > 0,
+      tests: orderedTests.size > 0,
+      diagnosis: finalDiagnosisId !== null,
+      debrief: assessment !== null,
+    }),
+    [doctorTurns, viewedExamSections.length, orderedTests.size, finalDiagnosisId, assessment]
+  )
+
   const navigateToSection = useCallback((section: ClinicalSection) => {
     if (section === 'debrief' && !canAccessDebrief) return
     setActiveSection(section)
@@ -560,6 +572,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         active={activeSection}
         onChange={handleSectionChange}
         canAccessDebrief={canAccessDebrief}
+        sectionCompletion={sectionCompletion}
       />
 
       <LeaveExamConfirmDialog

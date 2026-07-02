@@ -17,11 +17,15 @@ export function clinicalSectionToStep(section: ClinicalSection): number {
   return i < 0 ? 1 : i + 1
 }
 
+export type SectionCompletion = Record<ClinicalSection, boolean>
+
 type Props = {
   active: ClinicalSection
   onChange: (section: ClinicalSection) => void
   /** Results tab stays locked until a final diagnosis is submitted. */
   canAccessDebrief: boolean
+  /** Per-tab completion based on actual learner actions, not tab order. */
+  sectionCompletion: SectionCompletion
 }
 
 function CheckIcon({ className = '' }: { className?: string }) {
@@ -74,6 +78,7 @@ export default function SectionNav({
   active,
   onChange,
   canAccessDebrief,
+  sectionCompletion,
 }: Props) {
   const activeStep = clinicalSectionToStep(active)
 
@@ -81,7 +86,7 @@ export default function SectionNav({
       const step = index + 1
       const isActive = active === section.id
       const isLocked = section.id === 'debrief' && !canAccessDebrief
-      const isCompleted = step < activeStep
+      const isCompleted = sectionCompletion[section.id]
       const isUnlockedAhead = !isLocked && !isActive && step > activeStep
 
       const lockTitle =
