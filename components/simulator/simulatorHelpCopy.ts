@@ -42,22 +42,22 @@ export function getSimulatorHelpCopy(
   if (currentStep === 3 || sec === 'tests') {
     return {
       stepName: 'Step 3: Tests',
-      whatToDo: 'Order what you need to narrow the picture. At least one test is required before diagnosis.',
-      nextStep: 'Continue when you are set.',
+      whatToDo: 'Order what you need to narrow the picture. You can return to interview or exam anytime.',
+      nextStep: 'Move to diagnosis when you are ready.',
     }
   }
 
   if (currentStep === 2 || sec === 'exam') {
     return {
       stepName: 'Step 2: Exam',
-      whatToDo: 'Work through the systems and read the findings.',
-      nextStep: 'Continue to tests.',
+      whatToDo: 'Work through the systems and read the findings. You can switch tabs freely.',
+      nextStep: 'Continue to tests or another section when ready.',
     }
   }
 
   return {
     stepName: 'Step 1: History',
-    whatToDo: 'Use quick prompts or type in the chat.',
-    nextStep: 'Continue to the exam from the bar below the chat.',
+    whatToDo: 'Use quick prompts or type in the chat. All case tabs stay available as you work.',
+    nextStep: 'Open exam, tests, or diagnosis from the tab bar anytime.',
   }
 }

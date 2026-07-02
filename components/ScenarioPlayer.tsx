@@ -19,6 +19,7 @@ import SectionNav, {
 import HistoryHelperPanel from './HistoryHelperPanel'
 import { getScenarioSectionGuidanceLine } from './ux/ScenarioSectionHeader'
 import NextStepGuidance from './ux/NextStepGuidance'
+import LeaveExamConfirmDialog from './LeaveExamConfirmDialog'
 import InstructionModal from './InstructionModal'
 import HelpButton from './HelpButton'
 import { useInstructionModal } from '@/hooks/useInstructionModal'
@@ -143,7 +144,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [scenarioScore, setScenarioScore] = useState<ScenarioScoreState | null>(null)
   const [activeSection, setActiveSection] = useState<ClinicalSection>('history')
-  const [maxUnlockedStep, setMaxUnlockedStep] = useState(1)
+  const [maxUnlockedStep, setMaxUnlockedStep] = useState(4)
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [viewedExamSections, setViewedExamSections] = useState<string[]>([])
   const [orderedTests, setOrderedTests] = useState<Map<string, OrderedTestData>>(new Map())
@@ -155,6 +156,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const [savedTerms, setSavedTerms] = useState<string[]>([])
   const [isMobile, setIsMobile] = useState(false)
   const [mobileTab, setMobileTab] = useState<'helper' | 'chat'>('chat')
+  const [hasConfirmedExamLeave, setHasConfirmedExamLeave] = useState(false)
+  const [showExamLeaveDialog, setShowExamLeaveDialog] = useState(false)
+  const [pendingSection, setPendingSection] = useState<ClinicalSection | null>(null)
 
   // Match media avoids resize/scrollbar thrash flipping layout at ~768px (flash between tabs).
   useEffect(() => {
@@ -199,9 +203,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
               st.maxUnlockedStep >= 1 &&
               st.maxUnlockedStep <= SECTION_STEP_COUNT
             ) {
-              setMaxUnlockedStep(st.maxUnlockedStep)
+              setMaxUnlockedStep(Math.max(st.maxUnlockedStep, 4))
             } else {
-              setMaxUnlockedStep(inferMaxUnlockedStepFromLegacy(st))
+              setMaxUnlockedStep(Math.max(inferMaxUnlockedStepFromLegacy(st), 4))
             }
           }
         }
@@ -214,12 +218,11 @@ export default function ScenarioPlayer({ scenario }: Props) {
     }
   }, [sessionStatus, session?.user?.id, scenario.id])
 
-  const canAccessDiagnosis = viewedExamSections.length > 0 && orderedTests.size > 0
   const canAccessDebrief = finalDiagnosisId !== null
 
   useEffect(() => {
     if (canAccessDebrief) {
-      setMaxUnlockedStep((m) => Math.max(m, SECTION_STEP_COUNT))
+      setMaxUnlockedStep(SECTION_STEP_COUNT)
     }
   }, [canAccessDebrief])
 
@@ -443,12 +446,39 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
   const doctorTurns = chatMessages.filter((m) => m.role === 'doctor').length
 
-  const handleSectionChange = (section: ClinicalSection) => {
-    const step = clinicalSectionToStep(section)
-    if (step > maxUnlockedStep) return
-    if (section === 'diagnosis' && !canAccessDiagnosis) return
+  const navigateToSection = useCallback((section: ClinicalSection) => {
     if (section === 'debrief' && !canAccessDebrief) return
     setActiveSection(section)
+  }, [canAccessDebrief])
+
+  const handleSectionChange = useCallback(
+    (section: ClinicalSection) => {
+      if (section === activeSection) return
+      if (section === 'debrief' && !canAccessDebrief) return
+
+      if (activeSection === 'exam' && section !== 'exam' && !hasConfirmedExamLeave) {
+        setPendingSection(section)
+        setShowExamLeaveDialog(true)
+        return
+      }
+
+      navigateToSection(section)
+    },
+    [activeSection, canAccessDebrief, hasConfirmedExamLeave, navigateToSection]
+  )
+
+  const handleExamLeaveContinue = () => {
+    setHasConfirmedExamLeave(true)
+    setShowExamLeaveDialog(false)
+    if (pendingSection) {
+      navigateToSection(pendingSection)
+      setPendingSection(null)
+    }
+  }
+
+  const handleExamLeaveStay = () => {
+    setShowExamLeaveDialog(false)
+    setPendingSection(null)
   }
 
   const instructionPageKey = sectionToInstructionPageKey(activeSection)
@@ -528,10 +558,14 @@ export default function ScenarioPlayer({ scenario }: Props) {
       {/* Section Navigation */}
       <SectionNav
         active={activeSection}
-        maxUnlockedStep={maxUnlockedStep}
         onChange={handleSectionChange}
-        canAccessDiagnosis={canAccessDiagnosis}
         canAccessDebrief={canAccessDebrief}
+      />
+
+      <LeaveExamConfirmDialog
+        open={showExamLeaveDialog}
+        onContinue={handleExamLeaveContinue}
+        onStay={handleExamLeaveStay}
       />
 
       {/* Render only the active section */}
@@ -622,10 +656,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <button
                   type="button"
-                  onClick={() => {
-                    setMaxUnlockedStep((m) => Math.max(m, 2))
-                    setActiveSection('exam')
-                  }}
+                  onClick={() => handleSectionChange('exam')}
                   className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
@@ -657,10 +688,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <button
                   type="button"
-                  onClick={() => {
-                    setMaxUnlockedStep((m) => Math.max(m, 3))
-                    setActiveSection('tests')
-                  }}
+                  onClick={() => handleSectionChange('tests')}
                   className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
@@ -688,30 +716,13 @@ export default function ScenarioPlayer({ scenario }: Props) {
               showHeading={false}
               centered
               action={
-                <>
-                  {!canAccessDiagnosis && (
-                    <p className="mb-3 text-center text-xs text-slate-600 dark:text-[#94a3b8]">
-                      Open the exam and order a test to continue.
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!canAccessDiagnosis) return
-                      setMaxUnlockedStep((m) => Math.max(m, 4))
-                      setActiveSection('diagnosis')
-                    }}
-                    disabled={!canAccessDiagnosis}
-                    title={
-                      canAccessDiagnosis
-                        ? undefined
-                        : 'Open the exam and order at least one test.'
-                    }
-                    className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next step
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => handleSectionChange('diagnosis')}
+                  className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+                >
+                  Next step
+                </button>
               }
             >
               {getScenarioSectionGuidanceLine('tests')}

@@ -19,10 +19,8 @@ export function clinicalSectionToStep(section: ClinicalSection): number {
 
 type Props = {
   active: ClinicalSection
-  /** 1 = Interview … 5 = Results. Tabs with step > maxUnlockedStep are locked (with exceptions below). */
-  maxUnlockedStep: number
   onChange: (section: ClinicalSection) => void
-  canAccessDiagnosis: boolean
+  /** Results tab stays locked until a final diagnosis is submitted. */
   canAccessDebrief: boolean
 }
 
@@ -74,30 +72,20 @@ function tabButtonClasses(opts: {
 
 export default function SectionNav({
   active,
-  maxUnlockedStep,
   onChange,
-  canAccessDiagnosis,
   canAccessDebrief,
 }: Props) {
   const activeStep = clinicalSectionToStep(active)
-  const clampedMax = Math.max(1, Math.min(SECTION_STEP_COUNT, maxUnlockedStep))
 
   const tabs = SECTION_ORDER.map((section, index) => {
       const step = index + 1
       const isActive = active === section.id
-      const hardLockDiagnosis = section.id === 'diagnosis' && !canAccessDiagnosis
-      const hardLockDebrief = section.id === 'debrief' && !canAccessDebrief
-      const stepLock = step > clampedMax && !(section.id === 'debrief' && canAccessDebrief)
-      const isLocked = hardLockDiagnosis || hardLockDebrief || stepLock
+      const isLocked = section.id === 'debrief' && !canAccessDebrief
       const isCompleted = step < activeStep
       const isUnlockedAhead = !isLocked && !isActive && step > activeStep
 
-      let lockTitle: string | undefined
-      if (isLocked) {
-        if (hardLockDiagnosis) lockTitle = 'Open the exam and order at least one test first.'
-        else if (hardLockDebrief) lockTitle = 'Choose a final diagnosis to view results.'
-        else lockTitle = 'Complete the previous step to unlock.'
-      }
+      const lockTitle =
+        isLocked ? 'Choose a final diagnosis to view results.' : undefined
 
       return (
         <button

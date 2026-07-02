@@ -1,8 +1,8 @@
-const MIN_DELAY_MS = 1500
-const MAX_DELAY_MS = 2500
-const BASE_DELAY_MS = 600
-const MS_PER_CHAR = 15
-const JITTER_MS = 400
+const MIN_DELAY_MS = 1000
+const MAX_DELAY_MS = 2000
+const BASE_DELAY_MS = 400
+const MS_PER_CHAR = 12
+const JITTER_MS = 300
 
 function computeScriptedReplyDelayMs(message: string): number {
   const lengthScaled = BASE_DELAY_MS + message.length * MS_PER_CHAR
