@@ -690,4 +690,113 @@ export const internalMedicineFallbackScenarios: FallbackScenario[] = [
       },
     ],
   },
+  {
+    key: 'medacademy-pathology-cells-going-wild',
+    titleMatchers: ['cells going wild', 'medacademy', 'pathology'],
+    complaintMatchers: ['broke my hip', 'short of breath', 'blood clot'],
+    defaultAnswer:
+      "I was in the hospital because I broke my hip after a fall. While I was here, I suddenly felt short of breath and had some chest pain. The doctors ordered a scan to check for a blood clot in my lungs.",
+    qa: [
+      {
+        id: 'smoking',
+        answer: 'I have smoked for many years. Probably around 65 to 70 pack-years total.',
+        patterns: ['smok', 'cigarette', 'tobacco', 'pack'],
+        keywords: ['smok', 'tobacco'],
+      },
+      {
+        id: 'weight',
+        answer: 'No, I have not really noticed weight loss.',
+        patterns: ['weight loss', 'lost weight', 'losing weight'],
+        keywords: ['weight'],
+      },
+      {
+        id: 'hemoptysis',
+        answer: 'No, I have not coughed up blood.',
+        patterns: ['hemoptysis', 'blood in sputum', 'cough blood', 'coughing blood'],
+        keywords: ['blood', 'hemoptysis'],
+      },
+      {
+        id: 'cough',
+        answer: 'I may cough here and there, but nothing that felt very different to me.',
+        patterns: ['cough'],
+        keywords: ['cough'],
+      },
+      {
+        id: 'hoarseness',
+        answer: 'My voice has been raspy for about two weeks.',
+        patterns: ['hoarse', 'raspy', 'voice'],
+        keywords: ['voice', 'hoarse'],
+      },
+      {
+        id: 'back',
+        answer: 'I have had chronic low back pain.',
+        patterns: ['back pain', 'back', 'spine'],
+        keywords: ['back'],
+      },
+      {
+        id: 'headache',
+        answer: 'I have been having headaches recently.',
+        patterns: ['headache', 'head pain'],
+        keywords: ['headache'],
+      },
+      {
+        id: 'neuro',
+        answer: 'I have felt a little off. Sometimes I feel less coordinated than usual.',
+        patterns: ['confusion', 'coordination', 'mentation', 'off', 'dizzy', 'weak'],
+        keywords: ['confusion', 'coordination'],
+      },
+      {
+        id: 'family',
+        answer: 'No one in my family has had cancer that I know of.',
+        patterns: ['family history', 'family cancer', 'cancer in family'],
+        keywords: ['family'],
+      },
+      {
+        id: 'pmh',
+        answer:
+          'I have high blood pressure, hypothyroidism, chronic back pain, a history of GI bleeding in 2004, and I had colon surgery for a diverticular abscess many years ago.',
+        patterns: ['medical history', 'past medical', 'history of', 'hypertension', 'hypothyroid', 'colon', 'gi bleed'],
+        keywords: ['history', 'hypertension'],
+      },
+      {
+        id: 'legs',
+        answer: 'No, I have not noticed swelling in my legs.',
+        patterns: ['leg swell', 'edema', 'swelling'],
+        keywords: ['swell', 'leg'],
+      },
+      {
+        id: 'fever',
+        answer: 'No fever.',
+        patterns: ['fever', 'chills', 'temperature'],
+        keywords: ['fever'],
+      },
+      {
+        id: 'chest',
+        answer:
+          'It came on while I was in the hospital. It made them worry about a clot in my lungs.',
+        patterns: ['chest pain', 'chest'],
+        keywords: ['chest'],
+      },
+      {
+        id: 'sob',
+        answer: 'It happened suddenly while I was hospitalized.',
+        patterns: ['shortness of breath', 'short of breath', 'breath', 'dyspnea'],
+        keywords: ['breath'],
+      },
+      {
+        id: 'exam',
+        answer:
+          'They said my voice sounds a little raspy. My lungs sounded clear, heart regular, belly has an old surgery scar, no leg swelling, and my neuro exam was okay except I told them I feel a bit uncoordinated sometimes.',
+        patterns: ['physical exam', 'examine', 'exam findings', 'auscult'],
+        keywords: ['exam'],
+      },
+      {
+        id: 'hello',
+        answer:
+          "Hi — I'm Patricia. I broke my hip and now I'm having trouble breathing and some chest pain in the hospital.",
+        patterns: ['hello', 'hi '],
+        keywords: ['hello'],
+      },
+    ],
+  },
 ]

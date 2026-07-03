@@ -23,13 +23,15 @@ export function buildSummary(params: {
   correctDxId: string | undefined
   totalOutOf200: number
   askedRatio: number
+  maxScore?: number
 }): string {
-  const { scenarioTitle, correctDx, finalDxId, correctDxId, totalOutOf200, askedRatio } = params
+  const { scenarioTitle, correctDx, finalDxId, correctDxId, totalOutOf200, askedRatio, maxScore = 200 } =
+    params
   const correct = finalDxId && correctDxId && finalDxId === correctDxId
   const dxLine = correct
     ? `Expected diagnosis: ${correctDx}.`
     : `Teaching diagnosis: ${correctDx}.`
-  return `${scenarioTitle}. Overall clinical score ${totalOutOf200}/200 (${ratingLabel(totalOutOf200).toLowerCase()}). About ${Math.round(askedRatio * 100)}% of essential history topics covered. ${dxLine}`
+  return `${scenarioTitle}. Overall clinical score ${totalOutOf200}/${maxScore} (${ratingLabel(totalOutOf200).toLowerCase()}). About ${Math.round(askedRatio * 100)}% of essential history topics covered. ${dxLine}`
 }
 
 export function buildStrengths(

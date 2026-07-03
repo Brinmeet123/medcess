@@ -11,6 +11,7 @@ import type {
 } from '@/types/debrief'
 import { resolveScenarioAnswerKey } from './answerKey'
 import { computeClinicalScore200 } from './clinicalScoring200'
+import { computeMedacademy150Score } from './clinicalScoringMedacademy150'
 import {
   buildDebriefInput,
   doctorBlobFromChat,
@@ -73,8 +74,9 @@ export function generateDebriefOutput(params: {
   finalMatchesCorrect: boolean
   rubric200: ClinicalRubric200
   clinicalFeedback: ClinicalFeedbackReport
+  maxScore?: number
 }): DebriefOutput {
-  const { scenario, config, input, missedPersonaHistory, finalMatchesCorrect, rubric200 } =
+  const { scenario, config, input, missedPersonaHistory, finalMatchesCorrect, rubric200, maxScore = 200 } =
     params
 
   const essentialTopics =
@@ -91,6 +93,7 @@ export function generateDebriefOutput(params: {
     correctDxId: scenario.finalDxId,
     totalOutOf200: rubric200.total,
     askedRatio,
+    maxScore,
   })
 
   const strengths = buildStrengths(input, config, finalMatchesCorrect)
@@ -143,20 +146,38 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     (m) => m.role === 'doctor' || m.role === 'user'
   ).length
 
-  const clinicalFeedback = computeClinicalScore200({
-    scenario,
-    answerKey,
-    doctorBlob,
-    doctorMessageCount,
-    orderedTests: body.orderedTests ?? [],
-    differentialDetailed: body.differentialDetailed,
-    finalDxId: body.finalDxId,
-    offTopicQuestions: input.offTopicQuestions,
-    missingMustNotMissDxIds: input.missingMustNotMissDxIds,
-    redFlagsMissed: input.redFlagsMissed,
-  })
+  const differentialDxIds = (body.differentialDetailed ?? []).map((d) => d.dxId)
 
-  const rubric200 = clinicalFeedback.rubric
+  let clinicalFeedback: ClinicalFeedbackReport
+  let rubric200: ClinicalRubric200
+  let maxScore = 200
+
+  if (scenario.scoringProfile === 'medacademy-150') {
+    const medacademy = computeMedacademy150Score({
+      scenario,
+      doctorBlob,
+      orderedTests: body.orderedTests ?? [],
+      differentialDxIds,
+      finalDxId: body.finalDxId,
+    })
+    clinicalFeedback = medacademy.feedback
+    rubric200 = medacademy.rubric
+    maxScore = medacademy.maxScore
+  } else {
+    clinicalFeedback = computeClinicalScore200({
+      scenario,
+      answerKey,
+      doctorBlob,
+      doctorMessageCount,
+      orderedTests: body.orderedTests ?? [],
+      differentialDetailed: body.differentialDetailed,
+      finalDxId: body.finalDxId,
+      offTopicQuestions: input.offTopicQuestions,
+      missingMustNotMissDxIds: input.missingMustNotMissDxIds,
+      redFlagsMissed: input.redFlagsMissed,
+    })
+    rubric200 = clinicalFeedback.rubric
+  }
 
   const missedTopicLabels = missedKeyHistoryTopics(
     input.doctorChatBlob,
@@ -168,7 +189,11 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
   )
 
   const finalMatchesCorrect = Boolean(
-    body.finalDxId && scenario.finalDxId && body.finalDxId === scenario.finalDxId
+    body.finalDxId &&
+      scenario.finalDxId &&
+      (body.finalDxId === scenario.finalDxId ||
+        (scenario.scoringProfile === 'medacademy-150' &&
+          ['lung_cancer', 'non_small_cell_lung_cancer'].includes(body.finalDxId)))
   )
 
   const debriefStructured = generateDebriefOutput({
@@ -179,6 +204,7 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     finalMatchesCorrect,
     rubric200,
     clinicalFeedback,
+    maxScore,
   })
 
   const diagnosisFeedback = finalMatchesCorrect
@@ -198,7 +224,10 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     .filter(Boolean)
     .join(' ')
 
-  const overallRating = ratingLabel(rubric200.total)
+  const overallRating =
+    scenario.scoringProfile === 'medacademy-150'
+      ? rubric200.performanceLevel
+      : ratingLabel(rubric200.total)
   const sb = input.scoreBreakdown
 
   const assessment: DeterministicAssessment = {
@@ -220,8 +249,8 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
       communication: sectionRatingFromScore(sb.reasoning),
     },
     totalScore: rubric200.total,
-    totalScorePercentage: Math.round((rubric200.total / 200) * 100),
-    maxScore: 200,
+    totalScorePercentage: Math.round((rubric200.total / maxScore) * 100),
+    maxScore,
     rubric200,
     clinicalFeedback,
     scoreBreakdown: {

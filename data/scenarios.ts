@@ -211,6 +211,14 @@ export type Scenario = {
   teachingPoints: string[];   // Key points for debrief
   /** Optional override; defaults are in data/debriefConfigs.ts by scenario id */
   debriefConfig?: ScenarioDebriefConfig;
+  /** Use custom 150-point MedAcademy rubric instead of default /200 scoring */
+  scoringProfile?: 'medacademy-150';
+  /** Slightly faster scripted patient reply delay for this case */
+  fastPatientReplies?: boolean;
+  /** Show gentle warning on Diagnosis tab if interview/tests incomplete */
+  earlyDiagnosisWarning?: boolean;
+  /** Educational attribution shown in case details */
+  attributionNote?: string;
 };
 
 export const scenarios: Scenario[] = [

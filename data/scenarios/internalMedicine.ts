@@ -862,5 +862,360 @@ export const internalMedicineScenarios: Scenario[] = [
       "Anticoagulation thrombosis risk elevated in severe nephrotic protein loss context per guideline nuance.",
       "ACE inhibitor sometimes after specialist balance unless contraindicated acute kidney injury."
     ]
+  },
+  {
+    id: "medacademy-pathology-cells-going-wild",
+    title: "MEDacademy Case One: Pathology - Cells Going Wild",
+    specialty: INTERNAL_MEDICINE_SPECIALTY,
+    difficulty: "Advanced",
+    estimatedMinutes: 18,
+    description:
+      "Patricia Nolan, 59F, is hospitalized after a subtrochanteric hip fracture. During admission she develops sudden shortness of breath and chest pain. CT angiography was ordered to rule out pulmonary embolism — PE is ruled out, but imaging reveals a right infrahilar lung mass and enlarged subcarinal lymph nodes. Educational case adapted from a MedAcademy pathology case for demonstration purposes.",
+    cardTeaser:
+      "A hospitalized patient develops chest pain and shortness of breath, but imaging reveals something more concerning.",
+    objectives: [
+      "Interview the patient about smoking, constitutional symptoms, and neurologic complaints.",
+      "Order appropriate staging tests including biopsy, PET scan, and brain MRI when indicated.",
+      "Build a differential that includes lung cancer while recognizing PE was ruled out.",
+      "Arrive at a final diagnosis of primary lung cancer with concern for spread."
+    ],
+    attributionNote:
+      "Educational case adapted from a MedAcademy pathology case for demonstration purposes.",
+    scoringProfile: "medacademy-150",
+    fastPatientReplies: true,
+    earlyDiagnosisWarning: true,
+    patientPersona: {
+      name: "Patricia Nolan",
+      age: 59,
+      gender: "Female",
+      chiefComplaint:
+        "I was in the hospital because I broke my hip after a fall. While I was here, I suddenly felt short of breath and had some chest pain. The doctors ordered a scan to check for a blood clot in my lungs.",
+      background:
+        "Admitted after a fall with a subtrochanteric hip fracture requiring fixation. During hospitalization she developed acute dyspnea and pleuritic chest pain prompting PE protocol imaging. CT angiography excluded pulmonary embolism but showed a 3.1 cm right infrahilar mass and 1.2 cm subcarinal lymph nodes. Long-term smoker. Hypertension, hypothyroidism, chronic low back pain, remote GI bleed 2004, prior colon surgery for diverticular abscess.",
+      vitals: {
+        heartRate: 96,
+        bloodPressure: "138/82",
+        respiratoryRate: 20,
+        oxygenSat: "94% on room air",
+        temperature: "98.4°F"
+      },
+      keyHistoryPoints: [
+        "Heavy smoking history (~65–70 pack-years)",
+        "Hospitalized for subtrochanteric hip fracture after fall",
+        "Sudden dyspnea and chest pain during admission",
+        "CT ordered for PE — PE ruled out; lung mass found",
+        "Raspy voice for two weeks",
+        "Recent headaches and mild coordination changes",
+        "Chronic low back pain",
+        "No hemoptysis or intentional weight loss",
+        "No leg swelling or fever"
+      ],
+      redFlags: [
+        "Heavy smoking with new lung mass",
+        "Enlarged subcarinal lymph nodes",
+        "Hoarseness suggesting possible mediastinal involvement",
+        "Headache and coordination changes — possible brain metastasis",
+        "Chronic back pain and recent fracture — possible bone involvement"
+      ]
+    },
+    aiInstructions: {
+      patientStyle:
+        "Speak as Patricia, a hospitalized 59-year-old woman — worried, tired, plain language, not medical jargon.",
+      behaviorRules: [
+        "Answer only as the patient in first person.",
+        "Do NOT say lung cancer, carcinoma, malignancy, or metastasis.",
+        "Do NOT reveal biopsy or PET results unless the doctor has ordered those tests in the case.",
+        "You may mention the doctors found something on the scan if asked about tests, but do not name the diagnosis.",
+        "Keep answers brief and conversational (1–3 sentences)."
+      ],
+      doNotRevealDirectly: [
+        "lung cancer",
+        "carcinoma",
+        "malignancy",
+        "metastasis",
+        "non-small cell",
+        "small cell",
+        "you have cancer"
+      ]
+    },
+    physicalExam: [
+      {
+        id: "general",
+        label: "General",
+        summary: "Ill-appearing but alert; mild raspy voice.",
+        details: "Patient in hospital gown, hip surgical site dressed. Mild hoarseness noted when speaking."
+      },
+      {
+        id: "heent",
+        label: "HEENT",
+        summary: "HEENT normal except mild raspy voice.",
+        details: "Oropharynx without erythema or exudate. Mucous membranes moist. Voice mildly hoarse."
+      },
+      {
+        id: "neck",
+        label: "Neck",
+        summary: "Neck supple; thyroid not palpable.",
+        details: "No cervical lymphadenopathy appreciated. Thyroid not enlarged on palpation."
+      },
+      {
+        id: "respiratory",
+        label: "Lungs",
+        summary: "Lungs clear to auscultation and percussion.",
+        details: "Breath sounds equal bilaterally without wheezes, crackles, or diminished sounds at bases."
+      },
+      {
+        id: "cardiac",
+        label: "Cardiovascular",
+        summary: "Regular rate and rhythm; no murmurs.",
+        details: "Heart sounds regular without gallop or rub. No JVD."
+      },
+      {
+        id: "abdomen",
+        label: "Abdomen",
+        summary: "Healed surgical scar; no palpable masses.",
+        details: "Midline or prior colon surgery scar well healed. Soft, non-tender, no organomegaly or masses."
+      },
+      {
+        id: "extremities",
+        label: "Extremities",
+        summary: "No limb edema.",
+        details: "No calf tenderness or pitting edema. Hip surgical site intact."
+      },
+      {
+        id: "neuro",
+        label: "Neurologic",
+        summary: "Cranial nerves intact; no focal weakness.",
+        details: "Alert and oriented. Cranial nerves II–XII grossly intact. Motor strength 5/5 throughout. Mild subjective unsteadiness reported but no clear focal deficit on exam."
+      }
+    ],
+    testOverrides: [
+      {
+        testId: "ct_angiogram_chest",
+        result:
+          "Pulmonary embolism is ruled out. Imaging reveals a 3.1 cm right infrahilar mass involving the right middle/lower lung region. Subcarinal lymph nodes measure approximately 1.2 cm.",
+        yield: "high"
+      },
+      {
+        testId: "ct_chest",
+        result:
+          "Pulmonary embolism is ruled out. Imaging reveals a 3.1 cm right infrahilar mass involving the right middle/lower lung region. Subcarinal lymph nodes measure approximately 1.2 cm.",
+        yield: "high"
+      },
+      {
+        testId: "cxr",
+        result:
+          "May show a right hilar or infrahilar abnormality, but CT gives better detail.",
+        yield: "helpful"
+      },
+      {
+        testId: "pet_scan",
+        result:
+          "Hypermetabolic activity is present in the right infrahilar lung mass and suspicious mediastinal lymph nodes. This raises concern for malignancy and possible nodal involvement.",
+        yield: "high"
+      },
+      {
+        testId: "mri_brain",
+        result:
+          "Ordered because of headache and changes in mentation/coordination. Findings are concerning for possible metastatic disease and require further evaluation.",
+        yield: "high"
+      },
+      {
+        testId: "bone_scan",
+        result:
+          "Ordered because of chronic back pain and recent fracture. Findings raise concern for possible bone involvement, but correlation with PET/biopsy is needed.",
+        yield: "helpful"
+      },
+      {
+        testId: "lung_mass_biopsy",
+        result:
+          "Biopsy shows malignant epithelial cells consistent with lung carcinoma. Further testing is needed to classify subtype.",
+        yield: "high"
+      },
+      {
+        testId: "ebus_lymph_node",
+        result:
+          "Sampling of subcarinal lymph nodes shows malignant cells, concerning for nodal spread.",
+        yield: "high"
+      },
+      {
+        testId: "lymph_node_biopsy",
+        result:
+          "Sampling of subcarinal lymph nodes shows malignant cells, concerning for nodal spread.",
+        yield: "high"
+      },
+      {
+        testId: "cbc",
+        result: "Non-specific. No result alone confirms the diagnosis.",
+        yield: "helpful"
+      },
+      {
+        testId: "cmp",
+        result: "Useful for baseline function and staging workup, but not diagnostic by itself.",
+        yield: "helpful"
+      },
+      {
+        testId: "pft",
+        result:
+          "Useful if surgery is being considered, but not the first step before confirming and staging the malignancy.",
+        yield: "low"
+      },
+      {
+        testId: "d_dimer",
+        result: "Not very useful after CT has already ruled out pulmonary embolism.",
+        yield: "inappropriate"
+      },
+      {
+        testId: "troponin",
+        result:
+          "Reasonable for chest pain evaluation, but does not explain the lung mass.",
+        yield: "low"
+      },
+      {
+        testId: "ecg",
+        result:
+          "Reasonable for chest pain evaluation, but does not explain the lung mass.",
+        yield: "low"
+      },
+      {
+        testId: "sputum_cytology",
+        result:
+          "May help in some lung cancer cases but is less definitive than tissue biopsy.",
+        yield: "helpful"
+      }
+    ],
+    testDefaultBehavior: {
+      labDefault: "Baseline labs may support staging but do not establish the diagnosis alone.",
+      imagingDefault: "Further imaging should target staging of the lung mass and possible spread.",
+      bedsideDefault: "Bedside tests do not replace tissue diagnosis for a new lung mass.",
+      procedureDefault: "Tissue biopsy is required to confirm malignancy and guide subtype classification."
+    },
+    finalDxId: "lung_cancer",
+    requiredMustNotMiss: ["lung_cancer", "pe", "pneumonia"],
+    dxOverrides: [
+      {
+        dxId: "lung_cancer",
+        yield: "correct",
+        explanation:
+          "Heavy smoking, infrahilar mass, mediastinal nodes, hoarseness, and systemic symptoms strongly support primary lung cancer with concern for spread."
+      },
+      {
+        dxId: "non_small_cell_lung_cancer",
+        yield: "correct",
+        explanation:
+          "Most common subtype in this demographic; biopsy and immunohistochemistry would confirm NSCLC versus SCLC."
+      },
+      {
+        dxId: "small_cell_lung_cancer",
+        yield: "reasonable",
+        explanation:
+          "Possible in heavy smokers with mediastinal disease, but subtype requires biopsy."
+      },
+      {
+        dxId: "metastatic_cancer",
+        yield: "reasonable",
+        explanation:
+          "Brain and bone findings raise concern for metastatic spread once primary lung malignancy is confirmed."
+      },
+      {
+        dxId: "pe",
+        yield: "low",
+        explanation: "PE was the initial concern but CT angiography ruled out pulmonary embolism."
+      },
+      {
+        dxId: "pneumonia",
+        yield: "low",
+        explanation: "No fever, clear lungs on exam, and mass lesion on CT favor malignancy over pneumonia."
+      },
+      {
+        dxId: "community_acquired_pneumonia",
+        yield: "low",
+        explanation: "Presentation centered on mass and nodes rather than infectious consolidation."
+      },
+      {
+        dxId: "pulmonary_tuberculosis",
+        yield: "low",
+        explanation: "No chronic cough with hemoptysis, night sweats, or exposure pattern typical of TB."
+      },
+      {
+        dxId: "lymphoma",
+        yield: "reasonable",
+        explanation: "Mediastinal nodes can occur in lymphoma, but primary lung mass favors bronchogenic carcinoma."
+      },
+      {
+        dxId: "benign_lung_mass",
+        yield: "low",
+        explanation: "Smoking history, nodes, and systemic symptoms make benign etiology unlikely without proof."
+      }
+    ],
+    diagnosisOptions: [
+      {
+        id: "lung_cancer",
+        name: "Lung cancer",
+        isCorrect: true,
+        isDangerous: true,
+        explanation: "Primary diagnosis supported by mass, nodes, smoking, and biopsy when obtained."
+      },
+      {
+        id: "non_small_cell_lung_cancer",
+        name: "Non-small cell lung cancer",
+        isCorrect: true,
+        isDangerous: true,
+        explanation: "Likely subtype pending histology."
+      },
+      {
+        id: "pe",
+        name: "Pulmonary embolism",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Ruled out on CT angiography."
+      },
+      {
+        id: "pneumonia",
+        name: "Pneumonia",
+        isCorrect: false,
+        isDangerous: false,
+        explanation: "Less likely with mass and negative infectious picture."
+      },
+      {
+        id: "pulmonary_tuberculosis",
+        name: "Pulmonary tuberculosis",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Less likely without classic TB symptoms."
+      },
+      {
+        id: "lymphoma",
+        name: "Lymphoma",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Consider in differential but lung mass favors primary lung carcinoma."
+      },
+      {
+        id: "benign_lung_mass",
+        name: "Benign lung mass",
+        isCorrect: false,
+        isDangerous: false,
+        explanation: "Unlikely given risk factors and nodal disease."
+      },
+      {
+        id: "metastatic_cancer",
+        name: "Metastatic cancer",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "May describe spread but primary lung cancer is the unifying diagnosis."
+      }
+    ],
+    teachingPoints: [
+      "Rubric (150): Interview 45, Tests 55, Diagnosis 35, Reasoning 15.",
+      "This case begins as a PE workup, but the major finding is an incidental lung mass.",
+      "Heavy smoking history strongly increases concern for lung cancer.",
+      "Hoarseness can suggest involvement near the recurrent laryngeal nerve or mediastinum.",
+      "Subcarinal lymph nodes suggest possible nodal spread.",
+      "Headache, mentation changes, and coordination changes raise concern for brain metastasis.",
+      "Chronic back pain and hip fracture raise concern for possible bone involvement.",
+      "Biopsy is required before confirming cancer type.",
+      "PET scan, brain MRI, and lymph node sampling are important for staging.",
+      "Educational case adapted from a MedAcademy pathology case for demonstration purposes."
+    ]
   }
 ];

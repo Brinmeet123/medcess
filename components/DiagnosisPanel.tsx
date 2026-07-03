@@ -32,6 +32,8 @@ type Props = {
   }) => void
   onTermClick?: (term: string) => void
   onTermSave?: (term: string) => void
+  doctorMessageCount?: number
+  orderedTestCount?: number
 }
 
 const CATEGORIES: DxCategory[] = [
@@ -48,6 +50,8 @@ export default function DiagnosisPanel({
   onSubmit,
   onTermClick,
   onTermSave,
+  doctorMessageCount = 0,
+  orderedTestCount = 0,
 }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<DxCategory | 'All'>('All')
   const [searchQuery, setSearchQuery] = useState('')
@@ -216,6 +220,14 @@ export default function DiagnosisPanel({
       </p>
 
       <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC] mb-4">Make your diagnosis</h2>
+
+      {scenario.earlyDiagnosisWarning &&
+        (doctorMessageCount < 3 || orderedTestCount < 2) && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800/50 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+            You can submit a diagnosis now, but you may want to complete the patient interview and review
+            key tests first.
+          </div>
+        )}
 
       <CatalogBrowseLayout
         searchQuery={searchQuery}

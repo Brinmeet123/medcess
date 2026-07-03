@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     if (USE_DEMO_MOCKS) {
       const mockResponse = getMockPatientResponse(scenarioId, messages)
-      await delayBeforeScriptedPatientReply(mockResponse)
+      await delayBeforeScriptedPatientReply(mockResponse, { fast: scenario.fastPatientReplies })
       return NextResponse.json({
         message: mockResponse,
         source: 'demo-mock',
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     const preAi = await resolvePreAiPatientReply(scenario, messages)
     if (preAi) {
       if (preAi.scripted) {
-        await delayBeforeScriptedPatientReply(preAi.message)
+        await delayBeforeScriptedPatientReply(preAi.message, { fast: scenario.fastPatientReplies })
       }
       const res = NextResponse.json({
         message: preAi.message,
@@ -171,7 +171,10 @@ export async function POST(request: NextRequest) {
         bodyData.scenarioId || '',
         bodyData.messages || []
       )
-      await delayBeforeScriptedPatientReply(mockResponse)
+      const scenarioForFallback = scenarios.find((s) => s.id === bodyData.scenarioId)
+      await delayBeforeScriptedPatientReply(mockResponse, {
+        fast: scenarioForFallback?.fastPatientReplies,
+      })
       return NextResponse.json({
         message: mockResponse,
         source: 'demo-mock',

@@ -295,10 +295,64 @@ function thomasNephroticKeywords(input: string): string {
   return REPLY_CLARIFY
 }
 
+function medacademyCellsGoingWildKeywords(input: string): string {
+  const m = input
+  if (m.includes('smok') || m.includes('cigarette') || m.includes('tobacco') || m.includes('pack')) {
+    return 'I have smoked for many years. Probably around 65 to 70 pack-years total.'
+  }
+  if (m.includes('weight loss') || m.includes('lost weight') || m.includes('losing weight')) {
+    return 'No, I have not really noticed weight loss.'
+  }
+  if (m.includes('hemoptysis') || m.includes('cough blood') || m.includes('blood in sputum') || m.includes('coughing blood')) {
+    return 'No, I have not coughed up blood.'
+  }
+  if (m.includes('cough')) {
+    return 'I may cough here and there, but nothing that felt very different to me.'
+  }
+  if (m.includes('hoarse') || m.includes('raspy') || m.includes('voice')) {
+    return 'My voice has been raspy for about two weeks.'
+  }
+  if (m.includes('back pain') || (m.includes('back') && m.includes('pain'))) {
+    return 'I have had chronic low back pain.'
+  }
+  if (m.includes('headache') || m.includes('head pain')) {
+    return 'I have been having headaches recently.'
+  }
+  if (m.includes('confusion') || m.includes('coordination') || m.includes('mentation') || m.includes('off') || m.includes('dizzy')) {
+    return 'I have felt a little off. Sometimes I feel less coordinated than usual.'
+  }
+  if (m.includes('family history') || m.includes('family cancer') || (m.includes('family') && m.includes('cancer'))) {
+    return 'No one in my family has had cancer that I know of.'
+  }
+  if (m.includes('medical history') || m.includes('past medical') || m.includes('hypertension') || m.includes('hypothyroid') || m.includes('colon') || m.includes('gi bleed')) {
+    return 'I have high blood pressure, hypothyroidism, chronic back pain, a history of GI bleeding in 2004, and I had colon surgery for a diverticular abscess many years ago.'
+  }
+  if (m.includes('swell') || m.includes('edema') || m.includes('leg')) {
+    return 'No, I have not noticed swelling in my legs.'
+  }
+  if (m.includes('fever') || m.includes('chills')) {
+    return 'No fever.'
+  }
+  if (m.includes('chest pain') || (m.includes('chest') && m.includes('pain'))) {
+    return 'It came on while I was in the hospital. It made them worry about a clot in my lungs.'
+  }
+  if (m.includes('shortness') || m.includes('short of breath') || m.includes('breath') || m.includes('dyspnea')) {
+    return 'It happened suddenly while I was hospitalized.'
+  }
+  if (m.includes('physical exam') || m.includes('examine') || m.includes('auscult')) {
+    return 'They said my voice sounds a little raspy. My lungs sounded clear, heart regular, belly has an old surgery scar, no leg swelling, and my neuro exam was okay except I told them I feel a bit uncoordinated sometimes.'
+  }
+  if (/\b(hello|hi|hey)\b/.test(m)) {
+    return "Hi — I'm Patricia. I broke my hip and now I'm having trouble breathing and some chest pain in the hospital."
+  }
+  return REPLY_CLARIFY
+}
+
 export const internalMedicineKeywordHandlers: Record<string, (input: string) => string> = {
   't2dm-off-weeks-kevin-sharma': kevinT2dmKeywords,
   'chf-sob-robert-daniels': robertChfKeywords,
   'iron-anemia-dizziness-melissa-chen': melissaAnemiaKeywords,
   'ckd-fatigue-william-foster': williamCkdKeywords,
   'nephrotic-edema-thomas-rivera': thomasNephroticKeywords,
+  'medacademy-pathology-cells-going-wild': medacademyCellsGoingWildKeywords,
 }

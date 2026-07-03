@@ -506,6 +506,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
         <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
           {scenario.description}
         </p>
+        {scenario.attributionNote ? (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
+        ) : null}
       </div>
 
       <div className="case-vitals-banner">
@@ -755,6 +758,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
             onSubmit={handleDiagnosisSubmit}
             onTermClick={handleTermClick}
             onTermSave={handleTermSave}
+            doctorMessageCount={doctorTurns}
+            orderedTestCount={orderedTests.size}
           />
         </>
       )}

@@ -100,17 +100,29 @@ function ScoreCard({
   rubric,
   levelLabel,
   capApplied,
+  maxScore = 200,
+  scoringProfile,
 }: {
   rubric: ClinicalRubric200
   levelLabel: string
   capApplied?: number
+  maxScore?: number
+  scoringProfile?: Scenario['scoringProfile']
 }) {
-  const rows = [
-    { label: 'Patient Interview', value: rubric.patientInterview, max: 60 },
-    { label: 'Diagnostic Testing', value: rubric.diagnosticTesting, max: 60 },
-    { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 50 },
-    { label: 'Final Diagnosis', value: rubric.finalDiagnosis, max: 30 },
-  ]
+  const rows =
+    scoringProfile === 'medacademy-150'
+      ? [
+          { label: 'Patient Interview', value: rubric.patientInterview, max: 45 },
+          { label: 'Tests', value: rubric.diagnosticTesting, max: 55 },
+          { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 35 },
+          { label: 'Clinical Reasoning Explanation', value: rubric.clinicalReasoning, max: 15 },
+        ]
+      : [
+          { label: 'Patient Interview', value: rubric.patientInterview, max: 60 },
+          { label: 'Diagnostic Testing', value: rubric.diagnosticTesting, max: 60 },
+          { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 50 },
+          { label: 'Final Diagnosis', value: rubric.finalDiagnosis, max: 30 },
+        ]
 
   return (
     <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm">
@@ -119,14 +131,14 @@ function ScoreCard({
       </h3>
       <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-[#F8FAFC]">
         {rubric.total}
-        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/200</span>
+        <span className="text-2xl font-semibold text-slate-600 dark:text-[#CBD5E1]">/{maxScore}</span>
       </p>
       <p className="mt-1 text-sm font-medium text-teal-900 dark:text-teal-300">
         Performance Level: {levelLabel}
       </p>
       {capApplied != null ? (
         <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
-          Score capped at {capApplied}/200 because the clinical process did not support the final
+          Score capped at {capApplied}/{maxScore} because the clinical process did not support the final
           answer.
         </p>
       ) : null}
@@ -211,6 +223,8 @@ export default function SummaryPanel({
             rubric={rubric}
             levelLabel={assessment.overallRating}
             capApplied={rubric.scoreCapApplied}
+            maxScore={assessment.maxScore ?? 200}
+            scoringProfile={scenario.scoringProfile}
           />
         ) : assessment.totalScore != null ? (
           <div className="mb-6 rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">
