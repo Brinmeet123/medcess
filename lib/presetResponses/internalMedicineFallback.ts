@@ -695,105 +695,127 @@ export const internalMedicineFallbackScenarios: FallbackScenario[] = [
     titleMatchers: ['cells going wild', 'medacademy', 'pathology'],
     complaintMatchers: ['broke my hip', 'short of breath', 'blood clot'],
     defaultAnswer:
-      "I was in the hospital because I broke my hip after a fall. While I was here, I suddenly felt short of breath and had some chest pain. The doctors ordered a scan to check for a blood clot in my lungs.",
+      "I was in the hospital because I broke my hip after a fall. While I was here, I had shortness of breath and chest pain.",
     qa: [
       {
+        id: 'full-history',
+        answer: `A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.
+
+History of Present Illness:
+She denies weight loss and hemoptysis, but has been complaining of hoarseness for the past two weeks. She has chronic low back pain, headache, and changes in mentation/coordination. She has a 65-70 pack year smoking history.
+
+Past Medical History:
+Chronic back pain
+HTN
+Hypothyroidism
+Hx of GI bleed 2004 with negative endoscopy
+Hx of diverticular abscess requiring colon resection in 1982
+
+Family History:
+No cancer in the family.`,
+        patterns: [
+          'full patient history',
+          'full history',
+          'patient history',
+          'your history',
+          'summarize the patient history',
+          'summarize patient history',
+          'all the history',
+          'what do we know about the patient',
+          'what is your history',
+          'tell me your history',
+          'give me your history',
+        ],
+        keywords: ['history', 'summarize'],
+      },
+      {
+        id: 'physical-exam',
+        answer: `Physical Examination:
+
+Mild raspy voice
+
+HEENT: pupils equal, round, and reactive to light, extraocular movements intact (EOMI), oropharynx (OP) clear
+
+Neck: Supple non-palpable thyroid
+
+Lungs: Clear to auscultation and percussion
+
+Cardiac: regular rate & rhythm (RRR) w/o murmurs
+
+Abd: Well healed surgical scar, no masses, liver edge not palpated
+
+Limbs: No edema
+
+Neuro: Cranial nerves (CN) intact, no focal weakness`,
+        patterns: [
+          'physical exam',
+          'physical examination',
+          'exam findings',
+          'what did you find on exam',
+          'give me the physical',
+          'what is the pe',
+        ],
+        keywords: ['exam', 'physical'],
+      },
+      {
         id: 'smoking',
-        answer: 'I have smoked for many years. Probably around 65 to 70 pack-years total.',
+        answer: 'She has a 65-70 pack year smoking history.',
         patterns: ['smok', 'cigarette', 'tobacco', 'pack'],
         keywords: ['smok', 'tobacco'],
       },
       {
         id: 'weight',
-        answer: 'No, I have not really noticed weight loss.',
+        answer: 'She denies weight loss.',
         patterns: ['weight loss', 'lost weight', 'losing weight'],
         keywords: ['weight'],
       },
       {
         id: 'hemoptysis',
-        answer: 'No, I have not coughed up blood.',
+        answer: 'She denies hemoptysis.',
         patterns: ['hemoptysis', 'blood in sputum', 'cough blood', 'coughing blood'],
         keywords: ['blood', 'hemoptysis'],
       },
       {
-        id: 'cough',
-        answer: 'I may cough here and there, but nothing that felt very different to me.',
-        patterns: ['cough'],
-        keywords: ['cough'],
-      },
-      {
         id: 'hoarseness',
-        answer: 'My voice has been raspy for about two weeks.',
+        answer: 'She has been complaining of hoarseness for the past two weeks.',
         patterns: ['hoarse', 'raspy', 'voice'],
         keywords: ['voice', 'hoarse'],
       },
       {
         id: 'back',
-        answer: 'I have had chronic low back pain.',
-        patterns: ['back pain', 'back', 'spine'],
+        answer: 'She has chronic low back pain.',
+        patterns: ['back pain', 'chronic low back', 'low back pain'],
         keywords: ['back'],
       },
       {
         id: 'headache',
-        answer: 'I have been having headaches recently.',
+        answer: 'She has headache.',
         patterns: ['headache', 'head pain'],
         keywords: ['headache'],
       },
       {
         id: 'neuro',
-        answer: 'I have felt a little off. Sometimes I feel less coordinated than usual.',
+        answer: 'She has changes in mentation/coordination.',
         patterns: ['confusion', 'coordination', 'mentation', 'off', 'dizzy', 'weak'],
-        keywords: ['confusion', 'coordination'],
+        keywords: ['confusion', 'coordination', 'mentation'],
       },
       {
         id: 'family',
-        answer: 'No one in my family has had cancer that I know of.',
+        answer: 'No cancer in the family.',
         patterns: ['family history', 'family cancer', 'cancer in family'],
         keywords: ['family'],
       },
       {
         id: 'pmh',
         answer:
-          'I have high blood pressure, hypothyroidism, chronic back pain, a history of GI bleeding in 2004, and I had colon surgery for a diverticular abscess many years ago.',
-        patterns: ['medical history', 'past medical', 'history of', 'hypertension', 'hypothyroid', 'colon', 'gi bleed'],
+          'Chronic back pain, HTN, hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, and Hx of diverticular abscess requiring colon resection in 1982.',
+        patterns: ['medical history', 'past medical', 'history of', 'hypertension', 'hypothyroid', 'colon', 'gi bleed', 'pmh'],
         keywords: ['history', 'hypertension'],
-      },
-      {
-        id: 'legs',
-        answer: 'No, I have not noticed swelling in my legs.',
-        patterns: ['leg swell', 'edema', 'swelling'],
-        keywords: ['swell', 'leg'],
-      },
-      {
-        id: 'fever',
-        answer: 'No fever.',
-        patterns: ['fever', 'chills', 'temperature'],
-        keywords: ['fever'],
-      },
-      {
-        id: 'chest',
-        answer:
-          'It came on while I was in the hospital. It made them worry about a clot in my lungs.',
-        patterns: ['chest pain', 'chest'],
-        keywords: ['chest'],
-      },
-      {
-        id: 'sob',
-        answer: 'It happened suddenly while I was hospitalized.',
-        patterns: ['shortness of breath', 'short of breath', 'breath', 'dyspnea'],
-        keywords: ['breath'],
-      },
-      {
-        id: 'exam',
-        answer:
-          'They said my voice sounds a little raspy. My lungs sounded clear, heart regular, belly has an old surgery scar, no leg swelling, and my neuro exam was okay except I told them I feel a bit uncoordinated sometimes.',
-        patterns: ['physical exam', 'examine', 'exam findings', 'auscult'],
-        keywords: ['exam'],
       },
       {
         id: 'hello',
         answer:
-          "Hi — I'm Patricia. I broke my hip and now I'm having trouble breathing and some chest pain in the hospital.",
+          "Hi — I'm Patricia. I broke my hip and now I'm having shortness of breath and chest pain in the hospital.",
         patterns: ['hello', 'hi '],
         keywords: ['hello'],
       },

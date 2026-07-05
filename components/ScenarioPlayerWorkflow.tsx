@@ -296,6 +296,7 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
         </div>
       </div>
 
+      {!scenario.hideVitals && scenario.patientPersona.vitals ? (
       <div className="case-vitals-banner">
         <h3>Vital Signs</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
@@ -321,6 +322,7 @@ export default function ScenarioPlayerWorkflow({ scenario }: { scenario: Scenari
           </div>
         </div>
       </div>
+      ) : null}
 
       {(scenario.patientPersona.medicationList?.length ||
         scenario.patientPersona.baselineFunctionalStatus ||

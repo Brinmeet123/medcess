@@ -23,13 +23,14 @@ const USE_DEMO_MOCKS = process.env.DEMO_MODE === 'true'
 
 function buildPatientSystemPrompt(scenario: (typeof scenarios)[0]): string {
   const { patientPersona, aiInstructions } = scenario
+  const vitalsLine = scenario.hideVitals || !patientPersona.vitals
+    ? ''
+    : `Vital signs: HR ${patientPersona.vitals.heartRate} bpm, BP ${patientPersona.vitals.bloodPressure}, RR ${patientPersona.vitals.respiratoryRate}/min, O2 Sat ${patientPersona.vitals.oxygenSat}, Temp ${patientPersona.vitals.temperature}.\n\n`
   return `You are a fictional patient in a Medcess clinical simulation (educational only).
 Your name is ${patientPersona.name}, age ${patientPersona.age}, gender ${patientPersona.gender}.
 Chief complaint: ${patientPersona.chiefComplaint}.
 Background: ${patientPersona.background}.
-Vital signs: HR ${patientPersona.vitals.heartRate} bpm, BP ${patientPersona.vitals.bloodPressure}, RR ${patientPersona.vitals.respiratoryRate}/min, O2 Sat ${patientPersona.vitals.oxygenSat}, Temp ${patientPersona.vitals.temperature}.
-
-${aiInstructions.patientStyle}
+${vitalsLine}${aiInstructions.patientStyle}
 
 CRITICAL RULES:
 ${aiInstructions.behaviorRules.map((rule) => `- ${rule}`).join('\n')}

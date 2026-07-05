@@ -162,12 +162,29 @@ export default function ScenarioCard({
             </div>
           </div>
           <div className="mb-3">
-            <span className="text-sm text-primary-600 dark:text-primary-400 font-medium">{scenario.specialty}</span>
-            <span className="text-sm text-gray-500 dark:text-[#94a3b8] mx-2">•</span>
+            {scenario.cardCategory ? (
+              <>
+                <span className="text-sm text-primary-600 dark:text-primary-400 font-medium">
+                  {scenario.cardCategory}
+                </span>
+                <span className="text-sm text-gray-500 dark:text-[#94a3b8] mx-2">•</span>
+              </>
+            ) : (
+              <>
+                <span className="text-sm text-primary-600 dark:text-primary-400 font-medium">{scenario.specialty}</span>
+                <span className="text-sm text-gray-500 dark:text-[#94a3b8] mx-2">•</span>
+              </>
+            )}
             <span className="text-sm text-gray-500 dark:text-[#94a3b8]">{scenario.estimatedMinutes} min</span>
           </div>
-          <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.description}</p>
-          <p className="text-sm text-slate-500 dark:text-[#94a3b8] italic mb-3 leading-snug">{scenario.cardTeaser}</p>
+          {scenario.sectionLayout === 'medacademy' ? (
+            <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.cardTeaser}</p>
+          ) : (
+            <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.description}</p>
+          )}
+          {scenario.sectionLayout !== 'medacademy' ? (
+            <p className="text-sm text-slate-500 dark:text-[#94a3b8] italic mb-3 leading-snug">{scenario.cardTeaser}</p>
+          ) : null}
           {progress &&
             (progress.bestScore != null || progress.lastAttemptScore != null) &&
             (progress.status === 'completed' || progress.status === 'in_progress') && (

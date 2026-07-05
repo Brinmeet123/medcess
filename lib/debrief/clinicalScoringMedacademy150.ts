@@ -17,8 +17,6 @@ const LUNG_CANCER_DX_IDS = new Set([
   'small_cell_lung_cancer',
 ])
 
-const METASTATIC_DX_IDS = new Set(['metastatic_cancer', 'lung_cancer', 'non_small_cell_lung_cancer'])
-
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n))
 }
@@ -34,17 +32,13 @@ function performanceLevelFromScore150(total: number): PerformanceLevel {
 function scoreInterview(blob: string): { score: number; asked: string[]; missed: string[] } {
   const checks: Array<{ label: string; points: number; patterns: string[] }> = [
     { label: 'Smoking history', points: 10, patterns: ['smok', 'cigarette', 'tobacco', 'pack'] },
-    { label: 'Hoarseness or voice change', points: 7, patterns: ['hoarse', 'raspy', 'voice'] },
-    { label: 'Hemoptysis', points: 5, patterns: ['hemoptysis', 'cough blood', 'blood in sputum', 'coughing blood'] },
+    { label: 'Hoarseness', points: 7, patterns: ['hoarse', 'raspy', 'voice'] },
     { label: 'Weight loss', points: 5, patterns: ['weight loss', 'lost weight', 'losing weight'] },
-    {
-      label: 'Headache or neurologic symptoms',
-      points: 8,
-      patterns: ['headache', 'confusion', 'coordination', 'mentation', 'dizzy', 'weakness', 'neuro'],
-    },
-    { label: 'Back pain or bone pain', points: 5, patterns: ['back pain', 'bone pain', 'spine', 'fracture'] },
-    { label: 'Family history of cancer', points: 3, patterns: ['family history', 'family cancer', 'cancer in family'] },
-    { label: 'Past medical history', points: 2, patterns: ['medical history', 'past medical', 'hypertension', 'hypothyroid', 'colon surgery', 'gi bleed'] },
+    { label: 'Hemoptysis', points: 5, patterns: ['hemoptysis', 'cough blood', 'blood in sputum', 'coughing blood'] },
+    { label: 'Chronic low back pain', points: 5, patterns: ['back pain', 'low back', 'chronic back'] },
+    { label: 'Headache', points: 5, patterns: ['headache', 'head pain'] },
+    { label: 'Mentation/coordination', points: 5, patterns: ['confusion', 'coordination', 'mentation'] },
+    { label: 'Family history', points: 3, patterns: ['family history', 'family cancer', 'cancer in family'] },
   ]
 
   let score = 0
@@ -64,34 +58,73 @@ function scoreInterview(blob: string): { score: number; asked: string[]; missed:
   return { score: clamp(score, 0, 45), asked, missed }
 }
 
-function scoreTests(orderedTests: string[]): { score: number; hit: string[]; missed: string[] } {
-  const checks: Array<{ label: string; points: number; testIds: string[] }> = [
-    { label: 'CT chest / CTA review', points: 10, testIds: ['ct_chest', 'ct_angiogram_chest'] },
-    { label: 'Lung or lymph node biopsy', points: 15, testIds: ['lung_mass_biopsy', 'ebus_lymph_node', 'lymph_node_biopsy'] },
-    { label: 'PET scan for staging', points: 10, testIds: ['pet_scan'] },
-    { label: 'Brain MRI for neuro symptoms', points: 8, testIds: ['mri_brain'] },
-    { label: 'Spine imaging / bone scan', points: 5, testIds: ['bone_scan'] },
-    { label: 'Baseline CBC / CMP', points: 4, testIds: ['cbc', 'cmp'] },
-    { label: 'Pulmonary function testing', points: 3, testIds: ['pft'] },
-  ]
-
+function scoreTests(
+  orderedTests: string[],
+  doctorBlob: string
+): { score: number; hit: string[]; missed: string[] } {
   let score = 0
   const hit: string[] = []
   const missed: string[] = []
 
-  for (const check of checks) {
-    const ordered = check.testIds.some((id) => orderedTests.includes(id))
-    if (ordered) {
-      score += check.points
-      hit.push(check.label)
-    } else {
-      missed.push(check.label)
-    }
+  const ctOrdered = orderedTests.some((t) => ['ct_chest', 'ct_angiogram_chest'].includes(t))
+  if (ctOrdered) {
+    score += 10
+    hit.push('CT scan / CT Chest review')
+  } else {
+    missed.push('CT scan / CT Chest review')
   }
 
-  // CBC/CMP combined cap at 4
-  if (orderedTests.includes('cbc') && orderedTests.includes('cmp') && score > 0) {
-    // already counted once if either hit — adjust: only add full 4 if at least one ordered
+  const peRecognized =
+    ctOrdered ||
+    topicLikelyAsked(doctorBlob, 'pe ruled out') ||
+    topicLikelyAsked(doctorBlob, 'pulmonary embolism ruled')
+  if (peRecognized) {
+    score += 5
+    hit.push('Recognized PE was ruled out')
+  } else {
+    missed.push('Recognized PE was ruled out')
+  }
+
+  if (orderedTests.includes('lung_mass_biopsy')) {
+    score += 12
+    hit.push('Biopsy of lung mass')
+  } else {
+    missed.push('Biopsy of lung mass')
+  }
+
+  if (orderedTests.some((t) => ['ebus_lymph_node', 'lymph_node_biopsy'].includes(t))) {
+    score += 8
+    hit.push('Lymph node biopsy / EBUS')
+  } else {
+    missed.push('Lymph node biopsy / EBUS')
+  }
+
+  if (orderedTests.includes('pet_scan')) {
+    score += 7
+    hit.push('PET scan')
+  } else {
+    missed.push('PET scan')
+  }
+
+  if (orderedTests.includes('mri_brain')) {
+    score += 6
+    hit.push('Brain MRI')
+  } else {
+    missed.push('Brain MRI')
+  }
+
+  if (orderedTests.some((t) => ['bone_scan', 'mri_spine'].includes(t))) {
+    score += 4
+    hit.push('Bone scan / spine imaging')
+  } else {
+    missed.push('Bone scan / spine imaging')
+  }
+
+  if (orderedTests.includes('cbc') || orderedTests.includes('cmp')) {
+    score += 3
+    hit.push('CBC/CMP baseline labs')
+  } else {
+    missed.push('CBC/CMP baseline labs')
   }
 
   return { score: clamp(score, 0, 55), hit, missed }
@@ -105,87 +138,88 @@ function scoreDiagnosis(input: Medacademy150Input): { score: number; notes: stri
   const hasLungCancerDdx = differentialDxIds.some((id) => LUNG_CANCER_DX_IDS.has(id))
   if (hasLungCancerDdx) {
     score += 10
-    notes.push('Included lung cancer in the differential.')
+    notes.push('Included lung cancer/lung carcinoma in differential.')
   }
 
-  const peRuledOut =
-    !finalDxId ||
-    finalDxId !== 'pe' ||
-    topicLikelyAsked(doctorBlob, 'pe ruled out') ||
-    topicLikelyAsked(doctorBlob, 'pulmonary embolism ruled')
-  if (finalDxId !== 'pe') {
+  if (
+    topicLikelyAsked(doctorBlob, 'infrahilar') ||
+    topicLikelyAsked(doctorBlob, 'lung mass') ||
+    topicLikelyAsked(doctorBlob, 'mass')
+  ) {
     score += 5
-    notes.push('Did not select pulmonary embolism as the final diagnosis (PE was ruled out on CT).')
-  } else if (!peRuledOut) {
-    notes.push('PE was ruled out on imaging — it should not be the final diagnosis.')
+    notes.push('Recognized right infrahilar mass is concerning.')
   }
 
-  const stagingDx = differentialDxIds.some((id) =>
-    ['lung_cancer', 'non_small_cell_lung_cancer', 'lymphoma', 'metastatic_cancer'].includes(id)
-  )
-  if (stagingDx || topicLikelyAsked(doctorBlob, 'lymph') || topicLikelyAsked(doctorBlob, 'node')) {
-    score += 7
-    notes.push('Recognized lymph node involvement / staging concern.')
+  if (
+    topicLikelyAsked(doctorBlob, 'subcarinal') ||
+    topicLikelyAsked(doctorBlob, 'lymph') ||
+    topicLikelyAsked(doctorBlob, 'node')
+  ) {
+    score += 6
+    notes.push('Recognized subcarinal lymph nodes may suggest nodal involvement.')
   }
 
-  const metastaticConcern =
-    differentialDxIds.some((id) => METASTATIC_DX_IDS.has(id)) ||
-    topicLikelyAsked(doctorBlob, 'metast') ||
-    topicLikelyAsked(doctorBlob, 'brain') ||
-    topicLikelyAsked(doctorBlob, 'bone')
-  if (metastaticConcern) {
-    score += 7
-    notes.push('Recognized possible metastatic disease.')
+  if (topicLikelyAsked(doctorBlob, 'smok') || topicLikelyAsked(doctorBlob, 'pack')) {
+    score += 5
+    notes.push('Connected smoking history to lung cancer risk.')
+  }
+
+  if (
+    topicLikelyAsked(doctorBlob, 'headache') ||
+    topicLikelyAsked(doctorBlob, 'coordination') ||
+    topicLikelyAsked(doctorBlob, 'mentation')
+  ) {
+    score += 4
+    notes.push('Recognized neuro symptoms may suggest possible spread.')
   }
 
   const finalCorrect =
     finalDxId &&
-    (LUNG_CANCER_DX_IDS.has(finalDxId) ||
-      finalDxId === 'lung_cancer' ||
-      finalDxId === 'non_small_cell_lung_cancer')
+    (LUNG_CANCER_DX_IDS.has(finalDxId) || finalDxId === 'lung_cancer')
   if (finalCorrect) {
-    score += 6
-    notes.push('Final diagnosis: lung cancer / lung carcinoma.')
+    score += 5
+    notes.push('Correct final diagnosis.')
   }
 
   return { score: clamp(score, 0, 35), notes }
 }
 
 function scoreReasoning(input: Medacademy150Input): { score: number; notes: string[] } {
-  const { doctorBlob, orderedTests } = input
+  const { doctorBlob, orderedTests, finalDxId } = input
   let score = 0
   const notes: string[] = []
 
   if (
-    (topicLikelyAsked(doctorBlob, 'smok') || topicLikelyAsked(doctorBlob, 'pack')) &&
-    (topicLikelyAsked(doctorBlob, 'mass') || orderedTests.some((t) => ['ct_chest', 'ct_angiogram_chest'].includes(t)))
+    finalDxId !== 'pe' &&
+    (topicLikelyAsked(doctorBlob, 'pe ruled out') ||
+      topicLikelyAsked(doctorBlob, 'pulmonary embolism') ||
+      orderedTests.some((t) => ['ct_chest', 'ct_angiogram_chest'].includes(t)))
   ) {
-    score += 5
-    notes.push('Connected smoking history with the lung mass.')
+    score += 4
+    notes.push('Explains why PE is not the final diagnosis.')
   }
 
-  if (topicLikelyAsked(doctorBlob, 'hoarse') || topicLikelyAsked(doctorBlob, 'voice')) {
-    score += 3
-    notes.push('Connected hoarseness to possible local/mediastinal involvement.')
+  const biopsyOrdered = orderedTests.includes('lung_mass_biopsy')
+  if (biopsyOrdered || topicLikelyAsked(doctorBlob, 'biopsy')) {
+    score += 4
+    notes.push('Explains why biopsy is needed.')
+  }
+
+  const stagingOrdered = orderedTests.some((t) =>
+    ['pet_scan', 'mri_brain', 'ebus_lymph_node', 'lymph_node_biopsy', 'bone_scan', 'mri_spine'].includes(t)
+  )
+  if (stagingOrdered || topicLikelyAsked(doctorBlob, 'staging') || topicLikelyAsked(doctorBlob, 'spread')) {
+    score += 4
+    notes.push('Explains why staging is needed.')
   }
 
   if (
-    (topicLikelyAsked(doctorBlob, 'headache') || topicLikelyAsked(doctorBlob, 'coordination')) &&
-    orderedTests.includes('mri_brain')
+    orderedTests.some((t) => ['ct_chest', 'ct_angiogram_chest'].includes(t)) ||
+    topicLikelyAsked(doctorBlob, 'ct') ||
+    topicLikelyAsked(doctorBlob, 'mass')
   ) {
-    score += 4
-    notes.push('Connected neurologic symptoms to possible brain metastasis and ordered brain MRI.')
-  } else if (topicLikelyAsked(doctorBlob, 'headache') || topicLikelyAsked(doctorBlob, 'coordination')) {
-    score += 2
-    notes.push('Considered neurologic symptoms — brain MRI helps evaluate possible metastasis.')
-  }
-
-  const biopsyOrdered = orderedTests.some((t) =>
-    ['lung_mass_biopsy', 'ebus_lymph_node', 'lymph_node_biopsy'].includes(t)
-  )
-  if (biopsyOrdered || topicLikelyAsked(doctorBlob, 'biopsy')) {
     score += 3
-    notes.push('Recognized need for tissue biopsy before final classification.')
+    notes.push('Explains the role of CT findings.')
   }
 
   return { score: clamp(score, 0, 15), notes }
@@ -197,7 +231,7 @@ export function computeMedacademy150Score(input: Medacademy150Input): {
   maxScore: 150
 } {
   const interview = scoreInterview(input.doctorBlob)
-  const tests = scoreTests(input.orderedTests)
+  const tests = scoreTests(input.orderedTests, input.doctorBlob)
   const diagnosis = scoreDiagnosis(input)
   const reasoning = scoreReasoning(input)
 
@@ -216,10 +250,6 @@ export function computeMedacademy150Score(input: Medacademy150Input): {
     performanceLevel: performanceLevelFromScore150(total),
   }
 
-  const correctName =
-    diagnosisCatalog.find((d) => d.id === input.scenario.finalDxId)?.name ??
-    'Primary lung cancer, likely non-small cell lung cancer'
-
   const feedback: ClinicalFeedbackReport = {
     rubric,
     interview: {
@@ -235,40 +265,41 @@ export function computeMedacademy150Score(input: Medacademy150Input): {
     idealInterviewQuestions: [
       'Smoking history (pack-years)',
       'Hoarseness or voice changes',
-      'Cough and hemoptysis',
+      'Hemoptysis',
       'Weight loss',
-      'Headache, confusion, or coordination changes',
-      'Back pain',
-      'Past medical and surgical history',
+      'Chronic low back pain',
+      'Headache',
+      'Mentation/coordination changes',
       'Family history of cancer',
     ],
     idealWorkup: {
       essential: [
-        'Review CT chest / CTA (PE ruled out; lung mass and nodes seen)',
-        'Lung mass biopsy or EBUS lymph node sampling',
+        'Review CT chest / CTA (PE ruled out; right infrahilar mass and subcarinal nodes)',
+        'Biopsy of lung mass',
+        'Lymph node biopsy / EBUS',
         'PET scan for staging',
         'Brain MRI for neurologic symptoms',
         'Bone scan / spine imaging if bone involvement suspected',
+        'CBC and CMP baseline labs',
       ],
-      optional: ['CBC and CMP baseline', 'Pulmonary function tests if surgery considered'],
+      optional: ['Pulmonary function tests if surgery considered'],
     },
     correctReasoning:
-      'This case begins as a PE workup, but the major finding is an incidental lung mass. Heavy smoking, hoarseness, mediastinal nodes, and systemic symptoms raise concern for lung cancer with possible spread. Tissue biopsy and staging with PET, brain MRI, and nodal sampling are key next steps.',
+      'This case starts with shortness of breath and chest pain during hospitalization, so pulmonary embolism was considered. However, the PE was ruled out. The major finding is the right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The 65-70 pack year smoking history, hoarseness, headache, changes in mentation/coordination, and chronic low back pain make lung cancer with possible spread a major concern. Biopsy is needed to confirm malignancy and classify the tumor type, while staging studies such as PET scan, brain MRI, and lymph node sampling help determine spread.',
     correctDiagnosis:
-      'Primary lung cancer, likely non-small cell lung cancer, with concern for mediastinal lymph node involvement and possible metastatic disease.',
+      'Primary lung cancer / lung carcinoma with concern for nodal involvement and possible metastatic disease.',
     diagnosisKeyEvidence: [
-      '65–70 pack-year smoking history',
-      '3.1 cm right infrahilar lung mass',
-      'Enlarged subcarinal lymph nodes',
+      '65-70 pack year smoking history',
+      '3.1 cm right infrahilar mass',
+      'Subcarinal lymph nodes measuring 1.2 cm',
       'Hoarseness for two weeks',
-      'Headache and coordination changes',
-      'Chronic back pain and recent hip fracture',
-      'PE ruled out on CT angiography',
+      'Headache and changes in mentation/coordination',
+      'Chronic low back pain',
+      'PE ruled out',
     ],
     areasForImprovement: [
       ...interview.missed.map((m) => `Interview: ask about ${m.toLowerCase()}.`),
-      ...tests.missed.map((m) => `Tests: consider ordering ${m.toLowerCase()}.`),
-      ...diagnosis.notes.filter((n) => n.includes('should not')),
+      ...tests.missed.map((m) => `Tests: consider ${m.toLowerCase()}.`),
     ].slice(0, 8),
   }
 

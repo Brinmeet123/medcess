@@ -190,18 +190,65 @@ export default function SummaryPanel({
     .filter(Boolean)
     .join('\n')
 
-  const recommendedTerms = vocab
-    .filter((term) => {
-      const relatedToMissed = (cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints).some(
-        (point) =>
-          point.toLowerCase().includes(term.term.toLowerCase()) ||
-          term.tags.some((tag) => point.toLowerCase().includes(tag))
-      )
-      const isImportant = term.tags.includes('red-flag') || term.tags.includes('cardiac')
-      return (relatedToMissed || isImportant) && !savedTerms.includes(term.term)
-    })
-    .slice(0, 5)
-    .map((term) => term.term)
+  const missedTopics = [
+    ...(cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints),
+    ...(cf?.testing.missedEssential ?? []),
+    ...(cf?.areasForImprovement ?? assessment.areasForImprovement),
+  ]
+    .join(' ')
+    .toLowerCase()
+
+  const vocabKeywordMap: Record<string, string[]> = {
+    smoking: ['pack year', 'smoking'],
+    hoarseness: ['hoarseness', 'raspy'],
+    hemoptysis: ['hemoptysis'],
+    'weight loss': ['weight loss'],
+    headache: ['headache', 'mentation'],
+    coordination: ['coordination', 'mentation'],
+    mentation: ['mentation', 'coordination'],
+    'back pain': ['chronic low back pain', 'bone scan'],
+    family: ['family history'],
+    biopsy: ['biopsy', 'mass'],
+    pet: ['PET scan', 'staging'],
+    'brain mri': ['Brain MRI', 'headache'],
+    'lymph node': ['subcarinal lymph nodes', 'EBUS'],
+    ct: ['CT scan', 'right infrahilar mass'],
+    pe: ['pulmonary embolism', 'PE'],
+    staging: ['PET scan', 'staging'],
+  }
+
+  const caseVocabRecommendations =
+    scenario.caseVocab
+      ?.filter((entry) => {
+        for (const [keyword, terms] of Object.entries(vocabKeywordMap)) {
+          if (missedTopics.includes(keyword) && terms.some((t) => t.toLowerCase() === entry.term.toLowerCase())) {
+            return true
+          }
+        }
+        return missedTopics.split(/\W+/).some(
+          (word) =>
+            word.length > 4 &&
+            (entry.term.toLowerCase().includes(word) || entry.whyItMatters.toLowerCase().includes(word))
+        )
+      })
+      .slice(0, 8)
+      .map((e) => e.term) ?? []
+
+  const recommendedTerms =
+    caseVocabRecommendations.length > 0
+      ? caseVocabRecommendations
+      : vocab
+          .filter((term) => {
+            const relatedToMissed = (cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints).some(
+              (point) =>
+                point.toLowerCase().includes(term.term.toLowerCase()) ||
+                term.tags.some((tag) => point.toLowerCase().includes(tag))
+            )
+            const isImportant = term.tags.includes('red-flag') || term.tags.includes('cardiac')
+            return (relatedToMissed || isImportant) && !savedTerms.includes(term.term)
+          })
+          .slice(0, 5)
+          .map((term) => term.term)
 
   const improvementItems = cf?.areasForImprovement.length
     ? cf.areasForImprovement
@@ -302,9 +349,43 @@ export default function SummaryPanel({
               </div>
             </section>
 
+            {(cf.idealInterviewQuestions.length > 0 || cf.idealWorkup.essential.length > 0) && (
+              <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
+                <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
+                  Ideal approach
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {cf.idealInterviewQuestions.length > 0 ? (
+                    <div>
+                      <h4 className="mb-2 text-sm font-semibold text-slate-800 dark:text-[#F8FAFC]">
+                        Ideal patient interview questions
+                      </h4>
+                      <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                        {cf.idealInterviewQuestions.map((q) => (
+                          <li key={q}>{q}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {cf.idealWorkup.essential.length > 0 ? (
+                    <div>
+                      <h4 className="mb-2 text-sm font-semibold text-slate-800 dark:text-[#F8FAFC]">
+                        Ideal tests
+                      </h4>
+                      <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                        {cf.idealWorkup.essential.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+            )}
+
             <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
               <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
-                Correct Clinical Reasoning
+                Short clinical explanation
               </h3>
               <p className="text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1]">
                 <VocabText text={cf.correctReasoning} onTermClick={onTermClick} onTermSave={onTermSave} />
@@ -362,23 +443,40 @@ export default function SummaryPanel({
         {recommendedTerms.length > 0 ? (
           <div className="mt-6 rounded-lg border border-purple-200 dark:border-purple-800/50 bg-purple-50 dark:bg-[#071A33] p-4">
             <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">
-              Vocabulary to review
+              Vocabulary connected to missed reasoning points
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {recommendedTerms.map((term) => {
-                const termData = getVocabTerm(term)
-                return termData ? (
-                  <button
-                    key={term}
-                    type="button"
-                    onClick={() => onTermClick?.(term)}
-                    className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300"
-                  >
-                    {termData.display}
-                  </button>
-                ) : null
-              })}
-            </div>
+            {scenario.caseVocab ? (
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                {recommendedTerms.map((termName) => {
+                  const entry = scenario.caseVocab?.find(
+                    (e) => e.term.toLowerCase() === termName.toLowerCase()
+                  )
+                  if (!entry) return null
+                  return (
+                    <li key={termName} className="rounded-md border border-purple-200/60 dark:border-purple-800/40 bg-white/80 dark:bg-[#0a1f3d] px-3 py-2">
+                      <span className="font-semibold text-purple-800 dark:text-purple-300">{entry.term}</span>
+                      <span className="text-slate-600 dark:text-[#94a3b8]"> — {entry.definition}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {recommendedTerms.map((term) => {
+                  const termData = getVocabTerm(term)
+                  return termData ? (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => onTermClick?.(term)}
+                      className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300"
+                    >
+                      {termData.display}
+                    </button>
+                  ) : null
+                })}
+              </div>
+            )}
           </div>
         ) : null}
 

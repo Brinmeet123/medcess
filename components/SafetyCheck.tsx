@@ -32,11 +32,13 @@ export default function SafetyCheck({ scenario, onComplete }: Props) {
   }
 
   const vitals = scenario.patientPersona.vitals
-  const isUnstable = vitals.heartRate > 120 || 
-                     vitals.heartRate < 60 ||
-                     vitals.oxygenSat < '90%' ||
-                     vitals.respiratoryRate > 24 ||
-                     vitals.respiratoryRate < 12
+  const isUnstable = vitals
+    ? vitals.heartRate > 120 ||
+      vitals.heartRate < 60 ||
+      vitals.oxygenSat < '90%' ||
+      vitals.respiratoryRate > 24 ||
+      vitals.respiratoryRate < 12
+    : false
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">

@@ -1,4 +1,6 @@
 import type { Scenario } from "@/data/scenarios";
+import { medacademyCellsGoingWildCaseInfo } from "@/data/caseInfo/medacademyCellsGoingWild";
+import { medacademyCellsGoingWildVocab } from "@/data/caseVocab/medacademyCellsGoingWild";
 
 const INTERNAL_MEDICINE_SPECIALTY = "Internal Medicine" as const;
 
@@ -867,12 +869,13 @@ export const internalMedicineScenarios: Scenario[] = [
     id: "medacademy-pathology-cells-going-wild",
     title: "MEDacademy Case One: Pathology - Cells Going Wild",
     specialty: INTERNAL_MEDICINE_SPECIALTY,
-    difficulty: "Advanced",
+    difficulty: "Intermediate",
     estimatedMinutes: 18,
     description:
-      "Patricia Nolan, 59F, is hospitalized after a subtrochanteric hip fracture. During admission she develops sudden shortness of breath and chest pain. CT angiography was ordered to rule out pulmonary embolism — PE is ruled out, but imaging reveals a right infrahilar lung mass and enlarged subcarinal lymph nodes. Educational case adapted from a MedAcademy pathology case for demonstration purposes.",
+      "A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out.",
     cardTeaser:
-      "A hospitalized patient develops chest pain and shortness of breath, but imaging reveals something more concerning.",
+      "A 59 y/o female with shortness of breath, chest pain, and an unexpected CT finding.",
+    cardCategory: "Pathology / Pulmonology / Oncology",
     objectives: [
       "Interview the patient about smoking, constitutional symptoms, and neurologic complaints.",
       "Order appropriate staging tests including biopsy, PET scan, and brain MRI when indicated.",
@@ -880,53 +883,52 @@ export const internalMedicineScenarios: Scenario[] = [
       "Arrive at a final diagnosis of primary lung cancer with concern for spread."
     ],
     attributionNote:
-      "Educational case adapted from a MedAcademy pathology case for demonstration purposes.",
+      "Educational case adapted from a MedAcademy pathology case for demonstration purposes. Do not use official Cooper or MedAcademy logos unless permission is given.",
+    showAttribution: false,
     scoringProfile: "medacademy-150",
     fastPatientReplies: true,
     earlyDiagnosisWarning: true,
+    hideVitals: true,
+    sectionLayout: "medacademy",
+    caseInfoContent: medacademyCellsGoingWildCaseInfo,
+    caseVocab: medacademyCellsGoingWildVocab,
     patientPersona: {
       name: "Patricia Nolan",
       age: 59,
       gender: "Female",
       chiefComplaint:
-        "I was in the hospital because I broke my hip after a fall. While I was here, I suddenly felt short of breath and had some chest pain. The doctors ordered a scan to check for a blood clot in my lungs.",
+        "I was in the hospital because I broke my hip after a fall. While I was here, I had shortness of breath and chest pain.",
       background:
-        "Admitted after a fall with a subtrochanteric hip fracture requiring fixation. During hospitalization she developed acute dyspnea and pleuritic chest pain prompting PE protocol imaging. CT angiography excluded pulmonary embolism but showed a 3.1 cm right infrahilar mass and 1.2 cm subcarinal lymph nodes. Long-term smoker. Hypertension, hypothyroidism, chronic low back pain, remote GI bleed 2004, prior colon surgery for diverticular abscess.",
-      vitals: {
-        heartRate: 96,
-        bloodPressure: "138/82",
-        respiratoryRate: 20,
-        oxygenSat: "94% on room air",
-        temperature: "98.4°F"
-      },
+        "A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.",
       keyHistoryPoints: [
-        "Heavy smoking history (~65–70 pack-years)",
-        "Hospitalized for subtrochanteric hip fracture after fall",
-        "Sudden dyspnea and chest pain during admission",
-        "CT ordered for PE — PE ruled out; lung mass found",
-        "Raspy voice for two weeks",
-        "Recent headaches and mild coordination changes",
-        "Chronic low back pain",
-        "No hemoptysis or intentional weight loss",
-        "No leg swelling or fever"
+        "She denies weight loss and hemoptysis",
+        "Hoarseness for the past two weeks",
+        "Chronic low back pain, headache, and changes in mentation/coordination",
+        "65-70 pack year smoking history",
+        "PMH: chronic back pain, HTN, hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, Hx of diverticular abscess requiring colon resection in 1982",
+        "Family history: No cancer in the family",
+        "PE was ruled out on CT"
       ],
       redFlags: [
-        "Heavy smoking with new lung mass",
-        "Enlarged subcarinal lymph nodes",
-        "Hoarseness suggesting possible mediastinal involvement",
-        "Headache and coordination changes — possible brain metastasis",
-        "Chronic back pain and recent fracture — possible bone involvement"
+        "65-70 pack year smoking history with right infrahilar mass",
+        "Subcarinal lymph nodes measuring 1.2 cm",
+        "Hoarseness for two weeks",
+        "Headache and changes in mentation/coordination",
+        "Chronic low back pain and hip fracture"
       ]
     },
     aiInstructions: {
       patientStyle:
-        "Speak as Patricia, a hospitalized 59-year-old woman — worried, tired, plain language, not medical jargon.",
+        "Speak as Patricia, a hospitalized 59-year-old woman — worried, tired, plain language, not medical jargon. Use the exact wording from the case whenever possible.",
       behaviorRules: [
         "Answer only as the patient in first person.",
         "Do NOT say lung cancer, carcinoma, malignancy, or metastasis.",
         "Do NOT reveal biopsy or PET results unless the doctor has ordered those tests in the case.",
-        "You may mention the doctors found something on the scan if asked about tests, but do not name the diagnosis.",
-        "Keep answers brief and conversational (1–3 sentences)."
+        "Use exact case wording when answering about symptoms, history, and exam.",
+        "If asked for full patient history (e.g. 'give me your patient history', 'tell me your full history', 'what is your history', 'summarize the patient history'), provide the complete history using exact case wording — introduction, HPI, PMH, and family history — but do NOT include physical exam unless asked.",
+        "If asked for physical exam (e.g. 'give me the physical exam', 'exam findings', 'what is the PE' in exam context), return the exact physical examination list from the case.",
+        "If the user says PE in diagnosis context, they likely mean pulmonary embolism. If they ask about physical exam or say PE in exam context, they mean physical examination.",
+        "Keep answers brief and conversational (1–3 sentences) unless giving full history or physical exam."
       ],
       doNotRevealDirectly: [
         "lung cancer",
@@ -992,95 +994,97 @@ export const internalMedicineScenarios: Scenario[] = [
       {
         testId: "ct_angiogram_chest",
         result:
-          "Pulmonary embolism is ruled out. Imaging reveals a 3.1 cm right infrahilar mass involving the right middle/lower lung region. Subcarinal lymph nodes measure approximately 1.2 cm.",
+          "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.",
         yield: "high"
       },
       {
         testId: "ct_chest",
         result:
-          "Pulmonary embolism is ruled out. Imaging reveals a 3.1 cm right infrahilar mass involving the right middle/lower lung region. Subcarinal lymph nodes measure approximately 1.2 cm.",
+          "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.",
         yield: "high"
       },
       {
         testId: "cxr",
         result:
-          "May show a right hilar or infrahilar abnormality, but CT gives better detail.",
+          "Chest X-ray may show an abnormal hilar or infrahilar finding, but CT scan provides better detail.",
         yield: "helpful"
       },
       {
         testId: "pet_scan",
         result:
-          "Hypermetabolic activity is present in the right infrahilar lung mass and suspicious mediastinal lymph nodes. This raises concern for malignancy and possible nodal involvement.",
+          "PET scan can help evaluate metabolic activity and possible spread.",
         yield: "high"
       },
       {
         testId: "mri_brain",
         result:
-          "Ordered because of headache and changes in mentation/coordination. Findings are concerning for possible metastatic disease and require further evaluation.",
+          "Brain MRI is appropriate because of headache and changes in mentation/coordination.",
         yield: "high"
       },
       {
         testId: "bone_scan",
         result:
-          "Ordered because of chronic back pain and recent fracture. Findings raise concern for possible bone involvement, but correlation with PET/biopsy is needed.",
+          "Bone evaluation may be considered because of chronic low back pain and hip fracture.",
+        yield: "helpful"
+      },
+      {
+        testId: "mri_spine",
+        result:
+          "Bone evaluation may be considered because of chronic low back pain and hip fracture.",
         yield: "helpful"
       },
       {
         testId: "lung_mass_biopsy",
         result:
-          "Biopsy shows malignant epithelial cells consistent with lung carcinoma. Further testing is needed to classify subtype.",
+          "Biopsy is needed to determine whether the mass is malignant and to classify the tumor type.",
         yield: "high"
       },
       {
         testId: "ebus_lymph_node",
         result:
-          "Sampling of subcarinal lymph nodes shows malignant cells, concerning for nodal spread.",
+          "Sampling of subcarinal lymph nodes can help determine nodal involvement.",
         yield: "high"
       },
       {
         testId: "lymph_node_biopsy",
         result:
-          "Sampling of subcarinal lymph nodes shows malignant cells, concerning for nodal spread.",
+          "Sampling of subcarinal lymph nodes can help determine nodal involvement.",
         yield: "high"
       },
       {
         testId: "cbc",
-        result: "Non-specific. No result alone confirms the diagnosis.",
+        result: "CBC may be useful as baseline lab work, but it does not diagnose the lung mass.",
         yield: "helpful"
       },
       {
         testId: "cmp",
-        result: "Useful for baseline function and staging workup, but not diagnostic by itself.",
+        result:
+          "CMP may be useful as baseline lab work and for evaluating organ function, but it does not diagnose the lung mass.",
         yield: "helpful"
       },
       {
         testId: "pft",
         result:
-          "Useful if surgery is being considered, but not the first step before confirming and staging the malignancy.",
+          "Pulmonary function testing may be useful if surgery is considered.",
         yield: "low"
       },
       {
         testId: "d_dimer",
-        result: "Not very useful after CT has already ruled out pulmonary embolism.",
+        result:
+          "D-dimer is not very useful here because CT scan was already ordered to rule out pulmonary embolism and the PE was ruled out.",
         yield: "inappropriate"
       },
       {
         testId: "troponin",
         result:
-          "Reasonable for chest pain evaluation, but does not explain the lung mass.",
+          "Reasonable for chest pain evaluation, but it does not explain the right infrahilar mass.",
         yield: "low"
       },
       {
         testId: "ecg",
         result:
-          "Reasonable for chest pain evaluation, but does not explain the lung mass.",
+          "Reasonable for chest pain evaluation, but it does not explain the right infrahilar mass.",
         yield: "low"
-      },
-      {
-        testId: "sputum_cytology",
-        result:
-          "May help in some lung cancer cases but is less definitive than tissue biopsy.",
-        yield: "helpful"
       }
     ],
     testDefaultBehavior: {
@@ -1096,7 +1100,7 @@ export const internalMedicineScenarios: Scenario[] = [
         dxId: "lung_cancer",
         yield: "correct",
         explanation:
-          "Heavy smoking, infrahilar mass, mediastinal nodes, hoarseness, and systemic symptoms strongly support primary lung cancer with concern for spread."
+          "Primary lung cancer / lung carcinoma with concern for nodal involvement and possible metastatic disease."
       },
       {
         dxId: "non_small_cell_lung_cancer",
@@ -1206,16 +1210,12 @@ export const internalMedicineScenarios: Scenario[] = [
       }
     ],
     teachingPoints: [
-      "Rubric (150): Interview 45, Tests 55, Diagnosis 35, Reasoning 15.",
-      "This case begins as a PE workup, but the major finding is an incidental lung mass.",
-      "Heavy smoking history strongly increases concern for lung cancer.",
-      "Hoarseness can suggest involvement near the recurrent laryngeal nerve or mediastinum.",
-      "Subcarinal lymph nodes suggest possible nodal spread.",
-      "Headache, mentation changes, and coordination changes raise concern for brain metastasis.",
-      "Chronic back pain and hip fracture raise concern for possible bone involvement.",
-      "Biopsy is required before confirming cancer type.",
-      "PET scan, brain MRI, and lymph node sampling are important for staging.",
-      "Educational case adapted from a MedAcademy pathology case for demonstration purposes."
+      "Rubric (150): Interview 45, Tests 55, Diagnosis 35, Clinical Reasoning 15.",
+      "Correct diagnosis: Primary lung cancer / lung carcinoma with concern for nodal involvement and possible metastatic disease.",
+      "This case starts with shortness of breath and chest pain during hospitalization, so pulmonary embolism was considered. However, the PE was ruled out.",
+      "The major finding is the right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm.",
+      "Biopsy is needed to confirm malignancy and classify the tumor type, while staging studies such as PET scan, brain MRI, and lymph node sampling help determine spread.",
+      "Educational case adapted from a MedAcademy pathology case for demonstration purposes. Do not use official Cooper or MedAcademy logos unless permission is given."
     ]
   }
 ];

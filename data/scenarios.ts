@@ -163,13 +163,33 @@ export type Plan = {
   monitoring?: string[];
 };
 
+export type CaseInfoContent = {
+  introduction: string;
+  hpi: string;
+  pmh: string[];
+  familyHistory: string;
+  physicalExam: string[];
+  figureCaption?: string;
+  figureImageUrl?: string;
+};
+
+export type CaseVocabEntry = {
+  term: string;
+  definition: string;
+  whyItMatters: string;
+  /** Highlight when term appears directly in case text */
+  inCaseText?: boolean;
+};
+
+export type SectionLayout = 'default' | 'medacademy';
+
 export type PatientPersona = {
   name: string;
   age: number;
   gender: string;
   chiefComplaint: string;    // "Chest pain"
   background: string;        // Story, context, personality
-  vitals: VitalSigns;
+  vitals?: VitalSigns;
   keyHistoryPoints: string[]; // Important info a good doctor should find
   redFlags: string[];         // Critical danger signs
   /** Home medications (geriatrics / complex cases); optional */
@@ -219,6 +239,18 @@ export type Scenario = {
   earlyDiagnosisWarning?: boolean;
   /** Educational attribution shown in case details */
   attributionNote?: string;
+  /** Hide vitals banner and omit vitals from AI patient prompt */
+  hideVitals?: boolean;
+  /** Show attributionNote to learners (default true when attributionNote is set) */
+  showAttribution?: boolean;
+  /** Optional card category label (e.g. Pathology / Pulmonology / Oncology) */
+  cardCategory?: string;
+  /** Structured case info for Case Info tab (exact wording) */
+  caseInfoContent?: CaseInfoContent;
+  /** Per-case vocabulary for Vocab tab */
+  caseVocab?: CaseVocabEntry[];
+  /** Custom tab layout: medacademy = Case Info, Interview, Tests, Diagnosis, Vocab */
+  sectionLayout?: SectionLayout;
 };
 
 export const scenarios: Scenario[] = [

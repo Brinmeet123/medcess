@@ -11,10 +11,12 @@ import PhysicalExamPanel from './PhysicalExamPanel'
 import TestsPanel from './TestsPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import SummaryPanel from './SummaryPanel'
+import CaseInfoPanel from './CaseInfoPanel'
+import CaseVocabPanel from './CaseVocabPanel'
 import SectionNav, {
   ClinicalSection,
   clinicalSectionToStep,
-  SECTION_STEP_COUNT,
+  getSectionStepCount,
   type SectionCompletion,
 } from './SectionNav'
 import HistoryHelperPanel from './HistoryHelperPanel'
@@ -121,8 +123,8 @@ function inferMaxUnlockedStepFromLegacy(state: {
   if (viewed > 0) m = Math.max(m, 2)
   if (tests > 0) m = Math.max(m, 3)
   if (viewed > 0 && tests > 0) m = Math.max(m, 4)
-  if (state.finalDiagnosisId != null || active === 'debrief') m = Math.max(m, 5)
-  return Math.min(SECTION_STEP_COUNT, Math.max(1, m))
+  if (state.finalDiagnosisId != null || active === 'debrief') m = Math.max(m, 6)
+  return Math.min(6, Math.max(1, m))
 }
 
 function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageKey | null {
@@ -141,10 +143,14 @@ function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageK
 }
 
 export default function ScenarioPlayer({ scenario }: Props) {
+  const isMedacademyLayout = scenario.sectionLayout === 'medacademy'
+  const sectionStepCount = getSectionStepCount(scenario.sectionLayout)
   const { data: session, status: sessionStatus } = useSession()
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [scenarioScore, setScenarioScore] = useState<ScenarioScoreState | null>(null)
-  const [activeSection, setActiveSection] = useState<ClinicalSection>('history')
+  const [activeSection, setActiveSection] = useState<ClinicalSection>(
+    isMedacademyLayout ? 'case-info' : 'history'
+  )
   const [maxUnlockedStep, setMaxUnlockedStep] = useState(4)
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [viewedExamSections, setViewedExamSections] = useState<string[]>([])
@@ -202,9 +208,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
             if (
               typeof st.maxUnlockedStep === 'number' &&
               st.maxUnlockedStep >= 1 &&
-              st.maxUnlockedStep <= SECTION_STEP_COUNT
+              st.maxUnlockedStep <= sectionStepCount
             ) {
-              setMaxUnlockedStep(Math.max(st.maxUnlockedStep, 4))
+              setMaxUnlockedStep(Math.max(st.maxUnlockedStep, isMedacademyLayout ? sectionStepCount : 4))
             } else {
               setMaxUnlockedStep(Math.max(inferMaxUnlockedStepFromLegacy(st), 4))
             }
@@ -223,7 +229,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
   useEffect(() => {
     if (canAccessDebrief) {
-      setMaxUnlockedStep(SECTION_STEP_COUNT)
+      setMaxUnlockedStep(sectionStepCount)
     }
   }, [canAccessDebrief])
 
@@ -309,7 +315,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
   }) => {
     // State is already updated via onDifferentialUpdate and onFinalDxUpdate
     setIsLoadingAssessment(true)
-    setMaxUnlockedStep((m) => Math.max(m, SECTION_STEP_COUNT))
+    setMaxUnlockedStep((m) => Math.max(m, sectionStepCount))
     setActiveSection('debrief')
 
     const completeScoring = async (aid: string | null) => {
@@ -449,13 +455,23 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
   const sectionCompletion = useMemo<SectionCompletion>(
     () => ({
+      'case-info': isMedacademyLayout,
       history: doctorTurns >= 1,
       exam: viewedExamSections.length > 0,
       tests: orderedTests.size > 0,
       diagnosis: finalDiagnosisId !== null,
+      vocab: isMedacademyLayout && Boolean(scenario.caseVocab?.length),
       debrief: assessment !== null,
     }),
-    [doctorTurns, viewedExamSections.length, orderedTests.size, finalDiagnosisId, assessment]
+    [
+      doctorTurns,
+      viewedExamSections.length,
+      orderedTests.size,
+      finalDiagnosisId,
+      assessment,
+      isMedacademyLayout,
+      scenario.caseVocab?.length,
+    ]
   )
 
   const navigateToSection = useCallback((section: ClinicalSection) => {
@@ -468,7 +484,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
       if (section === activeSection) return
       if (section === 'debrief' && !canAccessDebrief) return
 
-      if (activeSection === 'exam' && section !== 'exam' && !hasConfirmedExamLeave) {
+      if (activeSection === 'exam' && section !== 'exam' && !hasConfirmedExamLeave && !isMedacademyLayout) {
         setPendingSection(section)
         setShowExamLeaveDialog(true)
         return
@@ -476,7 +492,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
       navigateToSection(section)
     },
-    [activeSection, canAccessDebrief, hasConfirmedExamLeave, navigateToSection]
+    [activeSection, canAccessDebrief, hasConfirmedExamLeave, navigateToSection, isMedacademyLayout]
   )
 
   const handleExamLeaveContinue = () => {
@@ -504,13 +520,17 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </p>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
         <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
-          {scenario.description}
+          {isMedacademyLayout ? scenario.cardTeaser : scenario.description}
         </p>
-        {scenario.attributionNote ? (
+        {scenario.attributionNote && scenario.showAttribution !== false ? (
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
+        ) : null}
+        {scenario.cardCategory ? (
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">{scenario.cardCategory}</p>
         ) : null}
       </div>
 
+      {!scenario.hideVitals && scenario.patientPersona.vitals ? (
       <div className="case-vitals-banner">
         <h3>Vital Signs</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
@@ -536,6 +556,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
           </div>
         </div>
       </div>
+      ) : null}
 
       {(scenario.patientPersona.medicationList?.length ||
         scenario.patientPersona.baselineFunctionalStatus ||
@@ -576,6 +597,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
         onChange={handleSectionChange}
         canAccessDebrief={canAccessDebrief}
         sectionCompletion={sectionCompletion}
+        sectionLayout={scenario.sectionLayout}
+        unlockAllTabs={isMedacademyLayout}
       />
 
       <LeaveExamConfirmDialog
@@ -585,6 +608,10 @@ export default function ScenarioPlayer({ scenario }: Props) {
       />
 
       {/* Render only the active section */}
+      {activeSection === 'case-info' && scenario.caseInfoContent ? (
+        <CaseInfoPanel content={scenario.caseInfoContent} />
+      ) : null}
+
       {activeSection === 'history' && (
         <>
           {/* Mobile: Tabbed View */}
@@ -672,7 +699,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <button
                   type="button"
-                  onClick={() => handleSectionChange('exam')}
+                  onClick={() =>
+                    handleSectionChange(isMedacademyLayout ? 'tests' : 'exam')
+                  }
                   className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
@@ -685,7 +714,11 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </>
       )}
 
-      {activeSection === 'exam' && (
+      {activeSection === 'vocab' && scenario.caseVocab ? (
+        <CaseVocabPanel terms={scenario.caseVocab} />
+      ) : null}
+
+      {activeSection === 'exam' && !isMedacademyLayout && (
         <>
           <PhysicalExamPanel
             sections={scenario.physicalExam}
