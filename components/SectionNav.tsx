@@ -11,6 +11,12 @@ export type ClinicalSection =
   | 'vocab'
   | 'debrief'
 
+export type SectionNavOptions = {
+  sectionLayout?: SectionLayout
+  /** When false, Vocab is omitted from MEDacademy navigation */
+  showVocabTab?: boolean
+}
+
 export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'history', label: 'Interview' },
   { id: 'exam', label: 'Exam' },
@@ -19,31 +25,38 @@ export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'debrief', label: 'Results' },
 ]
 
-export const MEDACADEMY_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
+const MEDACADEMY_BASE_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'case-info', label: 'Case Info' },
   { id: 'history', label: 'Patient Interview' },
   { id: 'tests', label: 'Tests' },
   { id: 'diagnosis', label: 'Diagnosis' },
-  { id: 'vocab', label: 'Vocab' },
 ]
+
+const MEDACADEMY_VOCAB_SECTION = { id: 'vocab' as const, label: 'Vocab' }
 
 /** @deprecated Use getSectionOrder() */
 export const SECTION_ORDER = DEFAULT_SECTION_ORDER
 
-export function getSectionOrder(layout?: SectionLayout): { id: ClinicalSection; label: string }[] {
-  if (layout === 'medacademy') return MEDACADEMY_SECTION_ORDER
+export function getSectionOrder(opts?: SectionNavOptions): { id: ClinicalSection; label: string }[] {
+  const layout = opts?.sectionLayout
+  if (layout === 'medacademy') {
+    const order = [...MEDACADEMY_BASE_SECTION_ORDER]
+    if (opts?.showVocabTab) {
+      order.push(MEDACADEMY_VOCAB_SECTION)
+    }
+    return order
+  }
   return DEFAULT_SECTION_ORDER
 }
 
-export function getSectionStepCount(layout?: SectionLayout): number {
-  return getSectionOrder(layout).length
+export function getSectionStepCount(opts?: SectionNavOptions): number {
+  return getSectionOrder(opts).length
 }
 
-export function clinicalSectionToStep(section: ClinicalSection, layout?: SectionLayout): number {
-  const order = getSectionOrder(layout)
+export function clinicalSectionToStep(section: ClinicalSection, opts?: SectionNavOptions): number {
+  const order = getSectionOrder(opts)
   const i = order.findIndex((s) => s.id === section)
   if (i >= 0) return i + 1
-  // debrief is post-submit for medacademy layout (not in tab bar)
   if (section === 'debrief') return order.length + 1
   return 1
 }
@@ -58,6 +71,8 @@ type Props = {
   /** Per-tab completion based on actual learner actions, not tab order. */
   sectionCompletion: SectionCompletion
   sectionLayout?: SectionLayout
+  /** MEDacademy only: when true, Vocab tab appears in navigation */
+  showVocabTab?: boolean
   /** When true, all tabs are accessible from the start (no linear unlock). */
   unlockAllTabs?: boolean
 }
@@ -114,10 +129,12 @@ export default function SectionNav({
   canAccessDebrief = false,
   sectionCompletion,
   sectionLayout,
+  showVocabTab = false,
   unlockAllTabs = false,
 }: Props) {
-  const sectionOrder = getSectionOrder(sectionLayout)
-  const activeStep = clinicalSectionToStep(active, sectionLayout)
+  const sectionNavOpts = { sectionLayout, showVocabTab }
+  const sectionOrder = getSectionOrder(sectionNavOpts)
+  const activeStep = clinicalSectionToStep(active, sectionNavOpts)
 
   const tabs = sectionOrder.map((section, index) => {
     const step = index + 1

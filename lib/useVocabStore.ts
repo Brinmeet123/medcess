@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import type { MedicalTerm } from '@/src/types/medicalTerm'
+import { caseVocabTermId } from '@/lib/scenarioVocab'
 import { getMedicalTermById, lookupMedicalTerm, normalizeLookupKey } from '@/src/lib/medicalTerms'
 import {
   loadVocabStorage,
@@ -22,6 +23,7 @@ type ApiVocabRow = {
   id: string
   term: string
   definition: string
+  sourceCase?: string | null
   createdAt: string
 }
 
@@ -36,6 +38,7 @@ function apiRowToSaved(row: ApiVocabRow): import('@/src/types/medicalTerm').Save
     mastered: false,
     sourceLabel: lookup ? undefined : row.term,
     sourceDefinition: lookup ? undefined : row.definition,
+    sourceCaseName: row.sourceCase ?? undefined,
   }
 }
 
@@ -148,6 +151,101 @@ export function useVocabStore() {
     [data.saved]
   )
 
+  const hasSavedPracticeTerm = useCallback(
+    (label: string): boolean => {
+      const key = normalizeLookupKey(label)
+      if (!key) return false
+      return data.saved.some((s) => {
+        const savedKey = normalizeLookupKey(s.sourceLabel ?? s.termId.replace(/^case-vocab:/, ''))
+        return savedKey === key || s.termId === caseVocabTermId(label)
+      })
+    },
+    [data.saved]
+  )
+
+  const saveCaseVocabTerm = useCallback(
+    async (input: {
+      term: string
+      definition: string
+      sourceCaseName: string
+    }): Promise<boolean> => {
+      const { term, definition, sourceCaseName } = input
+      if (!term.trim() || !definition.trim()) return false
+
+      const termId = caseVocabTermId(term)
+
+      if (isAuthed) {
+        const res = await fetch('/api/vocab', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            term: term.trim(),
+            definition: definition.trim(),
+            sourceCase: sourceCaseName,
+          }),
+        })
+        if (!res.ok) return false
+
+        const row = (await res.json()) as ApiVocabRow
+        const saved: import('@/src/types/medicalTerm').SavedVocabTerm = {
+          ...apiRowToSaved(row),
+          termId,
+          sourceLabel: term.trim(),
+          sourceDefinition: definition.trim(),
+          sourceCaseName,
+        }
+
+        setData((prev) => {
+          const rest = prev.saved.filter(
+            (s) => normalizeLookupKey(s.sourceLabel ?? '') !== normalizeLookupKey(term)
+          )
+          const nextSaved = [saved, ...rest]
+          return {
+            ...prev,
+            saved: nextSaved,
+            stats: {
+              ...prev.stats,
+              totalSaved: nextSaved.length,
+              mastered: nextSaved.filter((s) => s.mastered).length,
+            },
+          }
+        })
+        return true
+      }
+
+      // Guest: local practice list
+      const saved: import('@/src/types/medicalTerm').SavedVocabTerm = {
+        id: `local_${termId}`,
+        termId,
+        savedAt: new Date().toISOString(),
+        mastered: false,
+        sourceLabel: term.trim(),
+        sourceDefinition: definition.trim(),
+        sourceCaseName,
+      }
+
+      setData((prev) => {
+        const rest = prev.saved.filter(
+          (s) => normalizeLookupKey(s.sourceLabel ?? '') !== normalizeLookupKey(term)
+        )
+        const nextSaved = [saved, ...rest]
+        const next = {
+          ...prev,
+          saved: nextSaved,
+          stats: {
+            ...prev.stats,
+            totalSaved: nextSaved.length,
+            mastered: nextSaved.filter((s) => s.mastered).length,
+          },
+        }
+        persistVocabStorage(next)
+        return next
+      })
+      return true
+    },
+    [isAuthed]
+  )
+
   const remove = useCallback(
     async (savedId: string) => {
       if (isAuthed) {
@@ -212,7 +310,9 @@ export function useVocabStore() {
 
   return {
     saveMedicalTerm,
+    saveCaseVocabTerm,
     hasTermId,
+    hasSavedPracticeTerm,
     remove,
     removeByTermId,
     setMastered,

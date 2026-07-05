@@ -183,6 +183,8 @@ export type CaseVocabEntry = {
 
 export type SectionLayout = 'default' | 'medacademy';
 
+export type CaseType = 'standard' | 'MEDacademy';
+
 export type PatientPersona = {
   name: string;
   age: number;
@@ -247,10 +249,14 @@ export type Scenario = {
   cardCategory?: string;
   /** Structured case info for Case Info tab (exact wording) */
   caseInfoContent?: CaseInfoContent;
-  /** Per-case vocabulary for Vocab tab */
+  /** Per-case vocabulary for Vocab tab (MEDacademy only) */
   caseVocab?: CaseVocabEntry[];
-  /** Custom tab layout: medacademy = Case Info, Interview, Tests, Diagnosis, Vocab */
+  /** Custom tab layout: medacademy = Case Info, Interview, Tests, Diagnosis, optional Vocab */
   sectionLayout?: SectionLayout;
+  /** Case program type; Vocab tab requires MEDacademy */
+  caseType?: CaseType;
+  /** Explicit opt-in to show in-case Vocab tab (MEDacademy cases only) */
+  showVocabTab?: boolean;
 };
 
 export const scenarios: Scenario[] = [

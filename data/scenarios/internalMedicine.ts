@@ -889,6 +889,8 @@ export const internalMedicineScenarios: Scenario[] = [
     fastPatientReplies: true,
     earlyDiagnosisWarning: true,
     hideVitals: true,
+    caseType: "MEDacademy",
+    showVocabTab: true,
     sectionLayout: "medacademy",
     caseInfoContent: medacademyCellsGoingWildCaseInfo,
     caseVocab: medacademyCellsGoingWildVocab,

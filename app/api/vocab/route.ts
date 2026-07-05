@@ -7,6 +7,7 @@ import { z } from 'zod'
 const postSchema = z.object({
   term: z.string().trim().min(1).max(500),
   definition: z.string().trim().min(1).max(8000),
+  sourceCase: z.string().trim().min(1).max(500).optional(),
 })
 
 export async function GET() {
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
     }
 
     const { term: rawTerm, definition } = parsed.data
+    const sourceCase = parsed.data.sourceCase
     const termKey = normalizeVocabTerm(rawTerm)
     if (!termKey) {
       return NextResponse.json({ error: 'Invalid term.' }, { status: 400 })
@@ -55,9 +57,11 @@ export async function POST(req: Request) {
         userId: session.user.id,
         term: termKey,
         definition,
+        sourceCase: sourceCase ?? null,
       },
       update: {
         definition,
+        ...(sourceCase ? { sourceCase } : {}),
       },
     })
 

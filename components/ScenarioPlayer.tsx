@@ -27,6 +27,7 @@ import InstructionModal from './InstructionModal'
 import HelpButton from './HelpButton'
 import { useInstructionModal } from '@/hooks/useInstructionModal'
 import { INSTRUCTION_COPY, type InstructionPageKey } from '@/lib/instructionCopy'
+import { isMedacademyCase, shouldShowVocabTab } from '@/lib/scenarioVocab'
 import { isGuestAccessible } from '@/lib/caseAccess'
 import { recordGuestScenarioCompletion } from '@/lib/guestScenarioProgress'
 import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
@@ -143,8 +144,10 @@ function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageK
 }
 
 export default function ScenarioPlayer({ scenario }: Props) {
-  const isMedacademyLayout = scenario.sectionLayout === 'medacademy'
-  const sectionStepCount = getSectionStepCount(scenario.sectionLayout)
+  const isMedacademyLayout = isMedacademyCase(scenario)
+  const vocabTabEnabled = shouldShowVocabTab(scenario)
+  const sectionNavOpts = { sectionLayout: scenario.sectionLayout, showVocabTab: vocabTabEnabled }
+  const sectionStepCount = getSectionStepCount(sectionNavOpts)
   const { data: session, status: sessionStatus } = useSession()
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [scenarioScore, setScenarioScore] = useState<ScenarioScoreState | null>(null)
@@ -460,7 +463,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
       exam: viewedExamSections.length > 0,
       tests: orderedTests.size > 0,
       diagnosis: finalDiagnosisId !== null,
-      vocab: isMedacademyLayout && Boolean(scenario.caseVocab?.length),
+      vocab: vocabTabEnabled,
       debrief: assessment !== null,
     }),
     [
@@ -470,7 +473,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
       finalDiagnosisId,
       assessment,
       isMedacademyLayout,
-      scenario.caseVocab?.length,
+      vocabTabEnabled,
     ]
   )
 
@@ -598,6 +601,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         canAccessDebrief={canAccessDebrief}
         sectionCompletion={sectionCompletion}
         sectionLayout={scenario.sectionLayout}
+        showVocabTab={vocabTabEnabled}
         unlockAllTabs={isMedacademyLayout}
       />
 
@@ -714,8 +718,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </>
       )}
 
-      {activeSection === 'vocab' && scenario.caseVocab ? (
-        <CaseVocabPanel terms={scenario.caseVocab} />
+      {activeSection === 'vocab' && vocabTabEnabled && scenario.caseVocab ? (
+        <CaseVocabPanel terms={scenario.caseVocab} caseTitle={scenario.title} />
       ) : null}
 
       {activeSection === 'exam' && !isMedacademyLayout && (

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Scenario, ScenarioDifficulty } from '@/data/scenarios'
 import type { ScenarioProgressInfo } from './ScenarioList'
 import { difficultyUiLabel } from '@/lib/scenarioUi'
+import { isMedacademyCase } from '@/lib/scenarioVocab'
 import { isGuestAccessible } from '@/lib/caseAccess'
 
 type Props = {
@@ -177,12 +178,12 @@ export default function ScenarioCard({
             )}
             <span className="text-sm text-gray-500 dark:text-[#94a3b8]">{scenario.estimatedMinutes} min</span>
           </div>
-          {scenario.sectionLayout === 'medacademy' ? (
+          {isMedacademyCase(scenario) ? (
             <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.cardTeaser}</p>
           ) : (
             <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.description}</p>
           )}
-          {scenario.sectionLayout !== 'medacademy' ? (
+          {!isMedacademyCase(scenario) ? (
             <p className="text-sm text-slate-500 dark:text-[#94a3b8] italic mb-3 leading-snug">{scenario.cardTeaser}</p>
           ) : null}
           {progress &&

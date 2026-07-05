@@ -84,6 +84,7 @@ model Vocab {
   id         String   @id @default(cuid())
   term       String
   definition String
+  sourceCase String?
   userId     String
   createdAt  DateTime @default(now())
 

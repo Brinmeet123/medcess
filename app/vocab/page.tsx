@@ -157,11 +157,15 @@ export default function VocabPage() {
                 <div className="flex justify-between items-start mb-2 gap-2">
                   <div>
                     <h3 className="text-lg font-bold text-primary-900 dark:text-[#F8FAFC]">{title}</h3>
-                    {term && (
+                    {saved.sourceCaseName ? (
+                      <p className="text-xs text-slate-500 dark:text-[#94a3b8] mt-0.5">
+                        From: {saved.sourceCaseName}
+                      </p>
+                    ) : term ? (
                       <p className="text-xs font-medium text-primary-600 dark:text-primary-400 mt-0.5">
                         {term.category}
                       </p>
-                    )}
+                    ) : null}
                   </div>
                   <button
                     type="button"

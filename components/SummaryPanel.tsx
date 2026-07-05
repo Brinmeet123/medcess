@@ -6,6 +6,7 @@ import type { RubricBreakdown } from '@/lib/scoring'
 import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
+import { shouldShowVocabTab } from '@/lib/scenarioVocab'
 import { vocab, getVocabTerm } from '@/data/vocab'
 import { APP_NAME } from '@/lib/branding'
 
@@ -217,22 +218,23 @@ export default function SummaryPanel({
     staging: ['PET scan', 'staging'],
   }
 
-  const caseVocabRecommendations =
-    scenario.caseVocab
-      ?.filter((entry) => {
-        for (const [keyword, terms] of Object.entries(vocabKeywordMap)) {
-          if (missedTopics.includes(keyword) && terms.some((t) => t.toLowerCase() === entry.term.toLowerCase())) {
-            return true
+  const caseVocabRecommendations = shouldShowVocabTab(scenario)
+    ? (scenario.caseVocab
+        ?.filter((entry) => {
+          for (const [keyword, terms] of Object.entries(vocabKeywordMap)) {
+            if (missedTopics.includes(keyword) && terms.some((t) => t.toLowerCase() === entry.term.toLowerCase())) {
+              return true
+            }
           }
-        }
-        return missedTopics.split(/\W+/).some(
-          (word) =>
-            word.length > 4 &&
-            (entry.term.toLowerCase().includes(word) || entry.whyItMatters.toLowerCase().includes(word))
-        )
-      })
-      .slice(0, 8)
-      .map((e) => e.term) ?? []
+          return missedTopics.split(/\W+/).some(
+            (word) =>
+              word.length > 4 &&
+              (entry.term.toLowerCase().includes(word) || entry.whyItMatters.toLowerCase().includes(word))
+          )
+        })
+        .slice(0, 8)
+        .map((e) => e.term) ?? [])
+    : []
 
   const recommendedTerms =
     caseVocabRecommendations.length > 0
@@ -445,7 +447,7 @@ export default function SummaryPanel({
             <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">
               Vocabulary connected to missed reasoning points
             </h3>
-            {scenario.caseVocab ? (
+            {shouldShowVocabTab(scenario) && scenario.caseVocab ? (
               <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
                 {recommendedTerms.map((termName) => {
                   const entry = scenario.caseVocab?.find(
