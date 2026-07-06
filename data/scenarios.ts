@@ -165,6 +165,8 @@ export type Plan = {
 
 export type CaseInfoContent = {
   introduction: string;
+  /** Key imaging callout text (exact wording) */
+  keyImagingFinding?: string;
   hpi: string;
   pmh: string[];
   familyHistory: string;

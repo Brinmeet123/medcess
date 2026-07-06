@@ -518,19 +518,27 @@ export default function ScenarioPlayer({ scenario }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-10">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8] mb-2">
-          Active case
-        </p>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
-        <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
-          {isMedacademyLayout ? scenario.cardTeaser : scenario.description}
-        </p>
-        {scenario.attributionNote && scenario.showAttribution !== false ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
-        ) : null}
-        {scenario.cardCategory ? (
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">{scenario.cardCategory}</p>
-        ) : null}
+        {!(isMedacademyLayout && activeSection === 'case-info') ? (
+          <>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8] mb-2">
+              Active case
+            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
+            <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
+              {isMedacademyLayout ? scenario.cardTeaser : scenario.description}
+            </p>
+            {scenario.attributionNote && scenario.showAttribution !== false ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
+            ) : null}
+            {scenario.cardCategory ? (
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">{scenario.cardCategory}</p>
+            ) : null}
+          </>
+        ) : (
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
+            Active case
+          </p>
+        )}
       </div>
 
       {!scenario.hideVitals && scenario.patientPersona.vitals ? (
@@ -613,7 +621,15 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
       {/* Render only the active section */}
       {activeSection === 'case-info' && scenario.caseInfoContent ? (
-        <CaseInfoPanel content={scenario.caseInfoContent} />
+        <CaseInfoPanel
+          content={scenario.caseInfoContent}
+          title={scenario.title}
+          subtitle={scenario.cardCategory}
+          difficulty={scenario.difficulty}
+          showVocabButton={vocabTabEnabled}
+          onStartInterview={() => handleSectionChange('history')}
+          onReviewVocab={vocabTabEnabled ? () => handleSectionChange('vocab') : undefined}
+        />
       ) : null}
 
       {activeSection === 'history' && (

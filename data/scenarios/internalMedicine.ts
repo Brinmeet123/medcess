@@ -901,15 +901,14 @@ export const internalMedicineScenarios: Scenario[] = [
       chiefComplaint:
         "I was in the hospital because I broke my hip after a fall. While I was here, I had shortness of breath and chest pain.",
       background:
-        "A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.",
+        "A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out.",
       keyHistoryPoints: [
-        "She denies weight loss and hemoptysis",
-        "Hoarseness for the past two weeks",
-        "Chronic low back pain, headache, and changes in mentation/coordination",
-        "65-70 pack year smoking history",
-        "PMH: chronic back pain, HTN, hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, Hx of diverticular abscess requiring colon resection in 1982",
-        "Family history: No cancer in the family",
-        "PE was ruled out on CT"
+        "She denies weight loss and hemoptysis, but has been complaining of hoarseness for the past two weeks",
+        "She has chronic low back pain, headache, and changes in mentation/coordination",
+        "She has a 65-70 pack year smoking history",
+        "Chronic back pain, HTN, Hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, Hx of diverticular abscess requiring colon resection in 1982",
+        "No cancer in the family",
+        "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out."
       ],
       redFlags: [
         "65-70 pack year smoking history with right infrahilar mass",
@@ -996,13 +995,13 @@ export const internalMedicineScenarios: Scenario[] = [
       {
         testId: "ct_angiogram_chest",
         result:
-          "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.",
+          "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out.",
         yield: "high"
       },
       {
         testId: "ct_chest",
         result:
-          "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.",
+          "The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out.",
         yield: "high"
       },
       {

@@ -295,7 +295,7 @@ function thomasNephroticKeywords(input: string): string {
   return REPLY_CLARIFY
 }
 
-const MEDACADEMY_FULL_HISTORY = `A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.
+const MEDACADEMY_FULL_HISTORY = `A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out.
 
 History of Present Illness:
 She denies weight loss and hemoptysis, but has been complaining of hoarseness for the past two weeks. She has chronic low back pain, headache, and changes in mentation/coordination. She has a 65-70 pack year smoking history.
@@ -376,7 +376,7 @@ function medacademyCellsGoingWildKeywords(input: string): string {
     return 'No cancer in the family.'
   }
   if (m.includes('medical history') || m.includes('past medical') || m.includes('hypertension') || m.includes('hypothyroid') || m.includes('colon') || m.includes('gi bleed') || m.includes('pmh')) {
-    return 'Chronic back pain, HTN, hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, and Hx of diverticular abscess requiring colon resection in 1982.'
+    return 'Chronic back pain, HTN, Hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, and Hx of diverticular abscess requiring colon resection in 1982.'
   }
   if (/\b(hello|hi|hey)\b/.test(m)) {
     return "Hi — I'm Patricia. I broke my hip and now I'm having shortness of breath and chest pain in the hospital."
