@@ -188,7 +188,17 @@ export default function ScenarioCard({
           ) : null}
           {progress &&
             (progress.bestScore != null || progress.lastAttemptScore != null) &&
-            (progress.status === 'completed' || progress.status === 'in_progress') && (
+            (progress.status === 'completed' || progress.status === 'in_progress') &&
+            (isMedacademyCase(scenario) ? (
+              <p className="text-xs text-slate-600 dark:text-[#CBD5E1] tabular-nums mb-4">
+                {progress.bestScore != null && <span>Best {progress.bestScore}/150</span>}
+                {progress.lastAttemptScore != null && (
+                  <span>
+                    {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}/150
+                  </span>
+                )}
+              </p>
+            ) : (
               <p className="text-xs text-slate-600 dark:text-[#CBD5E1] tabular-nums mb-4">
                 {progress.bestScore != null && <span>Best {progress.bestScore}/200</span>}
                 {progress.lastAttemptScore != null && (
@@ -197,7 +207,7 @@ export default function ScenarioCard({
                   </span>
                 )}
               </p>
-            )}
+            ))}
           <div
             className={`btn-press mt-auto inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold ring-1 w-fit ${
               needsSignIn

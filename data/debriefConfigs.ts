@@ -5673,7 +5673,7 @@ export const DEBRIEF_CONFIGS: Record<string, ScenarioDebriefConfig> = {
       },
     ],
     clinicalPearls: [
-      'Rubric (150): Interview 45, Tests 55, Diagnosis 35, Clinical Reasoning 15.',
+      'Rubric (150): Interview 45, Clinical Data Review 55, Diagnosis 35, Clinical Reasoning 15.',
       'Incidental lung mass on PE protocol CT is a classic pivot point in this case.',
       'Hoarseness may reflect mediastinal involvement.',
       'Neurologic symptoms warrant brain MRI to evaluate possible spread.',

@@ -808,7 +808,7 @@ Neuro: Cranial nerves (CN) intact, no focal weakness`,
       {
         id: 'pmh',
         answer:
-          'Chronic back pain, HTN, Hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, and Hx of diverticular abscess requiring colon resection in 1982.',
+          'Chronic back pain, HTN, Hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, Hx of diverticular abscess requiring colon resection in 1982.',
         patterns: ['medical history', 'past medical', 'history of', 'hypertension', 'hypothyroid', 'colon', 'gi bleed', 'pmh'],
         keywords: ['history', 'hypertension'],
       },

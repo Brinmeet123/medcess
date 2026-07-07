@@ -19,6 +19,8 @@ type Props = {
   caseTitle: string
   viewedSections: string[]
   onSectionViewed: (sectionId: string) => void
+  scrollToSection?: string | null
+  onScrollComplete?: () => void
 }
 
 function CaseText({
@@ -117,6 +119,8 @@ export default function ClinicalDataPanel({
   caseTitle,
   viewedSections,
   onSectionViewed,
+  scrollToSection,
+  onScrollComplete,
 }: Props) {
   const scrollTo = useCallback(
     (id: string) => {
@@ -143,6 +147,16 @@ export default function ClinicalDataPanel({
   const familyRef = useSectionInView('family-history', markViewed)
   const peRef = useSectionInView('physical-exam', markViewed)
   const figureRef = useSectionInView('figure', markViewed)
+
+  useEffect(() => {
+    if (!scrollToSection) return
+    const timer = window.setTimeout(() => {
+      onSectionViewed(scrollToSection)
+      document.getElementById(scrollToSection)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      onScrollComplete?.()
+    }, 100)
+    return () => window.clearTimeout(timer)
+  }, [scrollToSection, onSectionViewed, onScrollComplete])
 
   return (
     <div className="case-panel !border-0 !bg-transparent !p-0 !shadow-none">

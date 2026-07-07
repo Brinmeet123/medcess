@@ -175,6 +175,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const [hasConfirmedExamLeave, setHasConfirmedExamLeave] = useState(false)
   const [showExamLeaveDialog, setShowExamLeaveDialog] = useState(false)
   const [pendingSection, setPendingSection] = useState<ClinicalSection | null>(null)
+  const [clinicalDataScrollTarget, setClinicalDataScrollTarget] = useState<string | null>(null)
 
   // Match media avoids resize/scrollbar thrash flipping layout at ~768px (flash between tabs).
   useEffect(() => {
@@ -501,6 +502,18 @@ export default function ScenarioPlayer({ scenario }: Props) {
     setActiveSection(section)
   }, [canAccessDebrief])
 
+  const handleViewFigureInClinicalData = useCallback(() => {
+    setClinicalDataScrollTarget('imaging')
+    if (activeSection === 'clinical-data') {
+      handleClinicalDataSectionViewed('imaging')
+      window.setTimeout(() => {
+        document.getElementById('imaging')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 50)
+      return
+    }
+    navigateToSection('clinical-data')
+  }, [activeSection, handleClinicalDataSectionViewed, navigateToSection])
+
   const handleSectionChange = useCallback(
     (section: ClinicalSection) => {
       if (section === activeSection) return
@@ -652,6 +665,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
           hideHeader
           onStartInterview={() => handleSectionChange('history')}
           onReviewClinicalData={() => handleSectionChange('clinical-data')}
+          onViewFigure={handleViewFigureInClinicalData}
           onReviewVocab={vocabTabEnabled ? () => handleSectionChange('vocab') : undefined}
         />
       ) : null}
@@ -802,6 +816,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
             caseTitle={scenario.title}
             viewedSections={viewedClinicalDataSections}
             onSectionViewed={handleClinicalDataSectionViewed}
+            scrollToSection={clinicalDataScrollTarget}
+            onScrollComplete={() => setClinicalDataScrollTarget(null)}
           />
           <div className="mt-10 mx-auto flex w-full max-w-xl justify-center px-2">
             <NextStepGuidance

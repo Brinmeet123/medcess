@@ -1,7 +1,7 @@
 'use client'
 
 import type { CaseInfoContent, CaseVocabEntry, ScenarioDifficulty } from '@/data/scenarios'
-import MedacademyVocabHighlight, { CaseFigureBlock } from './MedacademyVocabHighlight'
+import MedacademyVocabHighlight from './MedacademyVocabHighlight'
 
 type Props = {
   content: CaseInfoContent
@@ -12,6 +12,7 @@ type Props = {
   showVocabButton?: boolean
   onStartInterview?: () => void
   onReviewClinicalData?: () => void
+  onViewFigure?: () => void
   onReviewVocab?: () => void
   hideHeader?: boolean
 }
@@ -41,6 +42,7 @@ export default function CaseInfoPanel({
   showVocabButton = false,
   onStartInterview,
   onReviewClinicalData,
+  onViewFigure,
   onReviewVocab,
   hideHeader = false,
 }: Props) {
@@ -72,16 +74,17 @@ export default function CaseInfoPanel({
         <section className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-[#14345C] dark:bg-[#0a1f3d]">
           <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-[#F8FAFC]">Case Snapshot</h2>
           <p className="text-base leading-relaxed text-slate-700 dark:text-[#CBD5E1]">{highlight}</p>
+          {content.figureCaption && onViewFigure ? (
+            <button
+              type="button"
+              onClick={onViewFigure}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 transition hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-200"
+            >
+              View Figure 1 in Clinical Data
+              <span aria-hidden>→</span>
+            </button>
+          ) : null}
         </section>
-
-        {content.figureCaption ? (
-          <section className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-[#14345C] dark:bg-[#0a1f3d]">
-            <CaseFigureBlock
-              figureImageUrl={content.figureImageUrl}
-              figureCaption={content.figureCaption}
-            />
-          </section>
-        ) : null}
 
         <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 dark:border-[#14345C] sm:flex-row sm:flex-wrap">
           {onStartInterview ? (

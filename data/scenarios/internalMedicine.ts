@@ -868,6 +868,7 @@ export const internalMedicineScenarios: Scenario[] = [
   {
     id: "medacademy-pathology-cells-going-wild",
     title: "MEDacademy Case One: Pathology - Cells Going Wild",
+    sourceTitle: "ALG Case 1 - Pathology: Cells Going Wild",
     specialty: INTERNAL_MEDICINE_SPECIALTY,
     difficulty: "Intermediate",
     estimatedMinutes: 18,
@@ -878,7 +879,7 @@ export const internalMedicineScenarios: Scenario[] = [
     cardCategory: "Pathology / Pulmonology / Oncology",
     objectives: [
       "Interview the patient about smoking, constitutional symptoms, and neurologic complaints.",
-      "Order appropriate staging tests including biopsy, PET scan, and brain MRI when indicated.",
+      "Review Clinical Data including imaging findings and recognize that PE was ruled out.",
       "Build a differential that includes lung cancer while recognizing PE was ruled out.",
       "Arrive at a final diagnosis of primary lung cancer with concern for spread."
     ],

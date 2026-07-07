@@ -244,6 +244,8 @@ export type Scenario = {
   /** Show gentle warning on Diagnosis tab if interview/tests incomplete */
   earlyDiagnosisWarning?: boolean;
   /** Educational attribution shown in case details */
+  /** Original case title / source document title (admin metadata) */
+  sourceTitle?: string;
   attributionNote?: string;
   /** Hide vitals banner and omit vitals from AI patient prompt */
   hideVitals?: boolean;

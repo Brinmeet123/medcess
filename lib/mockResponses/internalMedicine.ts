@@ -376,7 +376,7 @@ function medacademyCellsGoingWildKeywords(input: string): string {
     return 'No cancer in the family.'
   }
   if (m.includes('medical history') || m.includes('past medical') || m.includes('hypertension') || m.includes('hypothyroid') || m.includes('colon') || m.includes('gi bleed') || m.includes('pmh')) {
-    return 'Chronic back pain, HTN, Hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, and Hx of diverticular abscess requiring colon resection in 1982.'
+    return 'Chronic back pain, HTN, Hypothyroidism, Hx of GI bleed 2004 with negative endoscopy, Hx of diverticular abscess requiring colon resection in 1982.'
   }
   if (/\b(hello|hi|hey)\b/.test(m)) {
     return "Hi — I'm Patricia. I broke my hip and now I'm having shortness of breath and chest pain in the hospital."
