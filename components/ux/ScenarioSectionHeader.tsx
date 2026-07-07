@@ -5,6 +5,7 @@ const GUIDANCE_LINES: Record<ClinicalSection, string> = {
   history: 'Ask questions to understand the patient.',
   exam: 'Review findings and decide what matters.',
   tests: 'Choose tests to confirm your thinking.',
+  'clinical-data': 'Review the clinical data already available in this case.',
   diagnosis: 'Enter your diagnosis.',
   vocab: 'Review key terms for this case.',
   debrief: 'Review your report.',

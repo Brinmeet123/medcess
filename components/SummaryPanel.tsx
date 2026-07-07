@@ -114,7 +114,7 @@ function ScoreCard({
     scoringProfile === 'medacademy-150'
       ? [
           { label: 'Patient Interview', value: rubric.patientInterview, max: 45 },
-          { label: 'Tests', value: rubric.diagnosticTesting, max: 55 },
+          { label: 'Clinical Data Review', value: rubric.diagnosticTesting, max: 55 },
           { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 35 },
           { label: 'Clinical Reasoning Explanation', value: rubric.clinicalReasoning, max: 15 },
         ]

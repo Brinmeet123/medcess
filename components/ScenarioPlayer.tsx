@@ -13,6 +13,8 @@ import DiagnosisPanel from './DiagnosisPanel'
 import SummaryPanel from './SummaryPanel'
 import CaseInfoPanel from './CaseInfoPanel'
 import CaseVocabPanel from './CaseVocabPanel'
+import ClinicalDataPanel from './ClinicalDataPanel'
+import MedacademyCaseHeader from './MedacademyCaseHeader'
 import SectionNav, {
   ClinicalSection,
   clinicalSectionToStep,
@@ -103,6 +105,7 @@ type DifferentialItem = {
 
 type PersistedState = {
   viewedExamSections: string[]
+  viewedClinicalDataSections?: string[]
   orderedTests: [string, OrderedTestData][]
   differential: DifferentialItem[]
   finalDiagnosisId: string | null
@@ -136,6 +139,8 @@ function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageK
       return 'exam'
     case 'tests':
       return 'tests'
+    case 'clinical-data':
+      return 'tests'
     case 'diagnosis':
       return 'diagnosis'
     default:
@@ -157,6 +162,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const [maxUnlockedStep, setMaxUnlockedStep] = useState(4)
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [viewedExamSections, setViewedExamSections] = useState<string[]>([])
+  const [viewedClinicalDataSections, setViewedClinicalDataSections] = useState<string[]>([])
   const [orderedTests, setOrderedTests] = useState<Map<string, OrderedTestData>>(new Map())
   const [differential, setDifferential] = useState<DifferentialItem[]>([])
   const [finalDiagnosisId, setFinalDiagnosisId] = useState<string | null>(null)
@@ -204,6 +210,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
           if (data.state && typeof data.state === 'object') {
             const st = data.state
             if (Array.isArray(st.viewedExamSections)) setViewedExamSections(st.viewedExamSections)
+            if (Array.isArray(st.viewedClinicalDataSections))
+              setViewedClinicalDataSections(st.viewedClinicalDataSections)
             if (Array.isArray(st.orderedTests)) setOrderedTests(new Map(st.orderedTests))
             if (Array.isArray(st.differential)) setDifferential(st.differential)
             if (st.finalDiagnosisId !== undefined) setFinalDiagnosisId(st.finalDiagnosisId)
@@ -242,6 +250,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
     const t = setTimeout(() => {
       const state: PersistedState = {
         viewedExamSections,
+        viewedClinicalDataSections,
         orderedTests: Array.from(orderedTests.entries()),
         differential,
         finalDiagnosisId,
@@ -263,6 +272,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
   }, [
     chatMessages,
     viewedExamSections,
+    viewedClinicalDataSections,
     orderedTests,
     differential,
     finalDiagnosisId,
@@ -298,6 +308,12 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const handleExamSectionsViewed = (sectionIds: string[]) => {
     setViewedExamSections(sectionIds)
   }
+
+  const handleClinicalDataSectionViewed = useCallback((sectionId: string) => {
+    setViewedClinicalDataSections((prev) =>
+      prev.includes(sectionId) ? prev : [...prev, sectionId]
+    )
+  }, [])
 
   const handleTestsOrdered = (tests: Map<string, OrderedTestData>) => {
     setOrderedTests(tests)
@@ -399,6 +415,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
           chat: chatMessages,
           viewedExamSections,
           orderedTests: Array.from(orderedTests.keys()),
+          viewedClinicalDataSections,
           differentialDetailed: differential,
           finalDxId: finalDiagnosisId,
           missingMustNotMiss: data.missingMustNotMiss,
@@ -462,6 +479,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
       history: doctorTurns >= 1,
       exam: viewedExamSections.length > 0,
       tests: orderedTests.size > 0,
+      'clinical-data': viewedClinicalDataSections.length >= 3,
       diagnosis: finalDiagnosisId !== null,
       vocab: vocabTabEnabled,
       debrief: assessment !== null,
@@ -469,6 +487,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
     [
       doctorTurns,
       viewedExamSections.length,
+      viewedClinicalDataSections.length,
       orderedTests.size,
       finalDiagnosisId,
       assessment,
@@ -517,29 +536,23 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-10">
-        {!(isMedacademyLayout && activeSection === 'case-info') ? (
-          <>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8] mb-2">
-              Active case
-            </p>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
-            <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
-              {isMedacademyLayout ? scenario.cardTeaser : scenario.description}
-            </p>
-            {scenario.attributionNote && scenario.showAttribution !== false ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
-            ) : null}
-            {scenario.cardCategory ? (
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">{scenario.cardCategory}</p>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
+      {!(isMedacademyLayout && activeSection === 'case-info') ? (
+        <div className="mb-10">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8] mb-2">
             Active case
           </p>
-        )}
-      </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
+          <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
+            {isMedacademyLayout ? scenario.cardTeaser : scenario.description}
+          </p>
+          {scenario.attributionNote && scenario.showAttribution !== false ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
+          ) : null}
+          {scenario.cardCategory ? (
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">{scenario.cardCategory}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {!scenario.hideVitals && scenario.patientPersona.vitals ? (
       <div className="case-vitals-banner">
@@ -602,6 +615,14 @@ export default function ScenarioPlayer({ scenario }: Props) {
         <DoctorPatientScene patientName={scenario.patientPersona.name} onPatientClick={scrollToChat} />
       )}
 
+      {isMedacademyLayout && activeSection === 'case-info' ? (
+        <MedacademyCaseHeader
+          title={scenario.title}
+          subtitle={scenario.cardCategory}
+          difficulty={scenario.difficulty}
+        />
+      ) : null}
+
       {/* Section Navigation */}
       <SectionNav
         active={activeSection}
@@ -626,8 +647,11 @@ export default function ScenarioPlayer({ scenario }: Props) {
           title={scenario.title}
           subtitle={scenario.cardCategory}
           difficulty={scenario.difficulty}
+          vocab={scenario.caseVocab ?? []}
           showVocabButton={vocabTabEnabled}
+          hideHeader
           onStartInterview={() => handleSectionChange('history')}
+          onReviewClinicalData={() => handleSectionChange('clinical-data')}
           onReviewVocab={vocabTabEnabled ? () => handleSectionChange('vocab') : undefined}
         />
       ) : null}
@@ -720,7 +744,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
                 <button
                   type="button"
                   onClick={() =>
-                    handleSectionChange(isMedacademyLayout ? 'tests' : 'exam')
+                    handleSectionChange(isMedacademyLayout ? 'clinical-data' : 'exam')
                   }
                   className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
@@ -770,7 +794,37 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </>
       )}
 
-      {activeSection === 'tests' && (
+      {activeSection === 'clinical-data' && isMedacademyLayout && scenario.caseInfoContent ? (
+        <>
+          <ClinicalDataPanel
+            content={scenario.caseInfoContent}
+            vocab={scenario.caseVocab ?? []}
+            caseTitle={scenario.title}
+            viewedSections={viewedClinicalDataSections}
+            onSectionViewed={handleClinicalDataSectionViewed}
+          />
+          <div className="mt-10 mx-auto flex w-full max-w-xl justify-center px-2">
+            <NextStepGuidance
+              compact
+              showHeading={false}
+              centered
+              action={
+                <button
+                  type="button"
+                  onClick={() => handleSectionChange('diagnosis')}
+                  className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+                >
+                  Next step
+                </button>
+              }
+            >
+              {getScenarioSectionGuidanceLine('clinical-data')}
+            </NextStepGuidance>
+          </div>
+        </>
+      ) : null}
+
+      {activeSection === 'tests' && !isMedacademyLayout && (
         <>
           <TestsPanel
             scenario={scenario}
@@ -813,6 +867,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
             onTermSave={handleTermSave}
             doctorMessageCount={doctorTurns}
             orderedTestCount={orderedTests.size}
+            clinicalDataSectionsReviewed={viewedClinicalDataSections.length}
+            isMedacademyCase={isMedacademyLayout}
           />
         </>
       )}

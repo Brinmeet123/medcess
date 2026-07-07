@@ -34,6 +34,7 @@ export type AssessRequestBody = {
   scenarioId: string
   chat?: Array<{ role: string; content: string }>
   viewedExamSections?: string[]
+  viewedClinicalDataSections?: string[]
   orderedTests?: string[]
   differentialDetailed?: Array<{ dxId: string; rank: number; confidence: string; note?: string }>
   finalDxId?: string | null
@@ -156,7 +157,7 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     const medacademy = computeMedacademy150Score({
       scenario,
       doctorBlob,
-      orderedTests: body.orderedTests ?? [],
+      viewedClinicalDataSections: body.viewedClinicalDataSections ?? [],
       differentialDxIds,
       finalDxId: body.finalDxId,
     })

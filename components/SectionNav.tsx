@@ -7,6 +7,7 @@ export type ClinicalSection =
   | 'history'
   | 'exam'
   | 'tests'
+  | 'clinical-data'
   | 'diagnosis'
   | 'vocab'
   | 'debrief'
@@ -28,7 +29,7 @@ export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
 const MEDACADEMY_BASE_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'case-info', label: 'Case Info' },
   { id: 'history', label: 'Patient Interview' },
-  { id: 'tests', label: 'Tests' },
+  { id: 'clinical-data', label: 'Clinical Data' },
   { id: 'diagnosis', label: 'Diagnosis' },
 ]
 

@@ -699,7 +699,7 @@ export const internalMedicineFallbackScenarios: FallbackScenario[] = [
     qa: [
       {
         id: 'full-history',
-        answer: `A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm (see Figure 1). The PE was ruled out.
+        answer: `A 59 y/o female fell and sustained a subtrochanteric hip fracture requiring fixation. During the hospitalization, she had an episode of shortness of breath and chest pain. CT scan was ordered to rule out a pulmonary embolism (PE). The radiology report described a right infrahilar mass of 3.1 cm and subcarinal lymph nodes measuring 1.2 cm. The PE was ruled out.
 
 History of Present Illness:
 She denies weight loss and hemoptysis, but has been complaining of hoarseness for the past two weeks. She has chronic low back pain, headache, and changes in mentation/coordination. She has a 65-70 pack year smoking history.

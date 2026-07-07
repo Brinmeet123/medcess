@@ -167,6 +167,8 @@ export type CaseInfoContent = {
   introduction: string;
   /** Key imaging callout text (exact wording) */
   keyImagingFinding?: string;
+  /** Clinical Data tab — Imaging section (exact wording) */
+  clinicalDataImaging?: string;
   hpi: string;
   pmh: string[];
   familyHistory: string;
