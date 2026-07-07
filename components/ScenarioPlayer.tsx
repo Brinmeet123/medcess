@@ -18,6 +18,7 @@ import MedacademyCaseHeader from './MedacademyCaseHeader'
 import SectionNav, {
   ClinicalSection,
   clinicalSectionToStep,
+  getMedacademyNextSection,
   getSectionStepCount,
   type SectionCompletion,
 } from './SectionNav'
@@ -133,6 +134,8 @@ function inferMaxUnlockedStepFromLegacy(state: {
 
 function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageKey | null {
   switch (section) {
+    case 'case-info':
+      return 'case-info'
     case 'history':
       return 'chat'
     case 'exam':
@@ -140,9 +143,13 @@ function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageK
     case 'tests':
       return 'tests'
     case 'clinical-data':
-      return 'tests'
+      return 'clinical-data'
+    case 'vocab':
+      return 'vocab'
     case 'diagnosis':
       return 'diagnosis'
+    case 'debrief':
+      return 'debrief'
     default:
       return null
   }
@@ -497,6 +504,12 @@ export default function ScenarioPlayer({ scenario }: Props) {
     ]
   )
 
+  const medacademyNextSection = useCallback(
+    (current: ClinicalSection) =>
+      getMedacademyNextSection(current, { showVocabTab: vocabTabEnabled }),
+    [vocabTabEnabled]
+  )
+
   const navigateToSection = useCallback((section: ClinicalSection) => {
     if (section === 'debrief' && !canAccessDebrief) return
     setActiveSection(section)
@@ -757,9 +770,12 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <button
                   type="button"
-                  onClick={() =>
-                    handleSectionChange(isMedacademyLayout ? 'clinical-data' : 'exam')
-                  }
+                  onClick={() => {
+                    const next = isMedacademyLayout
+                      ? medacademyNextSection('history')
+                      : 'exam'
+                    if (next) handleSectionChange(next)
+                  }}
                   className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
@@ -773,7 +789,32 @@ export default function ScenarioPlayer({ scenario }: Props) {
       )}
 
       {activeSection === 'vocab' && vocabTabEnabled && scenario.caseVocab ? (
-        <CaseVocabPanel terms={scenario.caseVocab} caseTitle={scenario.title} />
+        <>
+          <CaseVocabPanel terms={scenario.caseVocab} caseTitle={scenario.title} />
+          {isMedacademyLayout ? (
+            <div className="mt-10 mx-auto flex w-full max-w-xl justify-center px-2">
+              <NextStepGuidance
+                compact
+                showHeading={false}
+                centered
+                action={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = medacademyNextSection('vocab')
+                      if (next) handleSectionChange(next)
+                    }}
+                    className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
+                  >
+                    Next step
+                  </button>
+                }
+              >
+                {getScenarioSectionGuidanceLine('vocab')}
+              </NextStepGuidance>
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       {activeSection === 'exam' && !isMedacademyLayout && (
@@ -827,7 +868,10 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <button
                   type="button"
-                  onClick={() => handleSectionChange('diagnosis')}
+                  onClick={() => {
+                    const next = medacademyNextSection('clinical-data')
+                    if (next) handleSectionChange(next)
+                  }}
                   className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
                 >
                   Next step

@@ -87,20 +87,11 @@ export default function CaseInfoPanel({
         </section>
 
         <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 dark:border-[#14345C] sm:flex-row sm:flex-wrap">
-          {onStartInterview ? (
-            <button
-              type="button"
-              onClick={onStartInterview}
-              className="btn-press medcess-btn-primary flex-1 min-w-[200px] px-6 py-3 text-center text-sm font-semibold sm:flex-none"
-            >
-              Start Patient Interview
-            </button>
-          ) : null}
           {onReviewClinicalData ? (
             <button
               type="button"
               onClick={onReviewClinicalData}
-              className="btn-press flex-1 min-w-[200px] rounded-lg border border-primary-300 bg-white px-6 py-3 text-center text-sm font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 dark:border-primary-600/50 dark:bg-[#0a1f3d] dark:text-primary-300 dark:hover:bg-primary-950/40 sm:flex-none"
+              className="btn-press medcess-btn-primary flex-1 min-w-[200px] px-6 py-3 text-center text-sm font-semibold sm:flex-none"
             >
               Review Clinical Data
             </button>
@@ -112,6 +103,15 @@ export default function CaseInfoPanel({
               className="btn-press flex-1 min-w-[200px] rounded-lg border border-slate-300 bg-white px-6 py-3 text-center text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 dark:border-[#14345C] dark:bg-[#0a1f3d] dark:text-[#CBD5E1] dark:hover:bg-[#071A33] sm:flex-none"
             >
               Review Vocab
+            </button>
+          ) : null}
+          {onStartInterview ? (
+            <button
+              type="button"
+              onClick={onStartInterview}
+              className="btn-press flex-1 min-w-[200px] rounded-lg border border-primary-300 bg-white px-6 py-3 text-center text-sm font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 dark:border-primary-600/50 dark:bg-[#0a1f3d] dark:text-primary-300 dark:hover:bg-primary-950/40 sm:flex-none"
+            >
+              Start Patient Interview
             </button>
           ) : null}
         </div>

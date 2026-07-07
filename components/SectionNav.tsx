@@ -23,17 +23,15 @@ export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'exam', label: 'Exam' },
   { id: 'tests', label: 'Tests' },
   { id: 'diagnosis', label: 'Diagnosis' },
-  { id: 'debrief', label: 'Results' },
 ]
 
-const MEDACADEMY_BASE_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
+const MEDACADEMY_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'case-info', label: 'Case Info' },
-  { id: 'history', label: 'Patient Interview' },
   { id: 'clinical-data', label: 'Clinical Data' },
+  { id: 'vocab', label: 'Vocab' },
+  { id: 'history', label: 'Patient Interview' },
   { id: 'diagnosis', label: 'Diagnosis' },
 ]
-
-const MEDACADEMY_VOCAB_SECTION = { id: 'vocab' as const, label: 'Vocab' }
 
 /** @deprecated Use getSectionOrder() */
 export const SECTION_ORDER = DEFAULT_SECTION_ORDER
@@ -41,17 +39,25 @@ export const SECTION_ORDER = DEFAULT_SECTION_ORDER
 export function getSectionOrder(opts?: SectionNavOptions): { id: ClinicalSection; label: string }[] {
   const layout = opts?.sectionLayout
   if (layout === 'medacademy') {
-    const order = [...MEDACADEMY_BASE_SECTION_ORDER]
-    if (opts?.showVocabTab) {
-      order.push(MEDACADEMY_VOCAB_SECTION)
-    }
-    return order
+    if (opts?.showVocabTab) return [...MEDACADEMY_SECTION_ORDER]
+    return MEDACADEMY_SECTION_ORDER.filter((s) => s.id !== 'vocab')
   }
   return DEFAULT_SECTION_ORDER
 }
 
+export function getMedacademyNextSection(
+  current: ClinicalSection,
+  opts?: Pick<SectionNavOptions, 'showVocabTab'>
+): ClinicalSection | null {
+  const order = getSectionOrder({ sectionLayout: 'medacademy', showVocabTab: opts?.showVocabTab })
+  const index = order.findIndex((s) => s.id === current)
+  if (index < 0 || index >= order.length - 1) return null
+  return order[index + 1].id
+}
+
 export function getSectionStepCount(opts?: SectionNavOptions): number {
-  return getSectionOrder(opts).length
+  // All layouts append a separate locked Results (debrief) tab after the main steps
+  return getSectionOrder(opts).length + 1
 }
 
 export function clinicalSectionToStep(section: ClinicalSection, opts?: SectionNavOptions): number {
@@ -67,7 +73,7 @@ export type SectionCompletion = Partial<Record<ClinicalSection, boolean>>
 type Props = {
   active: ClinicalSection
   onChange: (section: ClinicalSection) => void
-  /** Results tab stays locked until a final diagnosis is submitted (default layout only). */
+  /** Results tab stays locked until a final diagnosis is submitted. */
   canAccessDebrief?: boolean
   /** Per-tab completion based on actual learner actions, not tab order. */
   sectionCompletion: SectionCompletion
@@ -163,35 +169,33 @@ export default function SectionNav({
     )
   })
 
-  // Default layout: show Results tab (locked until diagnosis)
-  if (sectionLayout !== 'medacademy') {
-    const debriefLocked = !canAccessDebrief
-    tabs.push(
-      <button
-        key="debrief"
-        type="button"
-        onClick={() => !debriefLocked && onChange('debrief')}
-        disabled={debriefLocked}
-        className={[
-          'relative text-sm leading-none px-2 sm:px-4 py-0',
-          tabButtonClasses({
-            isActive: active === 'debrief',
-            isCompleted: Boolean(sectionCompletion.debrief),
-            isLocked: debriefLocked,
-            isUnlockedAhead: false,
-          }),
-        ].join(' ')}
-        title={debriefLocked ? 'Choose a final diagnosis to view results.' : undefined}
-      >
-        <span className="flex w-full min-w-0 items-center justify-center gap-1.5 text-center">
-          {sectionCompletion.debrief && (
-            <CheckIcon className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-          )}
-          <span className="truncate">Results</span>
-        </span>
-      </button>
-    )
-  }
+  // Results tab (locked until diagnosis) — shown for all case layouts
+  const debriefLocked = !canAccessDebrief
+  tabs.push(
+    <button
+      key="debrief"
+      type="button"
+      onClick={() => !debriefLocked && onChange('debrief')}
+      disabled={debriefLocked}
+      className={[
+        'relative text-sm leading-none px-2 sm:px-4 py-0',
+        tabButtonClasses({
+          isActive: active === 'debrief',
+          isCompleted: Boolean(sectionCompletion.debrief),
+          isLocked: debriefLocked,
+          isUnlockedAhead: false,
+        }),
+      ].join(' ')}
+      title={debriefLocked ? 'Choose a final diagnosis to view results.' : undefined}
+    >
+      <span className="flex w-full min-w-0 items-center justify-center gap-1.5 text-center">
+        {sectionCompletion.debrief && (
+          <CheckIcon className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+        )}
+        <span className="truncate">Results</span>
+      </span>
+    </button>
+  )
 
   return (
     <div

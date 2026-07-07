@@ -257,7 +257,7 @@ export type Scenario = {
   caseInfoContent?: CaseInfoContent;
   /** Per-case vocabulary for Vocab tab (MEDacademy only) */
   caseVocab?: CaseVocabEntry[];
-  /** Custom tab layout: medacademy = Case Info, Interview, Tests, Diagnosis, optional Vocab */
+  /** Custom tab layout: medacademy = Case Info, Clinical Data, Vocab, Patient Interview, Diagnosis, Results */
   sectionLayout?: SectionLayout;
   /** Case program type; Vocab tab requires MEDacademy */
   caseType?: CaseType;

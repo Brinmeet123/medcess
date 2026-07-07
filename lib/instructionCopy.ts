@@ -1,5 +1,13 @@
 /** Keys match localStorage: instruction_seen_${pageKey} */
-export type InstructionPageKey = 'chat' | 'exam' | 'tests' | 'diagnosis'
+export type InstructionPageKey =
+  | 'chat'
+  | 'exam'
+  | 'tests'
+  | 'diagnosis'
+  | 'case-info'
+  | 'clinical-data'
+  | 'vocab'
+  | 'debrief'
 
 export const INSTRUCTION_COPY: Record<
   InstructionPageKey,
@@ -35,6 +43,38 @@ export const INSTRUCTION_COPY: Record<
       'Enter your final diagnosis.',
       'Be confident, but think it through.',
       'You’ll get feedback after submitting.',
+    ],
+  },
+  'case-info': {
+    title: 'Review Case Info',
+    lines: [
+      'Read the case snapshot for your first look at the patient.',
+      'Open Clinical Data or Vocab when you want more detail.',
+      'No tests can be ordered here — gather context first.',
+    ],
+  },
+  'clinical-data': {
+    title: 'Review Clinical Data',
+    lines: [
+      'Browse the chart sections already available in this case.',
+      'Use the section menu to jump to imaging, history, exam, and more.',
+      'This is review only — you cannot order new tests here.',
+    ],
+  },
+  vocab: {
+    title: 'Review Vocabulary',
+    lines: [
+      'Browse key terms for this case.',
+      'Search terms or add them to your Practice List.',
+      'Highlighted terms also appear in the case text.',
+    ],
+  },
+  debrief: {
+    title: 'Review Your Results',
+    lines: [
+      'Read your score and feedback.',
+      'See what you did well and what to review next.',
+      'Retry the case or try another from the library.',
     ],
   },
 }
