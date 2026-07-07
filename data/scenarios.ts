@@ -185,6 +185,8 @@ export type CaseVocabEntry = {
   inCaseText?: boolean;
 };
 
+import type { GuidedReasoningConfig } from '@/types/guidedReasoning';
+
 export type SectionLayout = 'default' | 'medacademy';
 
 export type CaseType = 'standard' | 'MEDacademy';
@@ -263,6 +265,8 @@ export type Scenario = {
   caseType?: CaseType;
   /** Explicit opt-in to show in-case Vocab tab (MEDacademy cases only) */
   showVocabTab?: boolean;
+  /** Guided Reasoning tab content (MEDacademy high school workflow) */
+  guidedReasoning?: GuidedReasoningConfig;
 };
 
 export const scenarios: Scenario[] = [

@@ -1,6 +1,7 @@
 import type { Scenario } from "@/data/scenarios";
 import { medacademyCellsGoingWildCaseInfo } from "@/data/caseInfo/medacademyCellsGoingWild";
 import { medacademyCellsGoingWildVocab } from "@/data/caseVocab/medacademyCellsGoingWild";
+import { medacademyCellsGoingWildGuidedReasoning } from "@/data/guidedReasoning/medacademyCellsGoingWild";
 
 const INTERNAL_MEDICINE_SPECIALTY = "Internal Medicine" as const;
 
@@ -895,6 +896,7 @@ export const internalMedicineScenarios: Scenario[] = [
     sectionLayout: "medacademy",
     caseInfoContent: medacademyCellsGoingWildCaseInfo,
     caseVocab: medacademyCellsGoingWildVocab,
+    guidedReasoning: medacademyCellsGoingWildGuidedReasoning,
     patientPersona: {
       name: "Patricia Nolan",
       age: 59,

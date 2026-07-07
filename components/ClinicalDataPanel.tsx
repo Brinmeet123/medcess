@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { id: 'pmh', label: 'PMH' },
   { id: 'family-history', label: 'Family History' },
   { id: 'physical-exam', label: 'Physical Exam' },
-  { id: 'figure', label: 'Figure' },
 ] as const
 
 type Props = {
@@ -146,7 +145,6 @@ export default function ClinicalDataPanel({
   const pmhRef = useSectionInView('pmh', markViewed)
   const familyRef = useSectionInView('family-history', markViewed)
   const peRef = useSectionInView('physical-exam', markViewed)
-  const figureRef = useSectionInView('figure', markViewed)
 
   useEffect(() => {
     if (!scrollToSection) return
@@ -286,15 +284,6 @@ export default function ClinicalDataPanel({
                   </li>
                 ))}
               </ul>
-            </CollapsibleCard>
-          </div>
-
-          <div ref={figureRef}>
-            <CollapsibleCard id="figure" title="Figure" defaultOpen onOpen={() => markViewed('figure')}>
-              <CaseFigureBlock
-                figureImageUrl={content.figureImageUrl}
-                figureCaption={content.figureCaption}
-              />
             </CollapsibleCard>
           </div>
         </div>

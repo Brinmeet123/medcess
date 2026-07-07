@@ -7,6 +7,7 @@ export type InstructionPageKey =
   | 'case-info'
   | 'clinical-data'
   | 'vocab'
+  | 'guided-reasoning'
   | 'debrief'
   | 'medacademy-interview'
 
@@ -68,6 +69,14 @@ export const INSTRUCTION_COPY: Record<
       'Browse key terms for this case.',
       'Search terms or add them to your Practice List.',
       'Highlighted terms also appear in the case text.',
+    ],
+  },
+  'guided-reasoning': {
+    title: 'Guided Reasoning',
+    lines: [
+      'Work through questions that connect the case to biology and cancer concepts.',
+      'Use Case Info, Clinical Data, and Vocab as you answer.',
+      'Complete all questions to unlock your Results.',
     ],
   },
   debrief: {

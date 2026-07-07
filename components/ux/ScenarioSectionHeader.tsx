@@ -8,6 +8,7 @@ const GUIDANCE_LINES: Record<ClinicalSection, string> = {
   'clinical-data': 'Review the clinical data already available in this case.',
   diagnosis: 'Enter your diagnosis.',
   vocab: 'Review key terms for this case.',
+  'guided-reasoning': 'Work through guided questions to connect the case to the learning objectives.',
   debrief: 'Review your report.',
 }
 

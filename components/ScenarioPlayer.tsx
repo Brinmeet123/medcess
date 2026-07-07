@@ -14,6 +14,7 @@ import SummaryPanel from './SummaryPanel'
 import CaseInfoPanel from './CaseInfoPanel'
 import CaseVocabPanel from './CaseVocabPanel'
 import ClinicalDataPanel from './ClinicalDataPanel'
+import GuidedReasoningPanel, { type GuidedReasoningAnswerState } from './GuidedReasoningPanel'
 import MedacademyCaseHeader from './MedacademyCaseHeader'
 import MedacademyInterviewPanel from './MedacademyInterviewPanel'
 import SectionNav, {
@@ -32,6 +33,7 @@ import HelpButton from './HelpButton'
 import { useInstructionModal } from '@/hooks/useInstructionModal'
 import { INSTRUCTION_COPY, type InstructionPageKey } from '@/lib/instructionCopy'
 import { isMedacademyCase, shouldShowVocabTab } from '@/lib/scenarioVocab'
+import { isGuidedReasoningComplete } from '@/lib/guidedReasoningScoring'
 import { isGuestAccessible } from '@/lib/caseAccess'
 import { recordGuestScenarioCompletion } from '@/lib/guestScenarioProgress'
 import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
@@ -114,6 +116,7 @@ type PersistedState = {
   activeSection: ClinicalSection
   /** 1–5, highest step the learner may open (linear unlock). */
   maxUnlockedStep?: number
+  guidedReasoningAnswers?: Record<string, GuidedReasoningAnswerState>
 }
 
 function inferMaxUnlockedStepFromLegacy(state: {
@@ -150,6 +153,8 @@ function sectionToInstructionPageKey(
       return 'clinical-data'
     case 'vocab':
       return 'vocab'
+    case 'guided-reasoning':
+      return 'guided-reasoning'
     case 'diagnosis':
       return 'diagnosis'
     case 'debrief':
@@ -162,7 +167,12 @@ function sectionToInstructionPageKey(
 export default function ScenarioPlayer({ scenario }: Props) {
   const isMedacademyLayout = isMedacademyCase(scenario)
   const vocabTabEnabled = shouldShowVocabTab(scenario)
-  const sectionNavOpts = { sectionLayout: scenario.sectionLayout, showVocabTab: vocabTabEnabled }
+  const guidedReasoningEnabled = Boolean(scenario.guidedReasoning)
+  const sectionNavOpts = {
+    sectionLayout: scenario.sectionLayout,
+    showVocabTab: vocabTabEnabled,
+    hasGuidedReasoning: guidedReasoningEnabled,
+  }
   const sectionStepCount = getSectionStepCount(sectionNavOpts)
   const { data: session, status: sessionStatus } = useSession()
   const [attemptId, setAttemptId] = useState<string | null>(null)
@@ -187,6 +197,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const [showExamLeaveDialog, setShowExamLeaveDialog] = useState(false)
   const [pendingSection, setPendingSection] = useState<ClinicalSection | null>(null)
   const [clinicalDataScrollTarget, setClinicalDataScrollTarget] = useState<string | null>(null)
+  const [guidedReasoningAnswers, setGuidedReasoningAnswers] = useState<
+    Record<string, GuidedReasoningAnswerState>
+  >({})
 
   // Match media avoids resize/scrollbar thrash flipping layout at ~768px (flash between tabs).
   useEffect(() => {
@@ -227,6 +240,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
             if (Array.isArray(st.orderedTests)) setOrderedTests(new Map(st.orderedTests))
             if (Array.isArray(st.differential)) setDifferential(st.differential)
             if (st.finalDiagnosisId !== undefined) setFinalDiagnosisId(st.finalDiagnosisId)
+            if (st.guidedReasoningAnswers && typeof st.guidedReasoningAnswers === 'object') {
+              setGuidedReasoningAnswers(st.guidedReasoningAnswers)
+            }
             if (st.activeSection) setActiveSection(st.activeSection)
             if (
               typeof st.maxUnlockedStep === 'number' &&
@@ -248,13 +264,18 @@ export default function ScenarioPlayer({ scenario }: Props) {
     }
   }, [sessionStatus, session?.user?.id, scenario.id])
 
+  const guidedReasoningComplete =
+    guidedReasoningEnabled && scenario.guidedReasoning
+      ? isGuidedReasoningComplete(scenario.guidedReasoning, guidedReasoningAnswers)
+      : false
+
   const canAccessDebrief = finalDiagnosisId !== null
 
   useEffect(() => {
     if (canAccessDebrief) {
       setMaxUnlockedStep(sectionStepCount)
     }
-  }, [canAccessDebrief])
+  }, [canAccessDebrief, sectionStepCount])
 
   // Persist messages + UI state for resume
   useEffect(() => {
@@ -268,6 +289,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         finalDiagnosisId,
         activeSection,
         maxUnlockedStep,
+        guidedReasoningAnswers,
       }
       void fetch('/api/scenario/attempt', {
         method: 'PATCH',
@@ -290,6 +312,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
     finalDiagnosisId,
     activeSection,
     maxUnlockedStep,
+    guidedReasoningAnswers,
     attemptId,
     scenario.id,
     sessionStatus,
@@ -339,144 +362,175 @@ export default function ScenarioPlayer({ scenario }: Props) {
     setFinalDiagnosisId(finalDxId)
   }
 
+  const loadAssessmentResults = useCallback(
+    async (opts?: { finalDxId?: string | null; missingMustNotMiss?: string[] }) => {
+      const effectiveFinalDxId = opts?.finalDxId !== undefined ? opts.finalDxId : finalDiagnosisId
+      setIsLoadingAssessment(true)
+      setMaxUnlockedStep((m) => Math.max(m, sectionStepCount))
+
+      const completeScoring = async (aid: string | null) => {
+        if (sessionStatus !== 'authenticated' || !aid) return
+        try {
+          const cr = await fetch('/api/scenario/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              scenarioId: scenario.id,
+              attemptId: aid,
+              messages: chatMessages,
+              finalDxId: effectiveFinalDxId,
+              viewedExamSections,
+              orderedTests: Array.from(orderedTests.keys()),
+              differential,
+            }),
+          })
+          if (cr.ok) {
+            const scoreJson = (await cr.json()) as {
+              error?: string
+              score: number
+              level: string
+              feedback: string
+              rubric: RubricBreakdown
+            }
+            if (!scoreJson.error) {
+              setScenarioScore({
+                score: scoreJson.score,
+                level: scoreJson.level,
+                feedback: scoreJson.feedback,
+                rubric: scoreJson.rubric,
+              })
+            }
+          }
+        } catch (e) {
+          console.error('scenario complete scoring', e)
+        }
+      }
+
+      let effectiveAttemptId = attemptId
+      if (sessionStatus === 'authenticated' && !effectiveAttemptId) {
+        try {
+          const sr = await fetch('/api/scenario/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scenarioId: scenario.id }),
+          })
+          if (sr.ok) {
+            const d = (await sr.json()) as { attemptId: string }
+            effectiveAttemptId = d.attemptId
+            setAttemptId(d.attemptId)
+          }
+        } catch (e) {
+          console.error('scenario start before complete', e)
+        }
+      }
+
+      const applyAssessment = (next: AssessmentResult) => {
+        setAssessment(next)
+        if (
+          sessionStatus !== 'authenticated' &&
+          isGuestAccessible(scenario.id) &&
+          typeof next.totalScore === 'number' &&
+          Number.isFinite(next.totalScore)
+        ) {
+          recordGuestScenarioCompletion(scenario.id, Math.round(next.totalScore))
+        }
+      }
+
+      try {
+        const response = await fetch('/api/assess', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scenarioId: scenario.id,
+            chat: chatMessages,
+            viewedExamSections,
+            orderedTests: Array.from(orderedTests.keys()),
+            viewedClinicalDataSections,
+            differentialDetailed: differential,
+            finalDxId: effectiveFinalDxId,
+            missingMustNotMiss: opts?.missingMustNotMiss ?? [],
+            selectedDifferentialIds: differential.map((d) => d.dxId),
+            finalDiagnosisId: effectiveFinalDxId,
+          }),
+        })
+
+        if (!response.ok) {
+          applyAssessment(getMockAssessment() as AssessmentResult)
+          await completeScoring(effectiveAttemptId)
+          return
+        }
+
+        const result = await response.json()
+
+        if (result.error) {
+          throw new Error(result.error)
+        }
+
+        applyAssessment(result)
+        await completeScoring(effectiveAttemptId)
+      } catch (error: unknown) {
+        console.error('Error:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        const isNetworkError =
+          errorMessage.includes('Failed to fetch') || errorMessage.includes('Load failed')
+        if (isNetworkError) {
+          applyAssessment(getMockAssessment() as AssessmentResult)
+          await completeScoring(effectiveAttemptId)
+          return
+        }
+
+        setAssessment({
+          overallRating: 'Error',
+          summary:
+            'Assessment failed to load. For local dev: run Ollama or set DEMO_MODE=true.',
+          strengths: [],
+          areasForImprovement: [errorMessage],
+          diagnosisFeedback: '',
+          missedKeyHistoryPoints: [],
+          testSelectionFeedback: '',
+        })
+        await completeScoring(effectiveAttemptId)
+      } finally {
+        setIsLoadingAssessment(false)
+      }
+    },
+    [
+      attemptId,
+      chatMessages,
+      differential,
+      finalDiagnosisId,
+      orderedTests,
+      scenario.id,
+      sectionStepCount,
+      sessionStatus,
+      viewedClinicalDataSections,
+      viewedExamSections,
+    ]
+  )
+
   const handleDiagnosisSubmit = async (data: {
     differentialDetailed: Array<{ dxId: string; rank: number; confidence: string; note?: string }>
     finalDxId: string | null
     missingMustNotMiss: string[]
   }) => {
-    // State is already updated via onDifferentialUpdate and onFinalDxUpdate
-    setIsLoadingAssessment(true)
-    setMaxUnlockedStep((m) => Math.max(m, sectionStepCount))
     setActiveSection('debrief')
-
-    const completeScoring = async (aid: string | null) => {
-      if (sessionStatus !== 'authenticated' || !aid) return
-      try {
-        const cr = await fetch('/api/scenario/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            scenarioId: scenario.id,
-            attemptId: aid,
-            messages: chatMessages,
-            finalDxId: finalDiagnosisId,
-            viewedExamSections,
-            orderedTests: Array.from(orderedTests.keys()),
-            differential,
-          }),
-        })
-        if (cr.ok) {
-          const scoreJson = (await cr.json()) as {
-            error?: string
-            score: number
-            level: string
-            feedback: string
-            rubric: RubricBreakdown
-          }
-          if (!scoreJson.error) {
-            setScenarioScore({
-              score: scoreJson.score,
-              level: scoreJson.level,
-              feedback: scoreJson.feedback,
-              rubric: scoreJson.rubric,
-            })
-          }
-        }
-      } catch (e) {
-        console.error('scenario complete scoring', e)
-      }
-    }
-
-    let effectiveAttemptId = attemptId
-    if (sessionStatus === 'authenticated' && !effectiveAttemptId) {
-      try {
-        const sr = await fetch('/api/scenario/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenarioId: scenario.id }),
-        })
-        if (sr.ok) {
-          const d = (await sr.json()) as { attemptId: string }
-          effectiveAttemptId = d.attemptId
-          setAttemptId(d.attemptId)
-        }
-      } catch (e) {
-        console.error('scenario start before complete', e)
-      }
-    }
-
-    const applyAssessment = (next: AssessmentResult) => {
-      setAssessment(next)
-      if (
-        sessionStatus !== 'authenticated' &&
-        isGuestAccessible(scenario.id) &&
-        typeof next.totalScore === 'number' &&
-        Number.isFinite(next.totalScore)
-      ) {
-        recordGuestScenarioCompletion(scenario.id, Math.round(next.totalScore))
-      }
-    }
-
-    try {
-      const response = await fetch('/api/assess', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          scenarioId: scenario.id,
-          chat: chatMessages,
-          viewedExamSections,
-          orderedTests: Array.from(orderedTests.keys()),
-          viewedClinicalDataSections,
-          differentialDetailed: differential,
-          finalDxId: finalDiagnosisId,
-          missingMustNotMiss: data.missingMustNotMiss,
-          // Legacy fields for backward compatibility
-          selectedDifferentialIds: differential.map(d => d.dxId),
-          finalDiagnosisId: finalDiagnosisId,
-        }),
-      })
-
-      if (!response.ok) {
-        applyAssessment(getMockAssessment() as AssessmentResult)
-        await completeScoring(effectiveAttemptId)
-        return
-      }
-
-      const result = await response.json()
-      
-      // Check if result has error
-      if (result.error) {
-        throw new Error(result.error)
-      }
-      
-      applyAssessment(result)
-      await completeScoring(effectiveAttemptId)
-    } catch (error: any) {
-      console.error('Error:', error)
-      const errorMessage = error?.message || 'Unknown error occurred'
-      const isNetworkError = errorMessage.includes('Failed to fetch') || errorMessage.includes('Load failed')
-      if (isNetworkError) {
-        applyAssessment(getMockAssessment() as AssessmentResult)
-        await completeScoring(effectiveAttemptId)
-        return
-      }
-
-      setAssessment({
-        overallRating: 'Error',
-        summary:
-          'Assessment failed to load. For local dev: run Ollama or set DEMO_MODE=true.',
-        strengths: [],
-        areasForImprovement: [errorMessage],
-        diagnosisFeedback: '',
-        missedKeyHistoryPoints: [],
-        testSelectionFeedback: '',
-      })
-      await completeScoring(effectiveAttemptId)
-    } finally {
-      setIsLoadingAssessment(false)
-    }
+    await loadAssessmentResults({
+      finalDxId: finalDiagnosisId,
+      missingMustNotMiss: data.missingMustNotMiss,
+    })
   }
+
+  const handleGuidedReasoningContinue = useCallback(() => {
+    setActiveSection('diagnosis')
+  }, [])
+
+  const handleGuidedReasoningAnswerChange = useCallback(
+    (questionId: string, state: GuidedReasoningAnswerState) => {
+      setGuidedReasoningAnswers((prev) => ({ ...prev, [questionId]: state }))
+    },
+    []
+  )
 
   const scrollToChat = () => {
     const chatElement = document.getElementById('chat-panel')
@@ -494,6 +548,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
       'clinical-data': viewedClinicalDataSections.length >= 3,
       diagnosis: finalDiagnosisId !== null,
       vocab: vocabTabEnabled,
+      'guided-reasoning': guidedReasoningComplete,
       debrief: assessment !== null,
     }),
     [
@@ -505,13 +560,17 @@ export default function ScenarioPlayer({ scenario }: Props) {
       assessment,
       isMedacademyLayout,
       vocabTabEnabled,
+      guidedReasoningComplete,
     ]
   )
 
   const medacademyNextSection = useCallback(
     (current: ClinicalSection) =>
-      getMedacademyNextSection(current, { showVocabTab: vocabTabEnabled }),
-    [vocabTabEnabled]
+      getMedacademyNextSection(current, {
+        showVocabTab: vocabTabEnabled,
+        hasGuidedReasoning: guidedReasoningEnabled,
+      }),
+    [vocabTabEnabled, guidedReasoningEnabled]
   )
 
   const navigateToSection = useCallback((section: ClinicalSection) => {
@@ -661,6 +720,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         sectionCompletion={sectionCompletion}
         sectionLayout={scenario.sectionLayout}
         showVocabTab={vocabTabEnabled}
+        hasGuidedReasoning={guidedReasoningEnabled}
         unlockAllTabs={isMedacademyLayout}
       />
 
@@ -687,7 +747,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         />
       ) : null}
 
-      {activeSection === 'history' && (
+      {activeSection === 'history' && !guidedReasoningEnabled && (
         <>
           {isMedacademyLayout ? (
             <MedacademyInterviewPanel
@@ -828,6 +888,15 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </>
       ) : null}
 
+      {activeSection === 'guided-reasoning' && scenario.guidedReasoning ? (
+        <GuidedReasoningPanel
+          config={scenario.guidedReasoning}
+          answers={guidedReasoningAnswers}
+          onAnswerChange={handleGuidedReasoningAnswerChange}
+          onViewResults={handleGuidedReasoningContinue}
+        />
+      ) : null}
+
       {activeSection === 'exam' && !isMedacademyLayout && (
         <>
           <PhysicalExamPanel
@@ -940,6 +1009,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
             orderedTestCount={orderedTests.size}
             clinicalDataSectionsReviewed={viewedClinicalDataSections.length}
             isMedacademyCase={isMedacademyLayout}
+            guidedReasoningComplete={guidedReasoningComplete}
           />
         </>
       )}

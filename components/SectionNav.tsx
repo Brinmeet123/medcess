@@ -10,12 +10,15 @@ export type ClinicalSection =
   | 'clinical-data'
   | 'diagnosis'
   | 'vocab'
+  | 'guided-reasoning'
   | 'debrief'
 
 export type SectionNavOptions = {
   sectionLayout?: SectionLayout
   /** When false, Vocab is omitted from MEDacademy navigation */
   showVocabTab?: boolean
+  /** MEDacademy high school workflow: Case Info → Clinical Data → Vocab → Guided Reasoning → Results */
+  hasGuidedReasoning?: boolean
 }
 
 export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
@@ -33,12 +36,24 @@ const MEDACADEMY_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'diagnosis', label: 'Diagnosis' },
 ]
 
+const MEDACADEMY_GUIDED_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
+  { id: 'case-info', label: 'Case Info' },
+  { id: 'clinical-data', label: 'Clinical Data' },
+  { id: 'vocab', label: 'Vocab' },
+  { id: 'guided-reasoning', label: 'Guided Reasoning' },
+  { id: 'diagnosis', label: 'Diagnosis' },
+]
+
 /** @deprecated Use getSectionOrder() */
 export const SECTION_ORDER = DEFAULT_SECTION_ORDER
 
 export function getSectionOrder(opts?: SectionNavOptions): { id: ClinicalSection; label: string }[] {
   const layout = opts?.sectionLayout
   if (layout === 'medacademy') {
+    if (opts?.hasGuidedReasoning) {
+      if (opts?.showVocabTab) return [...MEDACADEMY_GUIDED_SECTION_ORDER]
+      return MEDACADEMY_GUIDED_SECTION_ORDER.filter((s) => s.id !== 'vocab')
+    }
     if (opts?.showVocabTab) return [...MEDACADEMY_SECTION_ORDER]
     return MEDACADEMY_SECTION_ORDER.filter((s) => s.id !== 'vocab')
   }
@@ -47,9 +62,13 @@ export function getSectionOrder(opts?: SectionNavOptions): { id: ClinicalSection
 
 export function getMedacademyNextSection(
   current: ClinicalSection,
-  opts?: Pick<SectionNavOptions, 'showVocabTab'>
+  opts?: Pick<SectionNavOptions, 'showVocabTab' | 'hasGuidedReasoning'>
 ): ClinicalSection | null {
-  const order = getSectionOrder({ sectionLayout: 'medacademy', showVocabTab: opts?.showVocabTab })
+  const order = getSectionOrder({
+    sectionLayout: 'medacademy',
+    showVocabTab: opts?.showVocabTab,
+    hasGuidedReasoning: opts?.hasGuidedReasoning,
+  })
   const index = order.findIndex((s) => s.id === current)
   if (index < 0 || index >= order.length - 1) return null
   return order[index + 1].id
@@ -75,11 +94,15 @@ type Props = {
   onChange: (section: ClinicalSection) => void
   /** Results tab stays locked until a final diagnosis is submitted. */
   canAccessDebrief?: boolean
+  /** Tooltip when Results tab is locked */
+  debriefLockedReason?: string
   /** Per-tab completion based on actual learner actions, not tab order. */
   sectionCompletion: SectionCompletion
   sectionLayout?: SectionLayout
   /** MEDacademy only: when true, Vocab tab appears in navigation */
   showVocabTab?: boolean
+  /** MEDacademy high school workflow with Guided Reasoning tab */
+  hasGuidedReasoning?: boolean
   /** When true, all tabs are accessible from the start (no linear unlock). */
   unlockAllTabs?: boolean
 }
@@ -137,9 +160,11 @@ export default function SectionNav({
   sectionCompletion,
   sectionLayout,
   showVocabTab = false,
+  hasGuidedReasoning = false,
+  debriefLockedReason = 'Choose a final diagnosis to view results.',
   unlockAllTabs = false,
 }: Props) {
-  const sectionNavOpts = { sectionLayout, showVocabTab }
+  const sectionNavOpts = { sectionLayout, showVocabTab, hasGuidedReasoning }
   const sectionOrder = getSectionOrder(sectionNavOpts)
   const activeStep = clinicalSectionToStep(active, sectionNavOpts)
 
@@ -186,7 +211,7 @@ export default function SectionNav({
           isUnlockedAhead: false,
         }),
       ].join(' ')}
-      title={debriefLocked ? 'Choose a final diagnosis to view results.' : undefined}
+      title={debriefLocked ? debriefLockedReason : undefined}
     >
       <span className="flex w-full min-w-0 items-center justify-center gap-1.5 text-center">
         {sectionCompletion.debrief && (
