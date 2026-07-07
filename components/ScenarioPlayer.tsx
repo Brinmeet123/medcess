@@ -15,6 +15,7 @@ import CaseInfoPanel from './CaseInfoPanel'
 import CaseVocabPanel from './CaseVocabPanel'
 import ClinicalDataPanel from './ClinicalDataPanel'
 import MedacademyCaseHeader from './MedacademyCaseHeader'
+import MedacademyInterviewPanel from './MedacademyInterviewPanel'
 import SectionNav, {
   ClinicalSection,
   clinicalSectionToStep,
@@ -132,12 +133,15 @@ function inferMaxUnlockedStepFromLegacy(state: {
   return Math.min(6, Math.max(1, m))
 }
 
-function sectionToInstructionPageKey(section: ClinicalSection): InstructionPageKey | null {
+function sectionToInstructionPageKey(
+  section: ClinicalSection,
+  isMedacademyLayout: boolean
+): InstructionPageKey | null {
   switch (section) {
     case 'case-info':
       return 'case-info'
     case 'history':
-      return 'chat'
+      return isMedacademyLayout ? 'medacademy-interview' : 'chat'
     case 'exam':
       return 'exam'
     case 'tests':
@@ -557,7 +561,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
     setPendingSection(null)
   }
 
-  const instructionPageKey = sectionToInstructionPageKey(activeSection)
+  const instructionPageKey = sectionToInstructionPageKey(activeSection, isMedacademyLayout)
   const instructionModal = useInstructionModal(instructionPageKey)
 
   return (
@@ -637,9 +641,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </div>
       )}
 
-      {activeSection === 'history' && (
+      {activeSection === 'history' && !isMedacademyLayout ? (
         <DoctorPatientScene patientName={scenario.patientPersona.name} onPatientClick={scrollToChat} />
-      )}
+      ) : null}
 
       {isMedacademyLayout && activeSection === 'case-info' ? (
         <MedacademyCaseHeader
@@ -685,8 +689,15 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
       {activeSection === 'history' && (
         <>
-          {/* Mobile: Tabbed View */}
-          {isMobile ? (
+          {isMedacademyLayout ? (
+            <MedacademyInterviewPanel
+              scenario={scenario}
+              messages={chatMessages}
+              onChatUpdate={handleChatUpdate}
+              onTermClick={handleTermClick}
+              onTermSave={handleTermSave}
+            />
+          ) : isMobile ? (
             <div className="mb-6">
               {/* Tab Buttons */}
               <div className="flex border-b border-gray-200 dark:border-[#14345C] mb-4">

@@ -8,6 +8,7 @@ export type InstructionPageKey =
   | 'clinical-data'
   | 'vocab'
   | 'debrief'
+  | 'medacademy-interview'
 
 export const INSTRUCTION_COPY: Record<
   InstructionPageKey,
@@ -75,6 +76,14 @@ export const INSTRUCTION_COPY: Record<
       'Read your score and feedback.',
       'See what you did well and what to review next.',
       'Retry the case or try another from the library.',
+    ],
+  },
+  'medacademy-interview': {
+    title: 'Patient Interview',
+    lines: [
+      'Select interview questions from the list.',
+      'Patient answers use only information from this case.',
+      'Ask about smoking, symptoms, history, and exam before making your diagnosis.',
     ],
   },
 }

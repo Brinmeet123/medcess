@@ -6,7 +6,7 @@ import type { RubricBreakdown } from '@/lib/scoring'
 import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
-import { shouldShowVocabTab } from '@/lib/scenarioVocab'
+import { shouldShowVocabTab, isMedacademyCase } from '@/lib/scenarioVocab'
 import { vocab, getVocabTerm } from '@/data/vocab'
 import { APP_NAME } from '@/lib/branding'
 
@@ -256,6 +256,44 @@ export default function SummaryPanel({
     ? cf.areasForImprovement
     : assessment.areasForImprovement
 
+  const isMedacademy = isMedacademyCase(scenario)
+
+  const correctDiagnosisSection = cf ? (
+    <section className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-5">
+      <h3 className="mb-3 text-base font-semibold text-emerald-900 dark:text-emerald-300">
+        Correct Final Diagnosis
+      </h3>
+      <p className="text-sm font-semibold text-slate-900 dark:text-[#F8FAFC]">
+        Correct Diagnosis: {cf.correctDiagnosis}
+      </p>
+      {cf.diagnosisKeyEvidence.length > 0 ? (
+        <div className="mt-3">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
+            Key Evidence
+          </p>
+          <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
+            {cf.diagnosisKeyEvidence.map((item, idx) => (
+              <li key={idx}>
+                <VocabText text={item} onTermClick={onTermClick} onTermSave={onTermSave} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  ) : null
+
+  const clinicalExplanationSection = cf ? (
+    <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
+      <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
+        Short clinical explanation
+      </h3>
+      <p className="text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1]">
+        <VocabText text={cf.correctReasoning} onTermClick={onTermClick} onTermSave={onTermSave} />
+      </p>
+    </section>
+  ) : null
+
   return (
     <div className="case-panel">
       <VocabContextBlock source="debrief" mode="simplify" scenarioId={scenario.id} text={debriefContext}>
@@ -263,8 +301,9 @@ export default function SummaryPanel({
           Clinical Performance Report
         </h2>
         <p className="mb-6 text-sm leading-relaxed text-slate-600 dark:text-[#CBD5E1]">
-          {APP_NAME} evaluates your full clinical process — interview, testing, reasoning, and final
-          diagnosis — not just whether you guessed correctly.
+          {isMedacademy
+            ? `${APP_NAME} evaluates your full clinical process — interview, clinical data review, reasoning, and final diagnosis — not just whether you guessed correctly.`
+            : `${APP_NAME} evaluates your full clinical process — interview, testing, reasoning, and final diagnosis — not just whether you guessed correctly.`}
         </p>
 
         {rubric ? (
@@ -286,6 +325,8 @@ export default function SummaryPanel({
 
         {cf ? (
           <div className="space-y-4">
+            {correctDiagnosisSection}
+
             <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
               <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
                 Patient Interview
@@ -314,40 +355,50 @@ export default function SummaryPanel({
 
             <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
               <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
-                Diagnostic Testing
+                {isMedacademy ? 'Clinical Data Review' : 'Diagnostic Testing'}
               </h3>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className={`grid gap-4 ${isMedacademy ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
                 <FeedbackList
-                  title="Correctly ordered tests"
+                  title={isMedacademy ? 'Sections reviewed' : 'Correctly ordered tests'}
                   items={cf.testing.correctlyOrdered}
-                  emptyText="No essential tests ordered."
+                  emptyText={
+                    isMedacademy
+                      ? 'No clinical data sections reviewed yet.'
+                      : 'No essential tests ordered.'
+                  }
                   variant="correct"
                 />
                 <FeedbackList
-                  title="Missed essential tests"
+                  title={isMedacademy ? 'Sections missed' : 'Missed essential tests'}
                   items={cf.testing.missedEssential}
-                  emptyText="All essential tests were ordered."
+                  emptyText={
+                    isMedacademy
+                      ? 'All important clinical data sections were reviewed.'
+                      : 'All essential tests were ordered.'
+                  }
                   variant="missed"
                 />
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold text-rose-800 dark:text-rose-300">
-                    Unnecessary tests
-                  </h4>
-                  {cf.testing.unnecessary.length === 0 ? (
-                    <p className="text-sm text-slate-500 dark:text-[#94a3b8]">No unnecessary tests ordered.</p>
-                  ) : (
-                    <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
-                      {cf.testing.unnecessary.map((t, idx) => (
-                        <li key={idx}>
-                          <span className="font-medium">{t.name}</span>
-                          {t.reason ? (
-                            <span className="text-slate-500 dark:text-[#94a3b8]"> — {t.reason}</span>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                {!isMedacademy ? (
+                  <div>
+                    <h4 className="mb-2 text-sm font-semibold text-rose-800 dark:text-rose-300">
+                      Unnecessary tests
+                    </h4>
+                    {cf.testing.unnecessary.length === 0 ? (
+                      <p className="text-sm text-slate-500 dark:text-[#94a3b8]">No unnecessary tests ordered.</p>
+                    ) : (
+                      <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                        {cf.testing.unnecessary.map((t, idx) => (
+                          <li key={idx}>
+                            <span className="font-medium">{t.name}</span>
+                            {t.reason ? (
+                              <span className="text-slate-500 dark:text-[#94a3b8]"> — {t.reason}</span>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </section>
 
@@ -372,7 +423,7 @@ export default function SummaryPanel({
                   {cf.idealWorkup.essential.length > 0 ? (
                     <div>
                       <h4 className="mb-2 text-sm font-semibold text-slate-800 dark:text-[#F8FAFC]">
-                        Ideal tests
+                        {isMedacademy ? 'Important clinical data sections' : 'Ideal tests'}
                       </h4>
                       <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
                         {cf.idealWorkup.essential.map((t) => (
@@ -385,37 +436,7 @@ export default function SummaryPanel({
               </section>
             )}
 
-            <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
-              <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
-                Short clinical explanation
-              </h3>
-              <p className="text-sm leading-relaxed text-slate-700 dark:text-[#CBD5E1]">
-                <VocabText text={cf.correctReasoning} onTermClick={onTermClick} onTermSave={onTermSave} />
-              </p>
-            </section>
-
-            <section className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-5">
-              <h3 className="mb-3 text-base font-semibold text-emerald-900 dark:text-emerald-300">
-                Correct Final Diagnosis
-              </h3>
-              <p className="text-sm font-semibold text-slate-900 dark:text-[#F8FAFC]">
-                Correct Diagnosis: {cf.correctDiagnosis}
-              </p>
-              {cf.diagnosisKeyEvidence.length > 0 ? (
-                <div className="mt-3">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
-                    Key Evidence
-                  </p>
-                  <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
-                    {cf.diagnosisKeyEvidence.map((item, idx) => (
-                      <li key={idx}>
-                        <VocabText text={item} onTermClick={onTermClick} onTermSave={onTermSave} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </section>
+            {clinicalExplanationSection}
 
             <section className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/40 dark:bg-amber-950/20 p-5">
               <h3 className="mb-3 text-base font-semibold text-amber-900 dark:text-amber-300">
