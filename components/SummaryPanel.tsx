@@ -103,21 +103,30 @@ function ScoreCard({
   capApplied,
   maxScore = 200,
   scoringProfile,
+  hasGuidedReasoning,
 }: {
   rubric: ClinicalRubric200
   levelLabel: string
   capApplied?: number
   maxScore?: number
   scoringProfile?: Scenario['scoringProfile']
+  hasGuidedReasoning?: boolean
 }) {
   const rows =
-    scoringProfile === 'medacademy-150'
+    scoringProfile === 'medacademy-150' && hasGuidedReasoning
       ? [
-          { label: 'Patient Interview', value: rubric.patientInterview, max: 45 },
+          { label: 'Guided Reasoning', value: rubric.patientInterview, max: 55 },
           { label: 'Clinical Data Review', value: rubric.diagnosticTesting, max: 55 },
-          { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 35 },
-          { label: 'Clinical Reasoning Explanation', value: rubric.clinicalReasoning, max: 15 },
+          { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 30 },
+          { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 10 },
         ]
+      : scoringProfile === 'medacademy-150'
+        ? [
+            { label: 'Patient Interview', value: rubric.patientInterview, max: 45 },
+            { label: 'Clinical Data Review', value: rubric.diagnosticTesting, max: 55 },
+            { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 35 },
+            { label: 'Clinical Reasoning Explanation', value: rubric.clinicalReasoning, max: 15 },
+          ]
       : [
           { label: 'Patient Interview', value: rubric.patientInterview, max: 60 },
           { label: 'Diagnostic Testing', value: rubric.diagnosticTesting, max: 60 },
@@ -313,6 +322,7 @@ export default function SummaryPanel({
             capApplied={rubric.scoreCapApplied}
             maxScore={assessment.maxScore ?? 200}
             scoringProfile={scenario.scoringProfile}
+            hasGuidedReasoning={Boolean(scenario.guidedReasoning)}
           />
         ) : assessment.totalScore != null ? (
           <div className="mb-6 rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">

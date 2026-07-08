@@ -452,6 +452,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
             missingMustNotMiss: opts?.missingMustNotMiss ?? [],
             selectedDifferentialIds: differential.map((d) => d.dxId),
             finalDiagnosisId: effectiveFinalDxId,
+            guidedReasoningAnswers,
           }),
         })
 
@@ -709,6 +710,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
           title={scenario.title}
           subtitle={scenario.cardCategory}
           difficulty={scenario.difficulty}
+          difficultyLabel={scenario.difficultyLabel}
         />
       ) : null}
 
@@ -740,7 +742,10 @@ export default function ScenarioPlayer({ scenario }: Props) {
           vocab={scenario.caseVocab ?? []}
           showVocabButton={vocabTabEnabled}
           hideHeader
-          onStartInterview={() => handleSectionChange('history')}
+          onStartInterview={!guidedReasoningEnabled ? () => handleSectionChange('history') : undefined}
+          onStartGuidedReasoning={
+            guidedReasoningEnabled ? () => handleSectionChange('guided-reasoning') : undefined
+          }
           onReviewClinicalData={() => handleSectionChange('clinical-data')}
           onViewFigure={handleViewFigureInClinicalData}
           onReviewVocab={vocabTabEnabled ? () => handleSectionChange('vocab') : undefined}

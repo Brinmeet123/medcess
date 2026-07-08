@@ -6,6 +6,7 @@ type Props = {
   title: string
   subtitle?: string
   difficulty: ScenarioDifficulty
+  difficultyLabel?: string
 }
 
 function Badge({ children, tone = 'brand' }: { children: React.ReactNode; tone?: 'brand' | 'level' }) {
@@ -24,7 +25,7 @@ function Badge({ children, tone = 'brand' }: { children: React.ReactNode; tone?:
   )
 }
 
-export default function MedacademyCaseHeader({ title, subtitle, difficulty }: Props) {
+export default function MedacademyCaseHeader({ title, subtitle, difficulty, difficultyLabel }: Props) {
   return (
     <header className="mb-6 rounded-xl border border-slate-200/90 bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm dark:border-[#14345C] dark:from-[#071A33] dark:to-[#0a1f3d]">
       <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8]">
@@ -32,7 +33,7 @@ export default function MedacademyCaseHeader({ title, subtitle, difficulty }: Pr
       </p>
       <div className="mb-4 flex flex-wrap gap-2">
         <Badge tone="brand">MEDacademy Case</Badge>
-        <Badge tone="level">{difficulty}</Badge>
+        <Badge tone="level">{difficultyLabel ?? difficulty}</Badge>
       </div>
       <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F8FAFC] sm:text-3xl">{title}</h1>
       {subtitle ? (

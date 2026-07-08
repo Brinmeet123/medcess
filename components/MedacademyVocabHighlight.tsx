@@ -213,10 +213,19 @@ export default function MedacademyVocabHighlight({ text, vocab, caseTitle }: Pro
 export function CaseFigureBlock({
   figureImageUrl,
   figureCaption,
+  placeholderText = 'CT image placeholder',
 }: {
   figureImageUrl?: string
   figureCaption?: string
+  placeholderText?: string
 }) {
+  if (!figureCaption && !figureImageUrl) {
+    return (
+      <div className="mb-4 flex min-h-[200px] max-w-2xl items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 dark:border-[#14345C] dark:bg-[#071A33]">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{placeholderText}</p>
+      </div>
+    )
+  }
   if (!figureCaption) return null
   return (
     <>
@@ -228,7 +237,7 @@ export function CaseFigureBlock({
         />
       ) : (
         <div className="mb-4 flex min-h-[200px] max-w-2xl items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 dark:border-[#14345C] dark:bg-[#071A33]">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">CT image placeholder</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{placeholderText}</p>
         </div>
       )}
       <p className="text-sm italic leading-relaxed text-slate-600 dark:text-[#94a3b8]">{figureCaption}</p>

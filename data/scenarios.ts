@@ -163,18 +163,41 @@ export type Plan = {
   monitoring?: string[];
 };
 
+export type ClinicalLabRow = {
+  timepoint: string;
+  troponin: string;
+  creatineKinase: string;
+  ckMb: string;
+};
+
 export type CaseInfoContent = {
   introduction: string;
+  /** Pathology default vs cardio release layout for Clinical Data tab */
+  clinicalDataLayout?: 'pathology' | 'cardio';
   /** Key imaging callout text (exact wording) */
   keyImagingFinding?: string;
   /** Clinical Data tab — Imaging section (exact wording) */
   clinicalDataImaging?: string;
-  hpi: string;
-  pmh: string[];
-  familyHistory: string;
-  physicalExam: string[];
+  hpi?: string;
+  pmh?: string[];
+  familyHistory?: string;
+  physicalExam?: string[];
   figureCaption?: string;
   figureImageUrl?: string;
+  /** Cardio layout — Presentation section (exact wording) */
+  presentation?: string;
+  /** Cardio layout — Vital signs lines (exact wording) */
+  vitalSigns?: string[];
+  /** Cardio layout — ECG section heading */
+  ecgHeading?: string;
+  /** Cardio layout — ECG findings text (exact wording) */
+  ecgFindings?: string;
+  ecgFigureCaption?: string;
+  ecgFigureImageUrl?: string;
+  /** Cardio layout — Lab values intro paragraph (exact wording) */
+  labValuesIntro?: string;
+  /** Cardio layout — Serial lab table rows */
+  labValues?: ClinicalLabRow[];
 };
 
 export type CaseVocabEntry = {
@@ -255,6 +278,8 @@ export type Scenario = {
   showAttribution?: boolean;
   /** Optional card category label (e.g. Pathology / Pulmonology / Oncology) */
   cardCategory?: string;
+  /** Optional display label for difficulty (e.g. High School / Introductory) */
+  difficultyLabel?: string;
   /** Structured case info for Case Info tab (exact wording) */
   caseInfoContent?: CaseInfoContent;
   /** Per-case vocabulary for Vocab tab (MEDacademy only) */

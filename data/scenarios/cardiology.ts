@@ -1,4 +1,7 @@
 import type { Scenario } from "@/data/scenarios";
+import { medacademyElephantOnChestCaseInfo } from "@/data/caseInfo/medacademyElephantOnChest";
+import { medacademyElephantOnChestVocab } from "@/data/caseVocab/medacademyElephantOnChest";
+import { medacademyElephantOnChestGuidedReasoning } from "@/data/guidedReasoning/medacademyElephantOnChest";
 
 const CARDIOLOGY_SPECIALTY = "Cardiology" as const;
 
@@ -922,6 +925,209 @@ export const cardiologyScenarios: Scenario[] = [
       "Diffuse ST elevation with PR depression distinguishes from regional STEMI.",
       "NSAIDs and colchicine are mainstay; monitor for effusion/tamponade.",
       "Mild troponin elevation may reflect myopericarditis."
+    ]
+  },
+  {
+    id: "medacademy-cardio-elephant-on-chest",
+    title: "MEDacademy Case Two: Cardio - An Elephant on my Chest",
+    sourceTitle: "Cardio Case: An Elephant on my Chest",
+    specialty: CARDIOLOGY_SPECIALTY,
+    difficulty: "Beginner",
+    difficultyLabel: "High School / Introductory",
+    estimatedMinutes: 20,
+    description:
+      "A middle-aged man with a history of hypertension, diabetes, and hyperlipidemia presents with crushing retrosternal chest pain (10/10 in intensity) that is radiating down his left arm and left side of his neck. He reports a long history of smoking cigarettes as well as a family history of heart disease. He feels nauseous and light-headed, and he reports shortness of breath. Examination reveals a diaphoretic man in considerable discomfort with diffuse bilateral rales on chest auscultation. ECG reveals convex ST-segment elevation.",
+    cardTeaser:
+      "A middle-aged man with crushing chest pain, risk factors, and a concerning ECG finding.",
+    cardCategory: "Cardiology / Emergency Medicine / Pathology",
+    objectives: [
+      "Review Clinical Data including vital signs, ECG findings, and serial cardiac labs.",
+      "Use Guided Reasoning to connect symptoms, ECG changes, and lab trends.",
+      "Identify cardiovascular risk factors in the presentation.",
+      "Arrive at a final diagnosis of acute ST-elevation myocardial infarction (STEMI)."
+    ],
+    attributionNote:
+      "Educational case adapted from a MedAcademy cardio case for demonstration purposes.",
+    showAttribution: false,
+    scoringProfile: "medacademy-150",
+    fastPatientReplies: true,
+    earlyDiagnosisWarning: true,
+    hideVitals: true,
+    caseType: "MEDacademy",
+    showVocabTab: true,
+    sectionLayout: "medacademy",
+    caseInfoContent: medacademyElephantOnChestCaseInfo,
+    caseVocab: medacademyElephantOnChestVocab,
+    guidedReasoning: medacademyElephantOnChestGuidedReasoning,
+    patientPersona: {
+      name: "Mr. Carter",
+      age: 52,
+      gender: "Male",
+      chiefComplaint:
+        "It feels like an elephant is sitting on my chest. The pain is unbearable.",
+      background:
+        "A middle-aged man with a history of hypertension, diabetes, and hyperlipidemia presents with crushing retrosternal chest pain (10/10 in intensity) that is radiating down his left arm and left side of his neck. He reports a long history of smoking cigarettes as well as a family history of heart disease. He feels nauseous and light-headed, and he reports shortness of breath.",
+      keyHistoryPoints: [
+        "Crushing retrosternal chest pain (10/10 in intensity)",
+        "Pain radiating down left arm and left side of neck",
+        "Hypertension, diabetes, and hyperlipidemia",
+        "Long history of smoking cigarettes",
+        "Family history of heart disease",
+        "Nauseous and light-headed",
+        "Shortness of breath",
+        "ECG reveals convex ST-segment elevation"
+      ],
+      redFlags: [
+        "Crushing chest pain 10/10 with left arm and neck radiation",
+        "Hypotension (90/60 mmHg)",
+        "Convex ST-segment elevation on ECG",
+        "Rising troponin and CK-MB",
+        "Diffuse bilateral rales with shortness of breath"
+      ]
+    },
+    aiInstructions: {
+      patientStyle:
+        "Speak as a middle-aged man in severe distress — plain language, not medical jargon. Use the exact wording from the case whenever possible.",
+      behaviorRules: [
+        "Answer only as the patient in first person.",
+        "Do NOT say heart attack, STEMI, MI, or myocardial infarction.",
+        "Use exact case wording when answering about symptoms, history, and exam.",
+        "Keep answers brief and conversational (1–3 sentences) unless giving full history."
+      ],
+      doNotRevealDirectly: [
+        "STEMI",
+        "myocardial infarction",
+        "heart attack",
+        "MI",
+        "acute coronary syndrome"
+      ]
+    },
+    physicalExam: [
+      {
+        id: "general",
+        label: "General",
+        summary: "Diaphoretic man in considerable discomfort.",
+        details: "Examination reveals a diaphoretic man in considerable discomfort."
+      },
+      {
+        id: "respiratory",
+        label: "Lungs",
+        summary: "Diffuse bilateral rales on chest auscultation.",
+        details: "Diffuse bilateral rales on chest auscultation."
+      }
+    ],
+    testOverrides: [
+      {
+        testId: "ecg",
+        result: "ECG reveals convex ST-segment elevation.",
+        yield: "high"
+      },
+      {
+        testId: "troponin",
+        result:
+          "Troponin I/T 0.8 ng/mL at initial draw, rising to >100 ng/mL at 6 hours post initial draw.",
+        yield: "high"
+      }
+    ],
+    testDefaultBehavior: {
+      labDefault: "Serial cardiac markers are already available in Clinical Data.",
+      imagingDefault: "ECG findings are already available in Clinical Data.",
+      bedsideDefault: "Vital signs are already available in Clinical Data.",
+      procedureDefault: "This MEDacademy case uses pre-provided clinical data rather than ordering tests."
+    },
+    finalDxId: "stemi",
+    requiredMustNotMiss: ["stemi", "aortic_dissection", "pe"],
+    dxOverrides: [
+      {
+        dxId: "stemi",
+        yield: "correct",
+        explanation:
+          "Acute ST-elevation myocardial infarction (STEMI) — supported by crushing chest pain, ST elevation, and rising cardiac markers."
+      },
+      {
+        dxId: "nstemi",
+        yield: "reasonable",
+        explanation:
+          "Elevated troponin suggests myocardial injury, but convex ST-segment elevation favors STEMI over NSTEMI."
+      },
+      {
+        dxId: "unstable_angina",
+        yield: "low",
+        explanation: "Marked troponin rise and ST elevation indicate myocardial injury beyond unstable angina alone."
+      },
+      {
+        dxId: "chf_exacerbation",
+        yield: "reasonable",
+        explanation:
+          "Shortness of breath and diffuse bilateral rales may suggest acute heart failure as a complication."
+      },
+      {
+        dxId: "aortic_dissection",
+        yield: "dangerous-miss",
+        explanation: "Must-not-miss in severe chest pain, though radiation pattern and ST elevation favor MI here."
+      },
+      {
+        dxId: "pe",
+        yield: "low",
+        explanation: "Less likely as the primary diagnosis given ST elevation and serial cardiac marker pattern."
+      },
+      {
+        dxId: "pericarditis",
+        yield: "low",
+        explanation: "Convex ST-segment elevation with crushing ischemic pain pattern favors STEMI."
+      }
+    ],
+    diagnosisOptions: [
+      {
+        id: "stemi",
+        name: "ST-elevation myocardial infarction (STEMI)",
+        isCorrect: true,
+        isDangerous: true,
+        explanation: "Correct — crushing chest pain, ST elevation, and rising troponin/CK-MB."
+      },
+      {
+        id: "nstemi",
+        name: "Non-ST elevation myocardial infarction (NSTEMI)",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Related, but ST elevation makes STEMI the best fit."
+      },
+      {
+        id: "unstable_angina",
+        name: "Unstable angina",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Troponin rise indicates myocardial injury beyond angina alone."
+      },
+      {
+        id: "aortic_dissection",
+        name: "Aortic dissection",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Important to consider in chest pain but less likely here."
+      },
+      {
+        id: "pe",
+        name: "Pulmonary embolism",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "Less likely given ECG and cardiac marker pattern."
+      },
+      {
+        id: "chf_exacerbation",
+        name: "Congestive heart failure exacerbation",
+        isCorrect: false,
+        isDangerous: true,
+        explanation: "May be a complication but not the primary unifying diagnosis."
+      }
+    ],
+    teachingPoints: [
+      "Correct diagnosis: Acute ST-elevation myocardial infarction (STEMI).",
+      "Crushing retrosternal chest pain with left arm and neck radiation is a classic warning pattern.",
+      "ECG reveals convex ST-segment elevation — a major clue for STEMI.",
+      "Serial labs show Troponin I/T rising from 0.8 ng/mL to >100 ng/mL with major CK and CK-MB increases.",
+      "Risk factors include hypertension, diabetes, hyperlipidemia, smoking, and family history of heart disease.",
+      "Low blood pressure, shortness of breath, and diffuse bilateral rales may suggest cardiogenic shock or acute heart failure physiology."
     ]
   }
 ];

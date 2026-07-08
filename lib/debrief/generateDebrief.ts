@@ -13,6 +13,11 @@ import { resolveScenarioAnswerKey } from './answerKey'
 import { computeClinicalScore200 } from './clinicalScoring200'
 import { computeMedacademy150Score } from './clinicalScoringMedacademy150'
 import {
+  computeMedacademyCardioScore,
+  isMedacademyCardioScenario,
+  isStemiFinalDiagnosis,
+} from './clinicalScoringMedacademyCardio'
+import {
   buildDebriefInput,
   doctorBlobFromChat,
   missedKeyHistoryTopics,
@@ -39,6 +44,7 @@ export type AssessRequestBody = {
   differentialDetailed?: Array<{ dxId: string; rank: number; confidence: string; note?: string }>
   finalDxId?: string | null
   redFlagsFound?: string[]
+  guidedReasoningAnswers?: Record<string, { selectedIds: string[]; submitted: boolean }>
 }
 
 function mergeConfig(scenario: Scenario): ScenarioDebriefConfig {
@@ -154,16 +160,29 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
   let maxScore = 200
 
   if (scenario.scoringProfile === 'medacademy-150') {
-    const medacademy = computeMedacademy150Score({
-      scenario,
-      doctorBlob,
-      viewedClinicalDataSections: body.viewedClinicalDataSections ?? [],
-      differentialDxIds,
-      finalDxId: body.finalDxId,
-    })
-    clinicalFeedback = medacademy.feedback
-    rubric200 = medacademy.rubric
-    maxScore = medacademy.maxScore
+    if (isMedacademyCardioScenario(scenario.id)) {
+      const medacademy = computeMedacademyCardioScore({
+        scenario,
+        viewedClinicalDataSections: body.viewedClinicalDataSections ?? [],
+        differentialDxIds,
+        finalDxId: body.finalDxId,
+        guidedReasoningAnswers: body.guidedReasoningAnswers,
+      })
+      clinicalFeedback = medacademy.feedback
+      rubric200 = medacademy.rubric
+      maxScore = medacademy.maxScore
+    } else {
+      const medacademy = computeMedacademy150Score({
+        scenario,
+        doctorBlob,
+        viewedClinicalDataSections: body.viewedClinicalDataSections ?? [],
+        differentialDxIds,
+        finalDxId: body.finalDxId,
+      })
+      clinicalFeedback = medacademy.feedback
+      rubric200 = medacademy.rubric
+      maxScore = medacademy.maxScore
+    }
   } else {
     clinicalFeedback = computeClinicalScore200({
       scenario,
@@ -194,7 +213,9 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
       scenario.finalDxId &&
       (body.finalDxId === scenario.finalDxId ||
         (scenario.scoringProfile === 'medacademy-150' &&
-          ['lung_cancer', 'non_small_cell_lung_cancer'].includes(body.finalDxId)))
+          scenario.id === 'medacademy-pathology-cells-going-wild' &&
+          ['lung_cancer', 'non_small_cell_lung_cancer'].includes(body.finalDxId)) ||
+        (isMedacademyCardioScenario(scenario.id) && isStemiFinalDiagnosis(body.finalDxId)))
   )
 
   const debriefStructured = generateDebriefOutput({
