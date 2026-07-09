@@ -8,8 +8,6 @@ export const medacademyElephantOnChestCaseInfo: CaseInfoContent = {
   clinicalDataLayout: 'cardio',
   presentation: CASE_SNAPSHOT,
   vitalSigns: [
-    'Vital Signs:',
-    '',
     'Blood Pressure: 90/60 mmHg',
     '',
     'HR: 75',
@@ -20,6 +18,7 @@ export const medacademyElephantOnChestCaseInfo: CaseInfoContent = {
   ],
   ecgHeading: 'ECG (EKG) Results:',
   ecgFindings: 'ECG reveals convex ST-segment elevation.',
+  ecgFigureImageUrl: '/cases/medacademy-cardio-elephant-on-chest/figure-1-ecg.png',
   labValuesIntro:
     'Lab Values: Blood is drawn at the initial presentation and then repeatedly every 3-6 hours for 24 hours. Initial CBC is normal, however remarkable for slightly elevated creatine kinase (see below).',
   labValues: [

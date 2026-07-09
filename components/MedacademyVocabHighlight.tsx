@@ -226,13 +226,13 @@ export function CaseFigureBlock({
       </div>
     )
   }
-  if (!figureCaption) return null
+
   return (
     <>
       {figureImageUrl ? (
         <img
           src={figureImageUrl}
-          alt={figureCaption}
+          alt={figureCaption ?? 'Clinical figure'}
           className="mb-4 w-full max-w-2xl rounded-lg border border-slate-200 dark:border-[#14345C]"
         />
       ) : (
@@ -240,7 +240,9 @@ export function CaseFigureBlock({
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{placeholderText}</p>
         </div>
       )}
-      <p className="text-sm italic leading-relaxed text-slate-600 dark:text-[#94a3b8]">{figureCaption}</p>
+      {figureCaption ? (
+        <p className="text-sm italic leading-relaxed text-slate-600 dark:text-[#94a3b8]">{figureCaption}</p>
+      ) : null}
     </>
   )
 }
