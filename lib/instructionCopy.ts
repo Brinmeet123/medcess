@@ -4,12 +4,7 @@ export type InstructionPageKey =
   | 'exam'
   | 'tests'
   | 'diagnosis'
-  | 'case-info'
-  | 'clinical-data'
-  | 'vocab'
-  | 'guided-reasoning'
   | 'debrief'
-  | 'medacademy-interview'
 
 export const INSTRUCTION_COPY: Record<
   InstructionPageKey,
@@ -47,52 +42,12 @@ export const INSTRUCTION_COPY: Record<
       'You’ll get feedback after submitting.',
     ],
   },
-  'case-info': {
-    title: 'Review Case Info',
-    lines: [
-      'Read the case snapshot for your first look at the patient.',
-      'Open Clinical Data or Vocab when you want more detail.',
-      'No tests can be ordered here — gather context first.',
-    ],
-  },
-  'clinical-data': {
-    title: 'Review Clinical Data',
-    lines: [
-      'Browse the chart sections already available in this case.',
-      'Use the section menu to jump to imaging, history, exam, and more.',
-      'This is review only — you cannot order new tests here.',
-    ],
-  },
-  vocab: {
-    title: 'Review Vocabulary',
-    lines: [
-      'Browse key terms for this case.',
-      'Search terms or add them to your Practice List.',
-      'Highlighted terms also appear in the case text.',
-    ],
-  },
-  'guided-reasoning': {
-    title: 'Guided Reasoning',
-    lines: [
-      'Work through questions that connect the case to biology and cancer concepts.',
-      'Use Case Info, Clinical Data, and Vocab as you answer.',
-      'Complete all questions to unlock your Results.',
-    ],
-  },
   debrief: {
     title: 'Review Your Results',
     lines: [
       'Read your score and feedback.',
       'See what you did well and what to review next.',
       'Retry the case or try another from the library.',
-    ],
-  },
-  'medacademy-interview': {
-    title: 'Patient Interview',
-    lines: [
-      'Select interview questions from the list.',
-      'Patient answers use only information from this case.',
-      'Ask about smoking, symptoms, history, and exam before making your diagnosis.',
     ],
   },
 }

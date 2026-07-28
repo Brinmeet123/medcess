@@ -11,16 +11,9 @@ import PhysicalExamPanel from './PhysicalExamPanel'
 import TestsPanel from './TestsPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import SummaryPanel from './SummaryPanel'
-import CaseInfoPanel from './CaseInfoPanel'
-import CaseVocabPanel from './CaseVocabPanel'
-import ClinicalDataPanel from './ClinicalDataPanel'
-import GuidedReasoningPanel, { type GuidedReasoningAnswerState } from './GuidedReasoningPanel'
-import MedacademyCaseHeader from './MedacademyCaseHeader'
-import MedacademyInterviewPanel from './MedacademyInterviewPanel'
 import SectionNav, {
   ClinicalSection,
   clinicalSectionToStep,
-  getMedacademyNextSection,
   getSectionStepCount,
   type SectionCompletion,
 } from './SectionNav'
@@ -32,8 +25,6 @@ import InstructionModal from './InstructionModal'
 import HelpButton from './HelpButton'
 import { useInstructionModal } from '@/hooks/useInstructionModal'
 import { INSTRUCTION_COPY, type InstructionPageKey } from '@/lib/instructionCopy'
-import { isMedacademyCase, shouldShowVocabTab } from '@/lib/scenarioVocab'
-import { isGuidedReasoningComplete } from '@/lib/guidedReasoningScoring'
 import { isGuestAccessible } from '@/lib/caseAccess'
 import { recordGuestScenarioCompletion } from '@/lib/guestScenarioProgress'
 import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
@@ -109,14 +100,12 @@ type DifferentialItem = {
 
 type PersistedState = {
   viewedExamSections: string[]
-  viewedClinicalDataSections?: string[]
   orderedTests: [string, OrderedTestData][]
   differential: DifferentialItem[]
   finalDiagnosisId: string | null
   activeSection: ClinicalSection
   /** 1–5, highest step the learner may open (linear unlock). */
   maxUnlockedStep?: number
-  guidedReasoningAnswers?: Record<string, GuidedReasoningAnswerState>
 }
 
 function inferMaxUnlockedStepFromLegacy(state: {
@@ -137,24 +126,15 @@ function inferMaxUnlockedStepFromLegacy(state: {
 }
 
 function sectionToInstructionPageKey(
-  section: ClinicalSection,
-  isMedacademyLayout: boolean
+  section: ClinicalSection
 ): InstructionPageKey | null {
   switch (section) {
-    case 'case-info':
-      return 'case-info'
     case 'history':
-      return isMedacademyLayout ? 'medacademy-interview' : 'chat'
+      return 'chat'
     case 'exam':
       return 'exam'
     case 'tests':
       return 'tests'
-    case 'clinical-data':
-      return 'clinical-data'
-    case 'vocab':
-      return 'vocab'
-    case 'guided-reasoning':
-      return 'guided-reasoning'
     case 'diagnosis':
       return 'diagnosis'
     case 'debrief':
@@ -165,25 +145,14 @@ function sectionToInstructionPageKey(
 }
 
 export default function ScenarioPlayer({ scenario }: Props) {
-  const isMedacademyLayout = isMedacademyCase(scenario)
-  const vocabTabEnabled = shouldShowVocabTab(scenario)
-  const guidedReasoningEnabled = Boolean(scenario.guidedReasoning)
-  const sectionNavOpts = {
-    sectionLayout: scenario.sectionLayout,
-    showVocabTab: vocabTabEnabled,
-    hasGuidedReasoning: guidedReasoningEnabled,
-  }
-  const sectionStepCount = getSectionStepCount(sectionNavOpts)
+  const sectionStepCount = getSectionStepCount()
   const { data: session, status: sessionStatus } = useSession()
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [scenarioScore, setScenarioScore] = useState<ScenarioScoreState | null>(null)
-  const [activeSection, setActiveSection] = useState<ClinicalSection>(
-    isMedacademyLayout ? 'case-info' : 'history'
-  )
+  const [activeSection, setActiveSection] = useState<ClinicalSection>('history')
   const [maxUnlockedStep, setMaxUnlockedStep] = useState(4)
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [viewedExamSections, setViewedExamSections] = useState<string[]>([])
-  const [viewedClinicalDataSections, setViewedClinicalDataSections] = useState<string[]>([])
   const [orderedTests, setOrderedTests] = useState<Map<string, OrderedTestData>>(new Map())
   const [differential, setDifferential] = useState<DifferentialItem[]>([])
   const [finalDiagnosisId, setFinalDiagnosisId] = useState<string | null>(null)
@@ -196,10 +165,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const [hasConfirmedExamLeave, setHasConfirmedExamLeave] = useState(false)
   const [showExamLeaveDialog, setShowExamLeaveDialog] = useState(false)
   const [pendingSection, setPendingSection] = useState<ClinicalSection | null>(null)
-  const [clinicalDataScrollTarget, setClinicalDataScrollTarget] = useState<string | null>(null)
-  const [guidedReasoningAnswers, setGuidedReasoningAnswers] = useState<
-    Record<string, GuidedReasoningAnswerState>
-  >({})
 
   // Match media avoids resize/scrollbar thrash flipping layout at ~768px (flash between tabs).
   useEffect(() => {
@@ -235,21 +200,16 @@ export default function ScenarioPlayer({ scenario }: Props) {
           if (data.state && typeof data.state === 'object') {
             const st = data.state
             if (Array.isArray(st.viewedExamSections)) setViewedExamSections(st.viewedExamSections)
-            if (Array.isArray(st.viewedClinicalDataSections))
-              setViewedClinicalDataSections(st.viewedClinicalDataSections)
             if (Array.isArray(st.orderedTests)) setOrderedTests(new Map(st.orderedTests))
             if (Array.isArray(st.differential)) setDifferential(st.differential)
             if (st.finalDiagnosisId !== undefined) setFinalDiagnosisId(st.finalDiagnosisId)
-            if (st.guidedReasoningAnswers && typeof st.guidedReasoningAnswers === 'object') {
-              setGuidedReasoningAnswers(st.guidedReasoningAnswers)
-            }
             if (st.activeSection) setActiveSection(st.activeSection)
             if (
               typeof st.maxUnlockedStep === 'number' &&
               st.maxUnlockedStep >= 1 &&
               st.maxUnlockedStep <= sectionStepCount
             ) {
-              setMaxUnlockedStep(Math.max(st.maxUnlockedStep, isMedacademyLayout ? sectionStepCount : 4))
+              setMaxUnlockedStep(Math.max(st.maxUnlockedStep, 4))
             } else {
               setMaxUnlockedStep(Math.max(inferMaxUnlockedStepFromLegacy(st), 4))
             }
@@ -262,12 +222,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
     return () => {
       cancelled = true
     }
-  }, [sessionStatus, session?.user?.id, scenario.id])
-
-  const guidedReasoningComplete =
-    guidedReasoningEnabled && scenario.guidedReasoning
-      ? isGuidedReasoningComplete(scenario.guidedReasoning, guidedReasoningAnswers)
-      : false
+  }, [sessionStatus, session?.user?.id, scenario.id, sectionStepCount])
 
   const canAccessDebrief = finalDiagnosisId !== null
 
@@ -283,13 +238,11 @@ export default function ScenarioPlayer({ scenario }: Props) {
     const t = setTimeout(() => {
       const state: PersistedState = {
         viewedExamSections,
-        viewedClinicalDataSections,
         orderedTests: Array.from(orderedTests.entries()),
         differential,
         finalDiagnosisId,
         activeSection,
         maxUnlockedStep,
-        guidedReasoningAnswers,
       }
       void fetch('/api/scenario/attempt', {
         method: 'PATCH',
@@ -306,13 +259,11 @@ export default function ScenarioPlayer({ scenario }: Props) {
   }, [
     chatMessages,
     viewedExamSections,
-    viewedClinicalDataSections,
     orderedTests,
     differential,
     finalDiagnosisId,
     activeSection,
     maxUnlockedStep,
-    guidedReasoningAnswers,
     attemptId,
     scenario.id,
     sessionStatus,
@@ -343,12 +294,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
   const handleExamSectionsViewed = (sectionIds: string[]) => {
     setViewedExamSections(sectionIds)
   }
-
-  const handleClinicalDataSectionViewed = useCallback((sectionId: string) => {
-    setViewedClinicalDataSections((prev) =>
-      prev.includes(sectionId) ? prev : [...prev, sectionId]
-    )
-  }, [])
 
   const handleTestsOrdered = (tests: Map<string, OrderedTestData>) => {
     setOrderedTests(tests)
@@ -446,13 +391,11 @@ export default function ScenarioPlayer({ scenario }: Props) {
             chat: chatMessages,
             viewedExamSections,
             orderedTests: Array.from(orderedTests.keys()),
-            viewedClinicalDataSections,
             differentialDetailed: differential,
             finalDxId: effectiveFinalDxId,
             missingMustNotMiss: opts?.missingMustNotMiss ?? [],
             selectedDifferentialIds: differential.map((d) => d.dxId),
             finalDiagnosisId: effectiveFinalDxId,
-            guidedReasoningAnswers,
           }),
         })
 
@@ -505,7 +448,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
       scenario.id,
       sectionStepCount,
       sessionStatus,
-      viewedClinicalDataSections,
       viewedExamSections,
     ]
   )
@@ -522,17 +464,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
     })
   }
 
-  const handleGuidedReasoningContinue = useCallback(() => {
-    setActiveSection('diagnosis')
-  }, [])
-
-  const handleGuidedReasoningAnswerChange = useCallback(
-    (questionId: string, state: GuidedReasoningAnswerState) => {
-      setGuidedReasoningAnswers((prev) => ({ ...prev, [questionId]: state }))
-    },
-    []
-  )
-
   const scrollToChat = () => {
     const chatElement = document.getElementById('chat-panel')
     chatElement?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -542,36 +473,19 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
   const sectionCompletion = useMemo<SectionCompletion>(
     () => ({
-      'case-info': isMedacademyLayout,
       history: doctorTurns >= 1,
       exam: viewedExamSections.length > 0,
       tests: orderedTests.size > 0,
-      'clinical-data': viewedClinicalDataSections.length >= 3,
       diagnosis: finalDiagnosisId !== null,
-      vocab: vocabTabEnabled,
-      'guided-reasoning': guidedReasoningComplete,
       debrief: assessment !== null,
     }),
     [
       doctorTurns,
       viewedExamSections.length,
-      viewedClinicalDataSections.length,
       orderedTests.size,
       finalDiagnosisId,
       assessment,
-      isMedacademyLayout,
-      vocabTabEnabled,
-      guidedReasoningComplete,
     ]
-  )
-
-  const medacademyNextSection = useCallback(
-    (current: ClinicalSection) =>
-      getMedacademyNextSection(current, {
-        showVocabTab: vocabTabEnabled,
-        hasGuidedReasoning: guidedReasoningEnabled,
-      }),
-    [vocabTabEnabled, guidedReasoningEnabled]
   )
 
   const navigateToSection = useCallback((section: ClinicalSection) => {
@@ -579,24 +493,12 @@ export default function ScenarioPlayer({ scenario }: Props) {
     setActiveSection(section)
   }, [canAccessDebrief])
 
-  const handleViewFigureInClinicalData = useCallback(() => {
-    setClinicalDataScrollTarget('imaging')
-    if (activeSection === 'clinical-data') {
-      handleClinicalDataSectionViewed('imaging')
-      window.setTimeout(() => {
-        document.getElementById('imaging')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 50)
-      return
-    }
-    navigateToSection('clinical-data')
-  }, [activeSection, handleClinicalDataSectionViewed, navigateToSection])
-
   const handleSectionChange = useCallback(
     (section: ClinicalSection) => {
       if (section === activeSection) return
       if (section === 'debrief' && !canAccessDebrief) return
 
-      if (activeSection === 'exam' && section !== 'exam' && !hasConfirmedExamLeave && !isMedacademyLayout) {
+      if (activeSection === 'exam' && section !== 'exam' && !hasConfirmedExamLeave) {
         setPendingSection(section)
         setShowExamLeaveDialog(true)
         return
@@ -604,7 +506,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
 
       navigateToSection(section)
     },
-    [activeSection, canAccessDebrief, hasConfirmedExamLeave, navigateToSection, isMedacademyLayout]
+    [activeSection, canAccessDebrief, hasConfirmedExamLeave, navigateToSection]
   )
 
   const handleExamLeaveContinue = () => {
@@ -621,19 +523,18 @@ export default function ScenarioPlayer({ scenario }: Props) {
     setPendingSection(null)
   }
 
-  const instructionPageKey = sectionToInstructionPageKey(activeSection, isMedacademyLayout)
+  const instructionPageKey = sectionToInstructionPageKey(activeSection)
   const instructionModal = useInstructionModal(instructionPageKey)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {!(isMedacademyLayout && activeSection === 'case-info') ? (
-        <div className="mb-10">
+      <div className="mb-10">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#94a3b8] mb-2">
             Active case
           </p>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-3">{scenario.title}</h1>
           <p className="text-base text-slate-600 dark:text-[#CBD5E1] leading-relaxed line-clamp-3">
-            {isMedacademyLayout ? scenario.cardTeaser : scenario.description}
+            {scenario.description}
           </p>
           {scenario.attributionNote && scenario.showAttribution !== false ? (
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{scenario.attributionNote}</p>
@@ -641,8 +542,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
           {scenario.cardCategory ? (
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">{scenario.cardCategory}</p>
           ) : null}
-        </div>
-      ) : null}
+      </div>
 
       {!scenario.hideVitals && scenario.patientPersona.vitals ? (
       <div className="case-vitals-banner">
@@ -701,17 +601,8 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </div>
       )}
 
-      {activeSection === 'history' && !isMedacademyLayout ? (
+      {activeSection === 'history' ? (
         <DoctorPatientScene patientName={scenario.patientPersona.name} onPatientClick={scrollToChat} />
-      ) : null}
-
-      {isMedacademyLayout && activeSection === 'case-info' ? (
-        <MedacademyCaseHeader
-          title={scenario.title}
-          subtitle={scenario.cardCategory}
-          difficulty={scenario.difficulty}
-          difficultyLabel={scenario.difficultyLabel}
-        />
       ) : null}
 
       {/* Section Navigation */}
@@ -720,10 +611,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
         onChange={handleSectionChange}
         canAccessDebrief={canAccessDebrief}
         sectionCompletion={sectionCompletion}
-        sectionLayout={scenario.sectionLayout}
-        showVocabTab={vocabTabEnabled}
-        hasGuidedReasoning={guidedReasoningEnabled}
-        unlockAllTabs={isMedacademyLayout}
       />
 
       <LeaveExamConfirmDialog
@@ -733,36 +620,9 @@ export default function ScenarioPlayer({ scenario }: Props) {
       />
 
       {/* Render only the active section */}
-      {activeSection === 'case-info' && scenario.caseInfoContent ? (
-        <CaseInfoPanel
-          content={scenario.caseInfoContent}
-          title={scenario.title}
-          subtitle={scenario.cardCategory}
-          difficulty={scenario.difficulty}
-          vocab={scenario.caseVocab ?? []}
-          showVocabButton={vocabTabEnabled}
-          hideHeader
-          onStartInterview={!guidedReasoningEnabled ? () => handleSectionChange('history') : undefined}
-          onStartGuidedReasoning={
-            guidedReasoningEnabled ? () => handleSectionChange('guided-reasoning') : undefined
-          }
-          onReviewClinicalData={() => handleSectionChange('clinical-data')}
-          onViewFigure={handleViewFigureInClinicalData}
-          onReviewVocab={vocabTabEnabled ? () => handleSectionChange('vocab') : undefined}
-        />
-      ) : null}
-
-      {activeSection === 'history' && !guidedReasoningEnabled && (
+      {activeSection === 'history' && (
         <>
-          {isMedacademyLayout ? (
-            <MedacademyInterviewPanel
-              scenario={scenario}
-              messages={chatMessages}
-              onChatUpdate={handleChatUpdate}
-              onTermClick={handleTermClick}
-              onTermSave={handleTermSave}
-            />
-          ) : isMobile ? (
+          {isMobile ? (
             <div className="mb-6">
               {/* Tab Buttons */}
               <div className="flex border-b border-gray-200 dark:border-[#14345C] mb-4">
@@ -846,12 +706,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
               action={
                 <button
                   type="button"
-                  onClick={() => {
-                    const next = isMedacademyLayout
-                      ? medacademyNextSection('history')
-                      : 'exam'
-                    if (next) handleSectionChange(next)
-                  }}
+                  onClick={() => handleSectionChange('exam')}
                   className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
                 >
                   Next step
@@ -864,45 +719,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </>
       )}
 
-      {activeSection === 'vocab' && vocabTabEnabled && scenario.caseVocab ? (
-        <>
-          <CaseVocabPanel terms={scenario.caseVocab} caseTitle={scenario.title} />
-          {isMedacademyLayout ? (
-            <div className="mt-10 mx-auto flex w-full max-w-xl justify-center px-2">
-              <NextStepGuidance
-                compact
-                showHeading={false}
-                centered
-                action={
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const next = medacademyNextSection('vocab')
-                      if (next) handleSectionChange(next)
-                    }}
-                    className="btn-press w-full medcess-btn-primary text-center text-sm !py-3"
-                  >
-                    Next step
-                  </button>
-                }
-              >
-                {getScenarioSectionGuidanceLine('vocab')}
-              </NextStepGuidance>
-            </div>
-          ) : null}
-        </>
-      ) : null}
-
-      {activeSection === 'guided-reasoning' && scenario.guidedReasoning ? (
-        <GuidedReasoningPanel
-          config={scenario.guidedReasoning}
-          answers={guidedReasoningAnswers}
-          onAnswerChange={handleGuidedReasoningAnswerChange}
-          onViewResults={handleGuidedReasoningContinue}
-        />
-      ) : null}
-
-      {activeSection === 'exam' && !isMedacademyLayout && (
+      {activeSection === 'exam' && (
         <>
           <PhysicalExamPanel
             sections={scenario.physicalExam}
@@ -934,42 +751,7 @@ export default function ScenarioPlayer({ scenario }: Props) {
         </>
       )}
 
-      {activeSection === 'clinical-data' && isMedacademyLayout && scenario.caseInfoContent ? (
-        <>
-          <ClinicalDataPanel
-            content={scenario.caseInfoContent}
-            vocab={scenario.caseVocab ?? []}
-            caseTitle={scenario.title}
-            viewedSections={viewedClinicalDataSections}
-            onSectionViewed={handleClinicalDataSectionViewed}
-            scrollToSection={clinicalDataScrollTarget}
-            onScrollComplete={() => setClinicalDataScrollTarget(null)}
-          />
-          <div className="mt-10 mx-auto flex w-full max-w-xl justify-center px-2">
-            <NextStepGuidance
-              compact
-              showHeading={false}
-              centered
-              action={
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = medacademyNextSection('clinical-data')
-                    if (next) handleSectionChange(next)
-                  }}
-                  className="btn-press w-full rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
-                >
-                  Next step
-                </button>
-              }
-            >
-              {getScenarioSectionGuidanceLine('clinical-data')}
-            </NextStepGuidance>
-          </div>
-        </>
-      ) : null}
-
-      {activeSection === 'tests' && !isMedacademyLayout && (
+      {activeSection === 'tests' && (
         <>
           <TestsPanel
             scenario={scenario}
@@ -1012,9 +794,6 @@ export default function ScenarioPlayer({ scenario }: Props) {
             onTermSave={handleTermSave}
             doctorMessageCount={doctorTurns}
             orderedTestCount={orderedTests.size}
-            clinicalDataSectionsReviewed={viewedClinicalDataSections.length}
-            isMedacademyCase={isMedacademyLayout}
-            guidedReasoningComplete={guidedReasoningComplete}
           />
         </>
       )}

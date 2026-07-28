@@ -11,12 +11,6 @@ import type {
 } from '@/types/debrief'
 import { resolveScenarioAnswerKey } from './answerKey'
 import { computeClinicalScore200 } from './clinicalScoring200'
-import { computeMedacademy150Score } from './clinicalScoringMedacademy150'
-import {
-  computeMedacademyCardioScore,
-  isMedacademyCardioScenario,
-  isStemiFinalDiagnosis,
-} from './clinicalScoringMedacademyCardio'
 import {
   buildDebriefInput,
   doctorBlobFromChat,
@@ -39,12 +33,10 @@ export type AssessRequestBody = {
   scenarioId: string
   chat?: Array<{ role: string; content: string }>
   viewedExamSections?: string[]
-  viewedClinicalDataSections?: string[]
   orderedTests?: string[]
   differentialDetailed?: Array<{ dxId: string; rank: number; confidence: string; note?: string }>
   finalDxId?: string | null
   redFlagsFound?: string[]
-  guidedReasoningAnswers?: Record<string, { selectedIds: string[]; submitted: boolean }>
 }
 
 function mergeConfig(scenario: Scenario): ScenarioDebriefConfig {
@@ -153,51 +145,23 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     (m) => m.role === 'doctor' || m.role === 'user'
   ).length
 
-  const differentialDxIds = (body.differentialDetailed ?? []).map((d) => d.dxId)
-
   let clinicalFeedback: ClinicalFeedbackReport
   let rubric200: ClinicalRubric200
-  let maxScore = 200
+  const maxScore = 200
 
-  if (scenario.scoringProfile === 'medacademy-150') {
-    if (isMedacademyCardioScenario(scenario.id)) {
-      const medacademy = computeMedacademyCardioScore({
-        scenario,
-        viewedClinicalDataSections: body.viewedClinicalDataSections ?? [],
-        differentialDxIds,
-        finalDxId: body.finalDxId,
-        guidedReasoningAnswers: body.guidedReasoningAnswers,
-      })
-      clinicalFeedback = medacademy.feedback
-      rubric200 = medacademy.rubric
-      maxScore = medacademy.maxScore
-    } else {
-      const medacademy = computeMedacademy150Score({
-        scenario,
-        doctorBlob,
-        viewedClinicalDataSections: body.viewedClinicalDataSections ?? [],
-        differentialDxIds,
-        finalDxId: body.finalDxId,
-      })
-      clinicalFeedback = medacademy.feedback
-      rubric200 = medacademy.rubric
-      maxScore = medacademy.maxScore
-    }
-  } else {
-    clinicalFeedback = computeClinicalScore200({
-      scenario,
-      answerKey,
-      doctorBlob,
-      doctorMessageCount,
-      orderedTests: body.orderedTests ?? [],
-      differentialDetailed: body.differentialDetailed,
-      finalDxId: body.finalDxId,
-      offTopicQuestions: input.offTopicQuestions,
-      missingMustNotMissDxIds: input.missingMustNotMissDxIds,
-      redFlagsMissed: input.redFlagsMissed,
-    })
-    rubric200 = clinicalFeedback.rubric
-  }
+  clinicalFeedback = computeClinicalScore200({
+    scenario,
+    answerKey,
+    doctorBlob,
+    doctorMessageCount,
+    orderedTests: body.orderedTests ?? [],
+    differentialDetailed: body.differentialDetailed,
+    finalDxId: body.finalDxId,
+    offTopicQuestions: input.offTopicQuestions,
+    missingMustNotMissDxIds: input.missingMustNotMissDxIds,
+    redFlagsMissed: input.redFlagsMissed,
+  })
+  rubric200 = clinicalFeedback.rubric
 
   const missedTopicLabels = missedKeyHistoryTopics(
     input.doctorChatBlob,
@@ -209,13 +173,7 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
   )
 
   const finalMatchesCorrect = Boolean(
-    body.finalDxId &&
-      scenario.finalDxId &&
-      (body.finalDxId === scenario.finalDxId ||
-        (scenario.scoringProfile === 'medacademy-150' &&
-          scenario.id === 'medacademy-pathology-cells-going-wild' &&
-          ['lung_cancer', 'non_small_cell_lung_cancer'].includes(body.finalDxId)) ||
-        (isMedacademyCardioScenario(scenario.id) && isStemiFinalDiagnosis(body.finalDxId)))
+    body.finalDxId && scenario.finalDxId && body.finalDxId === scenario.finalDxId
   )
 
   const debriefStructured = generateDebriefOutput({
@@ -246,10 +204,7 @@ export function buildDeterministicAssessment(body: AssessRequestBody): Determini
     .filter(Boolean)
     .join(' ')
 
-  const overallRating =
-    scenario.scoringProfile === 'medacademy-150'
-      ? rubric200.performanceLevel
-      : ratingLabel(rubric200.total)
+  const overallRating = ratingLabel(rubric200.total)
   const sb = input.scoreBreakdown
 
   const assessment: DeterministicAssessment = {

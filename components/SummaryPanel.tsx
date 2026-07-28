@@ -6,7 +6,6 @@ import type { RubricBreakdown } from '@/lib/scoring'
 import type { ClinicalFeedbackReport, ClinicalRubric200 } from '@/types/debrief'
 import VocabText from './VocabText'
 import VocabContextBlock from './VocabContextBlock'
-import { shouldShowVocabTab, isMedacademyCase } from '@/lib/scenarioVocab'
 import { vocab, getVocabTerm } from '@/data/vocab'
 import { APP_NAME } from '@/lib/branding'
 
@@ -102,37 +101,18 @@ function ScoreCard({
   levelLabel,
   capApplied,
   maxScore = 200,
-  scoringProfile,
-  hasGuidedReasoning,
 }: {
   rubric: ClinicalRubric200
   levelLabel: string
   capApplied?: number
   maxScore?: number
-  scoringProfile?: Scenario['scoringProfile']
-  hasGuidedReasoning?: boolean
 }) {
-  const rows =
-    scoringProfile === 'medacademy-150' && hasGuidedReasoning
-      ? [
-          { label: 'Guided Reasoning', value: rubric.patientInterview, max: 55 },
-          { label: 'Clinical Data Review', value: rubric.diagnosticTesting, max: 55 },
-          { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 30 },
-          { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 10 },
-        ]
-      : scoringProfile === 'medacademy-150'
-        ? [
-            { label: 'Patient Interview', value: rubric.patientInterview, max: 45 },
-            { label: 'Clinical Data Review', value: rubric.diagnosticTesting, max: 55 },
-            { label: 'Diagnosis', value: rubric.finalDiagnosis, max: 35 },
-            { label: 'Clinical Reasoning Explanation', value: rubric.clinicalReasoning, max: 15 },
-          ]
-      : [
-          { label: 'Patient Interview', value: rubric.patientInterview, max: 60 },
-          { label: 'Diagnostic Testing', value: rubric.diagnosticTesting, max: 60 },
-          { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 50 },
-          { label: 'Final Diagnosis', value: rubric.finalDiagnosis, max: 30 },
-        ]
+  const rows = [
+    { label: 'Patient Interview', value: rubric.patientInterview, max: 60 },
+    { label: 'Diagnostic Testing', value: rubric.diagnosticTesting, max: 60 },
+    { label: 'Clinical Reasoning', value: rubric.clinicalReasoning, max: 50 },
+    { label: 'Final Diagnosis', value: rubric.finalDiagnosis, max: 30 },
+  ]
 
   return (
     <div className="mb-6 rounded-xl border border-teal-200 dark:border-teal-800/50 bg-gradient-to-br from-teal-50 to-slate-50 dark:from-[#071A33] dark:to-[#0a1f3d] p-5 shadow-sm">
@@ -200,72 +180,22 @@ export default function SummaryPanel({
     .filter(Boolean)
     .join('\n')
 
-  const missedTopics = [
-    ...(cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints),
-    ...(cf?.testing.missedEssential ?? []),
-    ...(cf?.areasForImprovement ?? assessment.areasForImprovement),
-  ]
-    .join(' ')
-    .toLowerCase()
-
-  const vocabKeywordMap: Record<string, string[]> = {
-    smoking: ['pack year', 'smoking'],
-    hoarseness: ['hoarseness', 'raspy'],
-    hemoptysis: ['hemoptysis'],
-    'weight loss': ['weight loss'],
-    headache: ['headache', 'mentation'],
-    coordination: ['coordination', 'mentation'],
-    mentation: ['mentation', 'coordination'],
-    'back pain': ['chronic low back pain', 'bone scan'],
-    family: ['family history'],
-    biopsy: ['biopsy', 'mass'],
-    pet: ['PET scan', 'staging'],
-    'brain mri': ['Brain MRI', 'headache'],
-    'lymph node': ['subcarinal lymph nodes', 'EBUS'],
-    ct: ['CT scan', 'right infrahilar mass'],
-    pe: ['pulmonary embolism', 'PE'],
-    staging: ['PET scan', 'staging'],
-  }
-
-  const caseVocabRecommendations = shouldShowVocabTab(scenario)
-    ? (scenario.caseVocab
-        ?.filter((entry) => {
-          for (const [keyword, terms] of Object.entries(vocabKeywordMap)) {
-            if (missedTopics.includes(keyword) && terms.some((t) => t.toLowerCase() === entry.term.toLowerCase())) {
-              return true
-            }
-          }
-          return missedTopics.split(/\W+/).some(
-            (word) =>
-              word.length > 4 &&
-              (entry.term.toLowerCase().includes(word) || entry.whyItMatters.toLowerCase().includes(word))
-          )
-        })
-        .slice(0, 8)
-        .map((e) => e.term) ?? [])
-    : []
-
-  const recommendedTerms =
-    caseVocabRecommendations.length > 0
-      ? caseVocabRecommendations
-      : vocab
-          .filter((term) => {
-            const relatedToMissed = (cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints).some(
-              (point) =>
-                point.toLowerCase().includes(term.term.toLowerCase()) ||
-                term.tags.some((tag) => point.toLowerCase().includes(tag))
-            )
-            const isImportant = term.tags.includes('red-flag') || term.tags.includes('cardiac')
-            return (relatedToMissed || isImportant) && !savedTerms.includes(term.term)
-          })
-          .slice(0, 5)
-          .map((term) => term.term)
+  const recommendedTerms = vocab
+    .filter((term) => {
+      const relatedToMissed = (cf?.interview.missedImportant ?? assessment.missedKeyHistoryPoints).some(
+        (point) =>
+          point.toLowerCase().includes(term.term.toLowerCase()) ||
+          term.tags.some((tag) => point.toLowerCase().includes(tag))
+      )
+      const isImportant = term.tags.includes('red-flag') || term.tags.includes('cardiac')
+      return (relatedToMissed || isImportant) && !savedTerms.includes(term.term)
+    })
+    .slice(0, 5)
+    .map((term) => term.term)
 
   const improvementItems = cf?.areasForImprovement.length
     ? cf.areasForImprovement
     : assessment.areasForImprovement
-
-  const isMedacademy = isMedacademyCase(scenario)
 
   const correctDiagnosisSection = cf ? (
     <section className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-5">
@@ -310,9 +240,7 @@ export default function SummaryPanel({
           Clinical Performance Report
         </h2>
         <p className="mb-6 text-sm leading-relaxed text-slate-600 dark:text-[#CBD5E1]">
-          {isMedacademy
-            ? `${APP_NAME} evaluates your full clinical process — interview, clinical data review, reasoning, and final diagnosis — not just whether you guessed correctly.`
-            : `${APP_NAME} evaluates your full clinical process — interview, testing, reasoning, and final diagnosis — not just whether you guessed correctly.`}
+          {`${APP_NAME} evaluates your full clinical process — interview, testing, reasoning, and final diagnosis — not just whether you guessed correctly.`}
         </p>
 
         {rubric ? (
@@ -321,8 +249,6 @@ export default function SummaryPanel({
             levelLabel={assessment.overallRating}
             capApplied={rubric.scoreCapApplied}
             maxScore={assessment.maxScore ?? 200}
-            scoringProfile={scenario.scoringProfile}
-            hasGuidedReasoning={Boolean(scenario.guidedReasoning)}
           />
         ) : assessment.totalScore != null ? (
           <div className="mb-6 rounded-xl border border-slate-200 dark:border-[#14345C] bg-slate-50 dark:bg-[#071A33] p-4">
@@ -365,50 +291,40 @@ export default function SummaryPanel({
 
             <section className="rounded-xl border border-slate-200 dark:border-[#14345C] bg-white dark:bg-[#0a1f3d] p-5">
               <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-[#F8FAFC]">
-                {isMedacademy ? 'Clinical Data Review' : 'Diagnostic Testing'}
+                Diagnostic Testing
               </h3>
-              <div className={`grid gap-4 ${isMedacademy ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+              <div className="grid gap-4 md:grid-cols-3">
                 <FeedbackList
-                  title={isMedacademy ? 'Sections reviewed' : 'Correctly ordered tests'}
+                  title="Correctly ordered tests"
                   items={cf.testing.correctlyOrdered}
-                  emptyText={
-                    isMedacademy
-                      ? 'No clinical data sections reviewed yet.'
-                      : 'No essential tests ordered.'
-                  }
+                  emptyText="No essential tests ordered."
                   variant="correct"
                 />
                 <FeedbackList
-                  title={isMedacademy ? 'Sections missed' : 'Missed essential tests'}
+                  title="Missed essential tests"
                   items={cf.testing.missedEssential}
-                  emptyText={
-                    isMedacademy
-                      ? 'All important clinical data sections were reviewed.'
-                      : 'All essential tests were ordered.'
-                  }
+                  emptyText="All essential tests were ordered."
                   variant="missed"
                 />
-                {!isMedacademy ? (
-                  <div>
-                    <h4 className="mb-2 text-sm font-semibold text-rose-800 dark:text-rose-300">
-                      Unnecessary tests
-                    </h4>
-                    {cf.testing.unnecessary.length === 0 ? (
-                      <p className="text-sm text-slate-500 dark:text-[#94a3b8]">No unnecessary tests ordered.</p>
-                    ) : (
-                      <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
-                        {cf.testing.unnecessary.map((t, idx) => (
-                          <li key={idx}>
-                            <span className="font-medium">{t.name}</span>
-                            {t.reason ? (
-                              <span className="text-slate-500 dark:text-[#94a3b8]"> — {t.reason}</span>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ) : null}
+                <div>
+                  <h4 className="mb-2 text-sm font-semibold text-rose-800 dark:text-rose-300">
+                    Unnecessary tests
+                  </h4>
+                  {cf.testing.unnecessary.length === 0 ? (
+                    <p className="text-sm text-slate-500 dark:text-[#94a3b8]">No unnecessary tests ordered.</p>
+                  ) : (
+                    <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
+                      {cf.testing.unnecessary.map((t, idx) => (
+                        <li key={idx}>
+                          <span className="font-medium">{t.name}</span>
+                          {t.reason ? (
+                            <span className="text-slate-500 dark:text-[#94a3b8]"> — {t.reason}</span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </section>
 
@@ -433,7 +349,7 @@ export default function SummaryPanel({
                   {cf.idealWorkup.essential.length > 0 ? (
                     <div>
                       <h4 className="mb-2 text-sm font-semibold text-slate-800 dark:text-[#F8FAFC]">
-                        {isMedacademy ? 'Important clinical data sections' : 'Ideal tests'}
+                        Ideal tests
                       </h4>
                       <ul className="list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-[#CBD5E1]">
                         {cf.idealWorkup.essential.map((t) => (
@@ -478,38 +394,21 @@ export default function SummaryPanel({
             <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">
               Vocabulary connected to missed reasoning points
             </h3>
-            {shouldShowVocabTab(scenario) && scenario.caseVocab ? (
-              <ul className="space-y-2 text-sm text-slate-700 dark:text-[#CBD5E1]">
-                {recommendedTerms.map((termName) => {
-                  const entry = scenario.caseVocab?.find(
-                    (e) => e.term.toLowerCase() === termName.toLowerCase()
-                  )
-                  if (!entry) return null
-                  return (
-                    <li key={termName} className="rounded-md border border-purple-200/60 dark:border-purple-800/40 bg-white/80 dark:bg-[#0a1f3d] px-3 py-2">
-                      <span className="font-semibold text-purple-800 dark:text-purple-300">{entry.term}</span>
-                      <span className="text-slate-600 dark:text-[#94a3b8]"> — {entry.definition}</span>
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {recommendedTerms.map((term) => {
-                  const termData = getVocabTerm(term)
-                  return termData ? (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => onTermClick?.(term)}
-                      className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300"
-                    >
-                      {termData.display}
-                    </button>
-                  ) : null
-                })}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {recommendedTerms.map((term) => {
+                const termData = getVocabTerm(term)
+                return termData ? (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => onTermClick?.(term)}
+                    className="rounded-md border border-purple-300 dark:border-purple-600 bg-white dark:bg-[#0a1f3d] px-3 py-1 text-sm text-purple-700 dark:text-purple-300"
+                  >
+                    {termData.display}
+                  </button>
+                ) : null
+              })}
+            </div>
           </div>
         ) : null}
 

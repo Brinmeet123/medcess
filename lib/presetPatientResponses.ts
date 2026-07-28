@@ -124,7 +124,6 @@ const SCENARIO_ID_TO_FALLBACK_KEY: Record<string, string> = {
   'iron-anemia-dizziness-melissa-chen': 'iron-anemia-dizziness-melissa-chen',
   'ckd-fatigue-william-foster': 'ckd-fatigue-william-foster',
   'nephrotic-edema-thomas-rivera': 'nephrotic-edema-thomas-rivera',
-  'medacademy-pathology-cells-going-wild': 'medacademy-pathology-cells-going-wild',
   'geriatrics-delirium-uti-margaret-russo': 'geriatrics-delirium-uti-margaret-russo',
   'geriatrics-alzheimer-harold-green': 'geriatrics-alzheimer-harold-green',
   'geriatrics-orthostatic-falls-richard-bennett': 'geriatrics-orthostatic-falls-richard-bennett',

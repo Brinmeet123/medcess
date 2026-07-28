@@ -1,25 +1,11 @@
 'use client'
 
-import type { SectionLayout } from '@/data/scenarios'
-
 export type ClinicalSection =
-  | 'case-info'
   | 'history'
   | 'exam'
   | 'tests'
-  | 'clinical-data'
   | 'diagnosis'
-  | 'vocab'
-  | 'guided-reasoning'
   | 'debrief'
-
-export type SectionNavOptions = {
-  sectionLayout?: SectionLayout
-  /** When false, Vocab is omitted from MEDacademy navigation */
-  showVocabTab?: boolean
-  /** MEDacademy high school workflow: Case Info → Clinical Data → Vocab → Guided Reasoning → Results */
-  hasGuidedReasoning?: boolean
-}
 
 export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'history', label: 'Interview' },
@@ -28,62 +14,21 @@ export const DEFAULT_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
   { id: 'diagnosis', label: 'Diagnosis' },
 ]
 
-const MEDACADEMY_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
-  { id: 'case-info', label: 'Case Info' },
-  { id: 'clinical-data', label: 'Clinical Data' },
-  { id: 'vocab', label: 'Vocab' },
-  { id: 'history', label: 'Patient Interview' },
-  { id: 'diagnosis', label: 'Diagnosis' },
-]
-
-const MEDACADEMY_GUIDED_SECTION_ORDER: { id: ClinicalSection; label: string }[] = [
-  { id: 'case-info', label: 'Case Info' },
-  { id: 'clinical-data', label: 'Clinical Data' },
-  { id: 'vocab', label: 'Vocab' },
-  { id: 'guided-reasoning', label: 'Guided Reasoning' },
-  { id: 'diagnosis', label: 'Diagnosis' },
-]
-
 /** @deprecated Use getSectionOrder() */
 export const SECTION_ORDER = DEFAULT_SECTION_ORDER
 
-export function getSectionOrder(opts?: SectionNavOptions): { id: ClinicalSection; label: string }[] {
-  const layout = opts?.sectionLayout
-  if (layout === 'medacademy') {
-    if (opts?.hasGuidedReasoning) {
-      if (opts?.showVocabTab) return [...MEDACADEMY_GUIDED_SECTION_ORDER]
-      return MEDACADEMY_GUIDED_SECTION_ORDER.filter((s) => s.id !== 'vocab')
-    }
-    if (opts?.showVocabTab) return [...MEDACADEMY_SECTION_ORDER]
-    return MEDACADEMY_SECTION_ORDER.filter((s) => s.id !== 'vocab')
-  }
+export function getSectionOrder(): { id: ClinicalSection; label: string }[] {
   return DEFAULT_SECTION_ORDER
 }
 
-export function getMedacademyNextSection(
-  current: ClinicalSection,
-  opts?: Pick<SectionNavOptions, 'showVocabTab' | 'hasGuidedReasoning'>
-): ClinicalSection | null {
-  const order = getSectionOrder({
-    sectionLayout: 'medacademy',
-    showVocabTab: opts?.showVocabTab,
-    hasGuidedReasoning: opts?.hasGuidedReasoning,
-  })
-  const index = order.findIndex((s) => s.id === current)
-  if (index < 0 || index >= order.length - 1) return null
-  return order[index + 1].id
+export function getSectionStepCount(): number {
+  return DEFAULT_SECTION_ORDER.length + 1
 }
 
-export function getSectionStepCount(opts?: SectionNavOptions): number {
-  // All layouts append a separate locked Results (debrief) tab after the main steps
-  return getSectionOrder(opts).length + 1
-}
-
-export function clinicalSectionToStep(section: ClinicalSection, opts?: SectionNavOptions): number {
-  const order = getSectionOrder(opts)
-  const i = order.findIndex((s) => s.id === section)
+export function clinicalSectionToStep(section: ClinicalSection): number {
+  const i = DEFAULT_SECTION_ORDER.findIndex((s) => s.id === section)
   if (i >= 0) return i + 1
-  if (section === 'debrief') return order.length + 1
+  if (section === 'debrief') return DEFAULT_SECTION_ORDER.length + 1
   return 1
 }
 
@@ -98,13 +43,6 @@ type Props = {
   debriefLockedReason?: string
   /** Per-tab completion based on actual learner actions, not tab order. */
   sectionCompletion: SectionCompletion
-  sectionLayout?: SectionLayout
-  /** MEDacademy only: when true, Vocab tab appears in navigation */
-  showVocabTab?: boolean
-  /** MEDacademy high school workflow with Guided Reasoning tab */
-  hasGuidedReasoning?: boolean
-  /** When true, all tabs are accessible from the start (no linear unlock). */
-  unlockAllTabs?: boolean
 }
 
 function CheckIcon({ className = '' }: { className?: string }) {
@@ -158,22 +96,17 @@ export default function SectionNav({
   onChange,
   canAccessDebrief = false,
   sectionCompletion,
-  sectionLayout,
-  showVocabTab = false,
-  hasGuidedReasoning = false,
   debriefLockedReason = 'Choose a final diagnosis to view results.',
-  unlockAllTabs = false,
 }: Props) {
-  const sectionNavOpts = { sectionLayout, showVocabTab, hasGuidedReasoning }
-  const sectionOrder = getSectionOrder(sectionNavOpts)
-  const activeStep = clinicalSectionToStep(active, sectionNavOpts)
+  const sectionOrder = DEFAULT_SECTION_ORDER
+  const activeStep = clinicalSectionToStep(active)
 
   const tabs = sectionOrder.map((section, index) => {
     const step = index + 1
     const isActive = active === section.id
     const isLocked = false
     const isCompleted = Boolean(sectionCompletion[section.id])
-    const isUnlockedAhead = !unlockAllTabs && !isLocked && !isActive && step > activeStep
+    const isUnlockedAhead = !isLocked && !isActive && step > activeStep
 
     return (
       <button

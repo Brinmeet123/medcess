@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
       viewedExamSections,
       differentials,
       orderedTests,
-      viewedClinicalDataSections,
       reasoningUpdates,
       finalDiagnosis,
       patientExplanation,
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest) {
       missingMustNotMiss,
       selectedDifferentialIds,
       finalDiagnosisId,
-      guidedReasoningAnswers,
     } = body
 
     const scenario = scenarios.find((s) => s.id === scenarioId)
@@ -51,11 +49,9 @@ export async function POST(request: NextRequest) {
         chat,
         viewedExamSections,
         orderedTests,
-        viewedClinicalDataSections,
         differentialDetailed,
         finalDxId,
         redFlagsFound,
-        guidedReasoningAnswers,
       })
       await delayForAssessment()
       const out = await maybePolishDeterministicAssessment(deterministic, actor)
@@ -83,11 +79,9 @@ export async function POST(request: NextRequest) {
       chat,
       viewedExamSections,
       orderedTests,
-      viewedClinicalDataSections,
       differentialDetailed,
       finalDxId,
       redFlagsFound,
-      guidedReasoningAnswers,
     })
 
     await delayForAssessment()

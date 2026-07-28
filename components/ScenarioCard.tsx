@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Scenario, ScenarioDifficulty } from '@/data/scenarios'
 import type { ScenarioProgressInfo } from './ScenarioList'
 import { difficultyUiLabel } from '@/lib/scenarioUi'
-import { isMedacademyCase } from '@/lib/scenarioVocab'
 import { isGuestAccessible } from '@/lib/caseAccess'
 
 type Props = {
@@ -178,36 +177,19 @@ export default function ScenarioCard({
             )}
             <span className="text-sm text-gray-500 dark:text-[#94a3b8]">{scenario.estimatedMinutes} min</span>
           </div>
-          {isMedacademyCase(scenario) ? (
-            <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.cardTeaser}</p>
-          ) : (
-            <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.description}</p>
-          )}
-          {!isMedacademyCase(scenario) ? (
-            <p className="text-sm text-slate-500 dark:text-[#94a3b8] italic mb-3 leading-snug">{scenario.cardTeaser}</p>
-          ) : null}
+          <p className="text-gray-600 dark:text-[#CBD5E1] text-sm flex-grow mb-2">{scenario.description}</p>
+          <p className="text-sm text-slate-500 dark:text-[#94a3b8] italic mb-3 leading-snug">{scenario.cardTeaser}</p>
           {progress &&
             (progress.bestScore != null || progress.lastAttemptScore != null) &&
             (progress.status === 'completed' || progress.status === 'in_progress') &&
-            (isMedacademyCase(scenario) ? (
-              <p className="text-xs text-slate-600 dark:text-[#CBD5E1] tabular-nums mb-4">
-                {progress.bestScore != null && <span>Best {progress.bestScore}/150</span>}
-                {progress.lastAttemptScore != null && (
-                  <span>
-                    {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}/150
-                  </span>
-                )}
-              </p>
-            ) : (
-              <p className="text-xs text-slate-600 dark:text-[#CBD5E1] tabular-nums mb-4">
-                {progress.bestScore != null && <span>Best {progress.bestScore}/200</span>}
-                {progress.lastAttemptScore != null && (
-                  <span>
-                    {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}/200
-                  </span>
-                )}
-              </p>
-            ))}
+            <p className="text-xs text-slate-600 dark:text-[#CBD5E1] tabular-nums mb-4">
+              {progress.bestScore != null && <span>Best {progress.bestScore}/200</span>}
+              {progress.lastAttemptScore != null && (
+                <span>
+                  {progress.bestScore != null ? ' · ' : ''}Last {progress.lastAttemptScore}/200
+                </span>
+              )}
+            </p>}
           <div
             className={`btn-press mt-auto inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold ring-1 w-fit ${
               needsSignIn

@@ -26,7 +26,7 @@ export type SavedVocabTerm = {
   /** When the term is not in the local catalog (e.g. server-only row) */
   sourceLabel?: string
   sourceDefinition?: string
-  /** MEDacademy case title where the term was saved from */
+  /** Case title where the term was saved from */
   sourceCaseName?: string
 }
 

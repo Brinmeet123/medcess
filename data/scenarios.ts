@@ -163,57 +163,6 @@ export type Plan = {
   monitoring?: string[];
 };
 
-export type ClinicalLabRow = {
-  timepoint: string;
-  troponin: string;
-  creatineKinase: string;
-  ckMb: string;
-};
-
-export type CaseInfoContent = {
-  introduction: string;
-  /** Pathology default vs cardio release layout for Clinical Data tab */
-  clinicalDataLayout?: 'pathology' | 'cardio';
-  /** Key imaging callout text (exact wording) */
-  keyImagingFinding?: string;
-  /** Clinical Data tab — Imaging section (exact wording) */
-  clinicalDataImaging?: string;
-  hpi?: string;
-  pmh?: string[];
-  familyHistory?: string;
-  physicalExam?: string[];
-  figureCaption?: string;
-  figureImageUrl?: string;
-  /** Cardio layout — Presentation section (exact wording) */
-  presentation?: string;
-  /** Cardio layout — Vital signs lines (exact wording) */
-  vitalSigns?: string[];
-  /** Cardio layout — ECG section heading */
-  ecgHeading?: string;
-  /** Cardio layout — ECG findings text (exact wording) */
-  ecgFindings?: string;
-  ecgFigureCaption?: string;
-  ecgFigureImageUrl?: string;
-  /** Cardio layout — Lab values intro paragraph (exact wording) */
-  labValuesIntro?: string;
-  /** Cardio layout — Serial lab table rows */
-  labValues?: ClinicalLabRow[];
-};
-
-export type CaseVocabEntry = {
-  term: string;
-  definition: string;
-  whyItMatters: string;
-  /** Highlight when term appears directly in case text */
-  inCaseText?: boolean;
-};
-
-import type { GuidedReasoningConfig } from '@/types/guidedReasoning';
-
-export type SectionLayout = 'default' | 'medacademy';
-
-export type CaseType = 'standard' | 'MEDacademy';
-
 export type PatientPersona = {
   name: string;
   age: number;
@@ -262,8 +211,6 @@ export type Scenario = {
   teachingPoints: string[];   // Key points for debrief
   /** Optional override; defaults are in data/debriefConfigs.ts by scenario id */
   debriefConfig?: ScenarioDebriefConfig;
-  /** Use custom 150-point MedAcademy rubric instead of default /200 scoring */
-  scoringProfile?: 'medacademy-150';
   /** Slightly faster scripted patient reply delay for this case */
   fastPatientReplies?: boolean;
   /** Show gentle warning on Diagnosis tab if interview/tests incomplete */
@@ -280,18 +227,6 @@ export type Scenario = {
   cardCategory?: string;
   /** Optional display label for difficulty (e.g. High School / Introductory) */
   difficultyLabel?: string;
-  /** Structured case info for Case Info tab (exact wording) */
-  caseInfoContent?: CaseInfoContent;
-  /** Per-case vocabulary for Vocab tab (MEDacademy only) */
-  caseVocab?: CaseVocabEntry[];
-  /** Custom tab layout: medacademy = Case Info, Clinical Data, Vocab, Patient Interview, Diagnosis, Results */
-  sectionLayout?: SectionLayout;
-  /** Case program type; Vocab tab requires MEDacademy */
-  caseType?: CaseType;
-  /** Explicit opt-in to show in-case Vocab tab (MEDacademy cases only) */
-  showVocabTab?: boolean;
-  /** Guided Reasoning tab content (MEDacademy high school workflow) */
-  guidedReasoning?: GuidedReasoningConfig;
 };
 
 export const scenarios: Scenario[] = [
