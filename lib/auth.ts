@@ -37,7 +37,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials?.password
         if (typeof email !== 'string' || typeof password !== 'string') return null
 
-        const [{ prisma }, bcrypt] = await Promise.all([import('@/lib/prisma'), import('bcryptjs')])
+        const [{ prisma }, bcrypt, { isAdminEmail }] = await Promise.all([
+          import('@/lib/prisma'),
+          import('bcryptjs'),
+          import('@/lib/adminAuth'),
+        ])
 
         const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } })
         if (!user) return null
@@ -45,12 +49,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const ok = await bcrypt.default.compare(password, user.password)
         if (!ok) return null
 
+        const isAdmin = user.role === 'admin' || isAdminEmail(user.email)
+
         return {
           id: user.id,
           email: user.email,
           name: user.name ?? undefined,
           image: user.image ?? undefined,
           username: user.username,
+          isAdmin,
         }
       },
     }),
@@ -79,6 +86,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id
         token.username = user.username ?? undefined
+        token.email = user.email ?? undefined
+        token.isAdmin = Boolean((user as { isAdmin?: boolean }).isAdmin)
       }
       return token
     },
@@ -86,6 +95,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string
         session.user.username = (token.username as string) ?? ''
+        session.user.isAdmin = Boolean(token.isAdmin)
       }
       return session
     },

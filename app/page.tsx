@@ -4,11 +4,16 @@ import { scenarios } from '@/data/scenarios'
 import { APP_NAME, TAGLINE, TAGLINE_SHORT } from '@/lib/branding'
 import MedcessLogo from '@/components/MedcessLogo'
 import MedcessDivider from '@/components/brand/MedcessDivider'
+import TestimonialsSection from '@/components/TestimonialsSection'
+import { listVisibleTestimonials } from '@/lib/testimonials'
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+export default async function Home() {
   const starterCases = FREE_CASE_IDS.map((id) => scenarios.find((s) => s.id === id)).filter(
     (s): s is (typeof scenarios)[number] => Boolean(s)
   )
+  const testimonials = await listVisibleTestimonials()
   return (
     <div className="min-h-screen bg-white dark:bg-[#020817]">
       <section className="relative overflow-hidden bg-medcess-hero dark:bg-medcess-hero-dark py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
@@ -159,6 +164,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <TestimonialsSection testimonials={testimonials} />
     </div>
   )
 }

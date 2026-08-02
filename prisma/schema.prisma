@@ -17,6 +17,8 @@ model User {
   email      String   @unique
   password   String
   image      String?
+  /// "user" | "admin" — only the seeded admin account should be "admin"
+  role       String   @default("user")
   createdAt  DateTime @default(now())
   subscribed Boolean  @default(true)
   totalScore Int      @default(0)
@@ -26,6 +28,29 @@ model User {
   progress            ScenarioProgress[]
   attempts            ScenarioAttempt[]
   passwordResetTokens PasswordResetToken[]
+}
+
+/// Homepage testimonials managed from the admin dashboard.
+model Testimonial {
+  id           String   @id @default(cuid())
+  name         String
+  text         String
+  /// Professional / academic level (free text).
+  level        String
+  /// School, university, hospital, or organization.
+  organization String
+  specialty    String?
+  /// Optional profile photo as a data URL or public path.
+  photoUrl     String?
+  /// Optional 1–5 star rating.
+  rating       Int?
+  visible      Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([visible, sortOrder])
+  @@index([sortOrder])
 }
 
 model PasswordResetToken {

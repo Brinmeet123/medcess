@@ -18,7 +18,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:wipe-users": "node scripts/wipe-users.cjs",
-    "db:deploy": "node scripts/with-database-env.cjs npx prisma migrate deploy"
+    "db:deploy": "node scripts/with-database-env.cjs npx prisma migrate deploy",
+    "db:seed-admin": "node scripts/with-database-env.cjs node scripts/seed-admin.cjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

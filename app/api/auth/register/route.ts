@@ -103,6 +103,7 @@ export async function POST(req: Request) {
         email: emailNorm,
         password: hashed,
         subscribed: true,
+        role: 'user',
       },
     })
 
